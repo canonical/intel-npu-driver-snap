@@ -1,0 +1,5 @@
+#!/bin/sh
+
+INSTALL_DIR="${SNAP_DATA}"/intel/vpu
+mkdir -p "${INSTALL_DIR}"
+cp -av "${SNAP}"/lib/firmware/updates/intel/vpu/* "${INSTALL_DIR}"

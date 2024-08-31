@@ -1,17 +1,100 @@
-name: my-snap-name # you probably want to 'snapcraft register <name>'
-base: core24 # the base snap is the execution environment for this snap
-version: '0.1' # just for humans, typically '1.2+git' or '1.3.2'
-summary: Single-line elevator pitch for your amazing snap # 79 char long summary
+name: intel-npu-driver
+base: core22
+version: '1.6.0'
+summary: User Mode Driver with Compiler Software for the Intel® NPU
 description: |
-  This is my-snap's description. You have a paragraph or two to tell the
-  most important story about your snap. Keep it under 100 words though,
-  we live in tweetspace and your description wants to look good in the snap
-  store.
+  User mode driver (UMD) with compiler for the Intel® NPU software stack.
+  Intel® NPU device is an AI inference accelerator integrated with Intel
+  client CPUs, starting from Intel® Core™ Ultra generation of CPUs (formerly
+  known as Meteor Lake). It enables energy-efficient execution of artificial
+  neural network tasks. This snap serves primarily as a producer snap providing
+  the oneAPI Level-Zero and UMD with compiler libraries. It also distributes
+  apps for installing firmware to a NPU device and validating the UMD.
+  For more info, see https://github.com/intel/linux-npu-driver
+grade: stable
+confinement: strict
 
-grade: devel # must be 'stable' to release into candidate/stable channels
-confinement: devmode # use 'strict' once you have the right plugs and slots
+slots:
+  intel-npu-slot:
+    interface: custom-device
+    custom-device: intel-npu-device
+    devices:
+      - /dev/accel/accel[0-9]
+      - /dev/accel/accel[1-5][0-9]
+      - /dev/accel/accel6[0-3]
+    udev-tagging:
+      - kernel: accel[0-9]
+        subsystem: accel
+        attributes:
+          vendor: "0x8086" # Intel
+      - kernel: accel[1-5][0-9]
+        subsystem: accel
+        attributes:
+          vendor: "0x8086" # Intel
+      - kernel: accel6[0-3]
+        subsystem: accel
+        attributes:
+          vendor: "0x8086" # Intel
+  npu-libs:
+    interface: content
+    content: npu-libs-2204
+    read:
+      - $SNAP/usr/lib/x86_64-linux-gnu
+
+plugs:
+  intel-npu-plug:
+    interface: custom-device
+    custom-device: intel-npu-device
+
+apps:
+
+  vpu-umd-test:
+    command: usr/bin/vpu-umd-test
+    plugs:
+      - intel-npu-plug
+
+  set-firmware-path:
+    command: usr/bin/set-firmware-path
+    plugs: [kernel-firmware-control]
 
 parts:
-  my-part:
-    # See 'snapcraft plugins'
-    plugin: nil
+
+  npu-driver:
+    source-type: git
+    source: https://github.com/intel/linux-npu-driver.git
+    source-tag: v1.6.0
+    plugin: cmake
+    cmake-parameters:
+      - -DENABLE_VPUX_COMPILER_BUILD=ON
+      - -DCMAKE_INSTALL_PREFIX=/usr
+    override-pull: |
+      craftctl default
+      git submodule update --init --recursive
+      git lfs pull
+    build-packages:
+      - build-essential
+      - git-lfs
+      - libudev-dev
+      - libboost-all-dev
+      - libssl-dev
+    stage-packages:
+      - libtbb12
+
+  set-firmware-path:
+    plugin: dump
+    source: bin/
+    organize:
+      '*': usr/bin/
+
+lint:
+  ignore:
+    - library:
+      # These are needed but are flagged
+      # by the linter because they are not
+      # explicitly linked to any binary or
+      # shared object, but rather dynamically
+      # loaded by apps.
+      - usr/lib/x86_64-linux-gnu/libze_validation_layer*
+      - usr/lib/x86_64-linux-gnu/libze_intel_vpu*
+      - usr/lib/x86_64-linux-gnu/libnpu_driver_compiler*
+      - usr/lib/x86_64-linux-gnu/libtbb*

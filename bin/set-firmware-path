@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ "${SNAP_UID}" -ne 0 ]; then
+  >&2 echo "Please run as root"
+  exit 1
+fi
+
+cd "${SNAP}"
+fw_blobs=$(find "${SNAP_DATA}" -name "*.bin")
+if [ -z "${fw_blobs}" ]; then
+  >&2 echo "No binary blobs found in ${SNAP_DATA}."
+  >&2 echo "Not updating firmware search path."
+  exit 1
+fi
+
+CUSTOM_FW_PATH_FILE=/sys/module/firmware_class/parameters/path
+echo -n "${SNAP_DATA}" > "${CUSTOM_FW_PATH_FILE}"
+
+custom_path=$(cat ${CUSTOM_FW_PATH_FILE})
+if [ -n "${custom_path}" ]; then
+  echo "Firmware search path is set to: ${custom_path}"
+else
+  >&2 echo "Error: custom firmware search path is empty"
+  >&2 echo "Did you remember to connect to the kernel-firmware-control interface?"
+  exit 1
+fi
