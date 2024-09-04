@@ -1,6 +1,6 @@
 # Intel NPU Driver Snap
 
-Snap recipe for the [Intel NPU Driver](https://github.com/intel/linux-npu-driver/). This snap is designed to be a producer snap providing NPU (neural processing unit) firmware and user-space libraries (including the user mode driver and NPU compiler) for consumption by application snaps via the [content interface](https://snapcraft.io/docs/content-interface).
+Snap recipe for the [Intel NPU Driver](https://github.com/intel/linux-npu-driver/). This snap is designed to be a producer snap providing NPU (neural processing unit) firmware, char device node access, and user-space libraries (including the user mode driver and NPU compiler) for consumption by application snaps. It exposes slots for consumer snaps to connect to (see below) but also provides firmware binary blobs for the NPU device and packages an app for validating the user space driver (`vpu-umd-test`).
 
 ## Instructions for building and running the snap
 
@@ -24,26 +24,30 @@ Note that this triggers an install hook that copies the firmware
 binary blobs to /var/snap/intel-npu-driver/current so that they
 are accessible to the kernel driver running on the host.
 
+### Snap slots
+
+* **intel-npu**: provides access to the NPU device node on the host
+* **npu-libs**: provides access to NPU libs, namely the NPU user mode driver with compiler
+
 ### Loading new NPU firmware
 
-Now connect the snap to the `kernel-firmware-control` snap interface,
-which allows the snap to access a file in /sys for customizing the
-kernel's firmware search path:
+Connecting the `intel-npu-fw` plug will trigger a hook
+that customizes the kernel's firmware search path:
 
 ```
-sudo snap connect intel-npu-driver:kernel-firmware-control
+sudo snap connect intel-npu-driver:intel-npu-fw
 ```
 
-Now run the following to customize the search path:
+To check that the search path was updated run:
 
 ```
-sudo intel-npu-driver.set-firmware-path
+sudo cat /sys/module/firmware_class/parameters/path
 ```
 
-The expected output is something like the following:
+The expected output is something like:
 
 ```
-Firmware search path is set to: /var/snap/intel-npu-driver/x1
+/var/snap/intel-npu-driver/x1
 ```
 
 Now reload the `intel_vpu` kernel module to load the updated firmware:
@@ -62,15 +66,15 @@ sudo dmesg | grep intel_vpu
 
 ### Running the vpu-umd-test application
 
-First connect to the `custom-device` interface, which allows access the
+First connect to the `custom-device` interface, which allows access to the
 NPU device node on the host:
 
 ```
-sudo snap connect intel-npu-driver:intel-npu-plug intel-npu-driver:intel-npu-slot
+sudo snap connect intel-npu-driver:intel-npu-plug intel-npu-driver:intel-npu
 ```
 
 If you have not done so already, ensure the following
-are performed in oder to set up non-root access to the
+are performed in order to set up non-root access to the
 NPU device:
 
 ```

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 INSTALL_DIR="${SNAP_DATA}"/intel/vpu
 mkdir -p "${INSTALL_DIR}"

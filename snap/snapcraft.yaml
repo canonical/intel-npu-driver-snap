@@ -15,7 +15,7 @@ grade: stable
 confinement: strict
 
 slots:
-  intel-npu-slot:
+  intel-npu:
     interface: custom-device
     custom-device: intel-npu-device
     devices:
@@ -42,20 +42,22 @@ slots:
       - $SNAP/usr/lib/x86_64-linux-gnu
 
 plugs:
-  intel-npu-plug:
+  intel-npu-plug: # append -plug as plug name cannot match slot name in same snap
     interface: custom-device
     custom-device: intel-npu-device
+  intel-npu-fw:
+    interface: kernel-firmware-control
+
+hooks:
+  connect-plug-intel-npu-fw:
+    plugs: [intel-npu-fw]
+  disconnect-plug-intel-npu-fw:
+    plugs: [intel-npu-fw]
 
 apps:
-
   vpu-umd-test:
     command: usr/bin/vpu-umd-test
-    plugs:
-      - intel-npu-plug
-
-  set-firmware-path:
-    command: usr/bin/set-firmware-path
-    plugs: [kernel-firmware-control]
+    plugs: [intel-npu-plug]
 
 parts:
 
@@ -79,12 +81,6 @@ parts:
       - libssl-dev
     stage-packages:
       - libtbb12
-
-  set-firmware-path:
-    plugin: dump
-    source: bin/
-    organize:
-      '*': usr/bin/
 
 lint:
   ignore:
