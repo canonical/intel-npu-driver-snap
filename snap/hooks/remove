@@ -1,0 +1,4 @@
+#!/bin/bash
+
+INSTALL_DIR="${SNAP_DATA}"/intel
+rm -rf "${INSTALL_DIR}"
