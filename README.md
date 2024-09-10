@@ -6,9 +6,7 @@ Snap recipe for the [Intel NPU Driver](https://github.com/intel/linux-npu-driver
 
 ### Building and installing the snap locally
 
-**Important note**: run `snapcraft` in the current directory
-in order for the install hook to get integrated with the
-snap correctly.
+**Important note**: run `snapcraft` in the current directory in order for the install hook to get integrated with the snap correctly.
 
 Build the snap:
 
@@ -31,8 +29,7 @@ are accessible to the kernel driver running on the host.
 
 ### Loading new NPU firmware
 
-Connecting the `intel-npu-fw` plug will trigger a hook
-that customizes the kernel's firmware search path:
+Connecting the `intel-npu-fw` plug will trigger a hook that customizes the kernel's firmware search path:
 
 ```
 sudo snap connect intel-npu-driver:intel-npu-fw
@@ -66,31 +63,32 @@ sudo dmesg | grep intel_vpu
 
 ### Running the vpu-umd-test application
 
-First connect to the `custom-device` interface, which allows access to the
-NPU device node on the host:
+First connect to the `custom-device` interface, which allows access to the NPU device node on the host:
 
 ```
 sudo snap connect intel-npu-driver:intel-npu-plug intel-npu-driver:intel-npu
 ```
 
-If you have not done so already, ensure the following
-are performed in order to set up non-root access to the
-NPU device:
+If you have not done so already, ensure the following are performed in order to set up non-root access to the NPU device:
 
 ```
 sudo usermod -a -G render $USER # log out and log back in
 ```
 
-If this is your first run, or if you re-loaded the `intel_vpu` driver,
-then you'll also need to perform the following:
+If this is your first run, or if you re-loaded the `intel_vpu` driver, then you'll also need to perform the following:
 
 ```
 sudo chown root:render /dev/accel/accel0
 sudo chmod g+rw /dev/accel/accel0
 ```
 
-Create input for tests. Note, the input must be stored in a special directory
-that is accessible both inside and outside the snap.
+Create input for tests. Here we store input in a special directory that is accessible both inside and outside the snap. This directory is created the first time you run the application. This is not a strict requirement for consuming snaps, for example a consuming snap may allow access to a user's home directory through the [home interface](https://snapcraft.io/docs/home-interface).
+
+```
+intel-npu-driver.vpu-umd-test --help
+```
+
+Now move into the special directory and create the input:
 
 ```
 cd $HOME/snap/intel-npu-driver/current
