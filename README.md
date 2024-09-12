@@ -2,6 +2,30 @@
 
 Snap recipe for the [Intel NPU Driver](https://github.com/intel/linux-npu-driver/). This snap is designed to be a producer snap providing NPU (neural processing unit) firmware, char device node access, and user-space libraries (including the user mode driver and NPU compiler) for consumption by application snaps. It exposes slots for consumer snaps to connect to (see below) but also provides firmware binary blobs for the NPU device and packages an app for validating the user space driver (`vpu-umd-test`).
 
+## Host OS Support
+
+### Meteor Lake
+
+The [`vpu-umd-test` user mode driver validation tool](#running-the-vpu-umd-test-application) is used to validate the snap with the following host OS + kernel on a [Intel Core Ultra 7 155H](https://www.intel.com/content/www/us/en/products/sku/236847/intel-core-ultra-7-processor-155h-24m-cache-up-to-4-80-ghz/specifications.html).
+
+| Host OS | Kernel Version | NPU Kernel Driver Support | Test Results | Comments |
+| ----- | :--: | :----------------: | :------------: | :------------------------------: |
+| 22.04 | 5.15 | :x:                | N/A            | Standard 22.04 kernel            |
+| 22.04 | 6.8  | :white_check_mark: | 184/199 passed | Hardware enablement (HWE) kernel |
+| 24.04 | 6.8  | :white_check_mark: | 184/199 passed | Standard 24.04 kernel            |
+| 24.10 | 6.11 | :white_check_mark: | 190/199 passed | Proposed 24.10 kernel            |
+
+Skipped tests on kernel 6.8 and lower only:
+
+- Metric streamer feature missing from `intel_vpu` kernel module (6 tests)
+
+Skipped tests common across all host OS and kernel versions:
+
+- GPU driver not present (2 tests)
+- DMA capabilities require tests to be run as root (3 tests)
+- Compiler in driver tests under investigation (3 tests)
+- Command queue priority under investigation (1 test)
+
 ## Instructions for building and running the snap
 
 ### Building and installing the snap locally
