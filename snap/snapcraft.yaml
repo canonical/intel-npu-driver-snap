@@ -1,5 +1,5 @@
 name: intel-npu-driver
-base: core22
+base: core24
 version: '1.6.0'
 summary: User Mode Driver with Compiler Software for the Intel® NPU
 description: |
@@ -25,19 +25,13 @@ slots:
     udev-tagging:
       - kernel: accel[0-9]
         subsystem: accel
-        attributes:
-          vendor: "0x8086" # Intel
       - kernel: accel[1-5][0-9]
         subsystem: accel
-        attributes:
-          vendor: "0x8086" # Intel
       - kernel: accel6[0-3]
         subsystem: accel
-        attributes:
-          vendor: "0x8086" # Intel
   npu-libs:
     interface: content
-    content: npu-libs-2204
+    content: npu-libs-2404
     read:
       - $SNAP/usr/lib/x86_64-linux-gnu
 
@@ -94,3 +88,4 @@ lint:
       - usr/lib/x86_64-linux-gnu/libze_intel_vpu*
       - usr/lib/x86_64-linux-gnu/libnpu_driver_compiler*
       - usr/lib/x86_64-linux-gnu/libtbb*
+      - usr/lib/x86_64-linux-gnu/libhwloc*
