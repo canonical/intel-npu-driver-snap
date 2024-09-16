@@ -1,0 +1,47 @@
+name: Build and test snap
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  SNAP_ARTIFACT_NAME: intel-npu-driver-snap
+  SNAP_FILE: intel-npu-driver.snap
+
+jobs:
+  snap-build:
+    name: Build snap
+    runs-on: [self-hosted, linux, X64, xlarge, jammy]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: snapcore/action-build@v1
+        id: snapcraft
+        with:
+          snapcraft-args: "-o ${{ env.SNAP_FILE }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.SNAP_ARTIFACT_NAME }}
+          path: ${{ steps.snapcraft.outputs.snap }}
+
+  snap-test:
+    name: Install and verify snap
+    runs-on: ubuntu-24.04
+    needs:
+      - snap-build
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.SNAP_ARTIFACT_NAME }}
+      - name: Install snap
+        run: |
+          sudo snap install --dangerous ${{ env.SNAP_FILE }}
+          snap list
+      - name: Connect snap interfaces
+        run: |
+          sudo snap connect intel-npu-driver:intel-npu-fw
+          sudo snap connect intel-npu-driver:intel-npu-plug intel-npu-driver:intel-npu
+          snap connections
