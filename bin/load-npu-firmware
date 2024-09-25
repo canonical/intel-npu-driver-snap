@@ -1,0 +1,49 @@
+#!/bin/bash
+
+set -e
+
+if [ "${SNAP_UID}" -ne 0 ]; then
+  >&2 echo "Please run as root"
+  exit 1
+fi
+
+if ! snapctl is-connected intel-npu-fw; then
+  >&2 echo "
+  Error: intel-npu-fw plug must be connected in order
+  for the firmware's custom load path to be updated.
+  "
+  exit 1
+fi
+
+if ! snapctl is-connected intel-npu-kmod; then
+  >&2 echo "
+  Error: intel-npu-kmod plug must be connected in order
+  for NPU firmware to be re-loaded by intel_vpu kernel module.
+  "
+  exit 1
+fi
+
+cd "${SNAP}"
+fw_blobs=$(find "${SNAP_DATA}" -name "*.bin")
+if [ -z "${fw_blobs}" ]; then
+  >&2 echo "
+  No binary blobs found in ${SNAP_DATA}.
+  Not updating firmware search path.
+  "
+  exit 1
+fi
+
+CUSTOM_FW_PATH_FILE=/sys/module/firmware_class/parameters/path
+echo -n "${SNAP_DATA}" > "${CUSTOM_FW_PATH_FILE}"
+
+custom_path=$(cat ${CUSTOM_FW_PATH_FILE})
+if [ -n "${custom_path}" ]; then
+  echo "Firmware search path is set to: ${custom_path}"
+else
+  >&2 echo "Error: custom firmware search path is empty."
+  exit 1
+fi
+
+# Load NPU firmware from custom path
+rmmod intel_vpu
+modprobe intel_vpu
