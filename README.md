@@ -53,11 +53,14 @@ are accessible to the kernel driver running on the host.
 
 ### Loading new NPU firmware
 
-Connecting the `intel-npu-fw` plug will trigger a hook that customizes the kernel's firmware search path:
+Customizing the `intel_vpu` kernel module's firmware search path is handled by a daemon packaged within the snap. This daemon is enabled automatically when the snap is installed and needs permissions provided by a few snap interfaces:
 
 ```
 sudo snap connect intel-npu-driver:intel-npu-fw
+sudo snap connect intel-npu-driver:intel-npu-kmod
 ```
+
+Ultimately we aim to automate these steps via snapd's autoconnection mechanism.
 
 To check that the search path was updated run:
 
@@ -71,19 +74,23 @@ The expected output is something like:
 /var/snap/intel-npu-driver/x1
 ```
 
-Now reload the `intel_vpu` kernel module to load the updated firmware:
+Verify the `intel_vpu` kernel module is running and loaded the current firmware:
 
 ```
-sudo rmmod intel_vpu
-sudo modprobe intel_vpu
-```
-
-Verify it's running and loaded correctly with:
-
-```
-lsmod | grep intel_vpu
 sudo dmesg | grep intel_vpu
 ```
+
+Typical output:
+
+```
+[    4.706576] intel_vpu 0000:00:0b.0: enabling device (0000 -> 0002)
+[    4.714294] intel_vpu 0000:00:0b.0: [drm] Firmware: intel/vpu/vpu_37xx_v0.0.bin, version: 20230726*MTL_CLIENT_SILICON-release*2101*ci_tag_mtl_pv_vpu_rc_20230726_2101*648a666b8b9
+[    4.796516] [drm] Initialized intel_vpu 1.0.0 20230117 for 0000:00:0b.0 on minor 0
+[   11.084478] intel_vpu 0000:00:0b.0: [drm] Firmware: intel/vpu/vpu_37xx_v0.0.bin, version: 20240726*MTL_CLIENT_SILICON-release*0004*ci_tag_ud202428_vpu_rc_20240726_0004*e4a99ed6b3e
+[   11.211998] [drm] Initialized intel_vpu 1.0.0 20230117 for 0000:00:0b.0 on minor 0
+```
+
+Note in this output that the system initially boots with the firmware that ships with OS before reloading more recent firmware provided by the snap. Check the [upstream repo from Intel](https://github.com/intel/linux-npu-driver/releases) for the expected firmware version for your platform.
 
 ### Running the vpu-umd-test application
 

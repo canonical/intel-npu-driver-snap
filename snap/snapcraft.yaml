@@ -9,7 +9,7 @@ description: |
   known as Meteor Lake). It enables energy-efficient execution of artificial
   neural network tasks. This snap serves primarily as a producer snap providing
   the oneAPI Level-Zero and UMD with compiler libraries. It also distributes
-  apps for installing firmware to a NPU device and validating the UMD.
+  an app for validating the UMD.
   For more info, see https://github.com/intel/linux-npu-driver
 grade: devel
 confinement: strict
@@ -39,19 +39,31 @@ plugs:
   intel-npu-plug: # append -plug as plug name cannot match slot name in same snap
     interface: custom-device
     custom-device: intel-npu-device
+  intel-npu-kmod:
+    interface: kernel-module-control
   intel-npu-fw:
     interface: kernel-firmware-control
 
 hooks:
-  connect-plug-intel-npu-fw:
-    plugs: [intel-npu-fw]
-  disconnect-plug-intel-npu-fw:
-    plugs: [intel-npu-fw]
+  remove:
+    plugs:
+      - intel-npu-kmod
+      - intel-npu-fw
 
 apps:
   vpu-umd-test:
     command: usr/bin/vpu-umd-test
     plugs: [intel-npu-plug]
+
+  load-npu-firmware:
+    command: usr/bin/load-npu-firmware
+    daemon: simple
+    install-mode: enable
+    restart-condition: on-failure
+    restart-delay: 10s
+    plugs:
+      - intel-npu-kmod
+      - intel-npu-fw
 
 parts:
 
@@ -75,6 +87,12 @@ parts:
       - libssl-dev
     stage-packages:
       - libtbb12
+
+  load-npu-firmware:
+    plugin: dump
+    source: bin/
+    organize:
+      '*': usr/bin/
 
 lint:
   ignore:
