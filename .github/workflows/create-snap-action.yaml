@@ -2,9 +2,15 @@ name: Build and test snap
 on:
   workflow_dispatch:
   push:
+    paths:
+      - 'snap/**'
+      - 'bin/**'
     branches:
       - main
   pull_request:
+    paths:
+      - 'snap/**'
+      - 'bin/**'
     branches:
       - main
 

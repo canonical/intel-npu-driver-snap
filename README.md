@@ -51,18 +51,32 @@ are accessible to the kernel driver running on the host.
 * **intel-npu**: provides access to the NPU device node on the host
 * **npu-libs**: provides access to NPU libs, namely the NPU user mode driver with compiler
 
+An example snippet for a consuming app's `snapcraft.yaml` may look like:
+
+```yaml
+plugs:
+  intel-npu:
+    interface: custom-device
+    custom-device: intel-npu-device
+  npu-libs:
+    interface: content
+    content: npu-libs-2404
+    target: $SNAP/usr/lib/npu-libs-2404
+
+environment:
+  LD_LIBRARY_PATH: $SNAP/usr/lib/npu-libs-2404:$LD_LIBRARY_PATH
+
+apps:
+  npu-enabled-app:
+    command: ...
+    plugs:
+      - intel-npu
+      - npu-libs
+```
+
 ### Loading new NPU firmware
 
-Customizing the `intel_vpu` kernel module's firmware search path is handled by a daemon packaged within the snap. This daemon is enabled automatically when the snap is installed and needs permissions provided by a few snap interfaces:
-
-```
-sudo snap connect intel-npu-driver:intel-npu-fw
-sudo snap connect intel-npu-driver:intel-npu-kmod
-```
-
-Ultimately we aim to automate these steps via snapd's autoconnection mechanism.
-
-To check that the search path was updated run:
+After installing the snap, check that the firmware search path was updated with:
 
 ```
 sudo cat /sys/module/firmware_class/parameters/path
@@ -90,23 +104,17 @@ Typical output:
 [   11.211998] [drm] Initialized intel_vpu 1.0.0 20230117 for 0000:00:0b.0 on minor 0
 ```
 
-Note in this output that the system initially boots with the firmware that ships with OS before reloading more recent firmware provided by the snap. Check the [upstream repo from Intel](https://github.com/intel/linux-npu-driver/releases) for the expected firmware version for your platform.
+In this example output the system initially boots with the firmware that ships with OS before reloading more recent firmware provided by the snap. Check the [upstream repo from Intel](https://github.com/intel/linux-npu-driver/releases) for the expected firmware version for your platform.
 
 ### Running the vpu-umd-test application
 
-First connect to the `custom-device` interface, which allows access to the NPU device node on the host:
-
-```
-sudo snap connect intel-npu-driver:intel-npu-plug intel-npu-driver:intel-npu
-```
-
-If you have not done so already, ensure the following are performed in order to set up non-root access to the NPU device:
+To allow non-root access to the NPU device, first ensure the appropriate user is in the `render` Unix group:
 
 ```
 sudo usermod -a -G render $USER # log out and log back in
 ```
 
-If this is your first run, or if you re-loaded the `intel_vpu` driver, then you'll also need to perform the following:
+Next apply the appropriate permissions on the device node. This is required each time the `intel_vpu` driver is reloaded, e.g. when the snap is first installed or following a reboot.
 
 ```
 sudo chown root:render /dev/accel/accel0
