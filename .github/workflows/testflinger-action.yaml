@@ -1,4 +1,4 @@
-name: Build and test snap
+name: Build and test snap on Testflinger device
 on:
   workflow_dispatch:
   push:

@@ -1,4 +1,4 @@
-name: Build and test snap
+name: Build and test snap on self-hosted runner
 on:
   workflow_dispatch:
   push:
