@@ -1,0 +1,68 @@
+job_queue: REPLACE_QUEUE
+output_timeout: 1800
+provision_data:
+  REPLACE_PROVISION_DATA
+test_data:
+  test_cmds: |
+
+    # Exit immediately if a test fails
+    set -e
+
+    # Clone repo from appropriate branch/commit.
+    ssh ubuntu@$DEVICE_IP '
+      sudo DEBIAN_FRONTEND=noninteractive apt update
+      sudo DEBIAN_FRONTEND=noninteractive apt -y upgrade
+      sudo DEBIAN_FRONTEND=noninteractive apt -y install git
+      git clone -b REPLACE_BRANCH \
+        https://github.com/canonical/intel-npu-driver-snap.git \
+        ~ubuntu/intel-npu-driver-snap
+      cd ~ubuntu/intel-npu-driver-snap
+      echo "Current git branch: $(git branch --show-current)"
+      echo "Latest commit:"
+      git log --name-status HEAD^..HEAD
+    '
+
+    # Install dependencies
+    ssh ubuntu@$DEVICE_IP '
+      sudo snap install --classic snapcraft
+      sudo snap install checkbox22
+      sudo snap install lxd --channel=5.21/stable
+      sudo adduser ubuntu lxd
+      sudo snap refresh
+    '
+
+    # Disable swap and IPv6
+    ssh ubuntu@$DEVICE_IP '
+      sudo sysctl -w vm.swappiness=0
+      sudo echo "vm.swappiness = 0" | sudo tee -a /etc/sysctl.conf
+      sudo swapoff -a
+      echo "net.ipv6.conf.all.disable_ipv6=1" | sudo tee -a /etc/sysctl.conf
+      echo "net.ipv6.conf.default.disable_ipv6=1" | sudo tee -a /etc/sysctl.conf
+      echo "net.ipv6.conf.lo.disable_ipv6=1" | sudo tee -a /etc/sysctl.conf
+      sudo sysctl -p
+    '
+
+    # Build and install checkbox-npu snap
+    ssh ubuntu@$DEVICE_IP '
+      lxd init --auto
+      cd ~ubuntu/intel-npu-driver-snap/checkbox
+      snapcraft
+      sudo snap install --dangerous --classic ./checkbox-npu_*_amd64.snap
+    '
+
+    # Enable non-root access to the NPU device node
+    ssh ubuntu@$DEVICE_IP '
+      sudo usermod -a -G render $USER
+      sudo chown root:render /dev/accel/accel0
+      sudo chmod g+rw /dev/accel/accel0
+    '
+
+    # Install test dependencies
+    ssh ubuntu@$DEVICE_IP '
+      checkbox-dss.install-full-deps
+    '
+
+    # Run tests
+    ssh ubuntu@$DEVICE_IP '
+      checkbox-npu.test-runner-automated
+    '

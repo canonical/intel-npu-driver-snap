@@ -5,12 +5,15 @@ on:
     paths:
       - 'snap/**'
       - 'bin/**'
+      - '.github/workflows/create-snap-action.yaml'
     branches:
       - main
+      - frenchwr/testflinger-integration # temporary
   pull_request:
     paths:
       - 'snap/**'
       - 'bin/**'
+      - '.github/workflows/create-snap-action.yaml'
     branches:
       - main
 
@@ -43,11 +46,33 @@ jobs:
         with:
           name: ${{ env.SNAP_ARTIFACT_NAME }}
       - name: Install snap
+        shell: bash
         run: |
           sudo snap install --dangerous ${{ env.SNAP_FILE }}
           snap list
-      - name: Connect snap interfaces
+      - name: Check autoconnecting snap interfaces
+        shell: bash
         run: |
-          sudo snap connect intel-npu-driver:intel-npu-fw
-          sudo snap connect intel-npu-driver:intel-npu-plug intel-npu-driver:intel-npu
-          snap connections
+          snap connections intel-npu-driver | grep -w custom-device
+          snap connections intel-npu-driver | grep -w kernel-firmware-control
+          snap connections intel-npu-driver | grep -w kernel-module-control
+      - name: Verify that the load-npu-firmware service is enabled
+        shell: bash
+        run: |
+          snap services intel-npu-driver.load-npu-firmware | grep -w enabled
+      - name: Verify that the firmware is deployed in the expected path
+        shell: bash
+        run: |
+          fw_search_path=$(sudo cat /sys/module/firmware_class/parameters/path)
+          if [ -z "${fw_search_path}" ]; then
+            >&2 echo "Error: Firmware search path not updated."
+            exit 1
+          fi
+          echo "Checking for firmware in expected path..."
+          ls "${fw_search_path}"/intel/vpu/ | grep ".*.bin$"
+          echo "Success! Found what I was looking for."
+      - name: Verify that the user mode driver validation tool is deployed in the snap
+        shell: bash
+        run: |
+          echo "Checking for the user mode driver command in the snap..."
+          command -V intel-npu-driver.vpu-umd-test
