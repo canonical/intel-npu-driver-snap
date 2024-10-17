@@ -1,0 +1,373 @@
+# For 1.6.0 there are known issues with the following tests
+# so we explictly filter them out below.
+# 
+# BuffersExport.GpuZeFillToNpuZeCopy
+# BuffersExport.NpuZeFillToGpuZeCopy
+# CompilerInDriver.CreatingGraphWithNullptrInputGraphExpectFailure
+# CompilerInDriver.CreatingGraphWithZeroGraphSizeExpectFailure
+# CompilerInDriver.CreatingGraphCorrectBlobFileAndDescExpectSuccess
+# CommandQueuePriority.executeManyLowPriorityJobsExpectHighPriorityJobCompletesFirst
+# Sizes/PrimeBuffers.importDeviceMemory/2KB
+# Sizes/PrimeBuffers.importDeviceMemory/16MB
+# Sizes/PrimeBuffers.importDeviceMemory/255MB
+
+id: umd/Umd
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: Umd
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=Umd.* --config=basic.yaml
+
+id: umd/Command
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: Command
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=Command.* --config=basic.yaml
+
+id: umd/CommandTimestamp
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: CommandTimestamp
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=CommandTimestamp.* --config=basic.yaml
+
+id: umd/CommandCopy
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: CommandCopy
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=CommandCopy.* --config=basic.yaml
+
+id: umd/CommandBarrier
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: CommandBarrier
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=CommandBarrier.* --config=basic.yaml
+
+id: umd/CommandStress
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: CommandStress
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=CommandStress.* --config=basic.yaml
+
+id: umd/Context
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: Context
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=Context.* --config=basic.yaml
+
+id: umd/Device
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: Device
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=Device.* --config=basic.yaml
+
+id: umd/Driver
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: Driver
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=Driver.* --config=basic.yaml
+
+id: umd/Event
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: Event
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=Event.* --config=basic.yaml
+
+id: umd/EventSync
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: EventSync
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=EventSync.* --config=basic.yaml
+
+id: umd/EventPool
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: EventPool
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=EventPool.* --config=basic.yaml
+
+id: umd/Fence
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: Fence
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=Fence.* --config=basic.yaml
+
+id: umd/FenceSync
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: Fence Sync
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=FenceSync.* --config=basic.yaml
+
+id: umd/GraphNativeBase
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: GraphNativeBase
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=GraphNativeBase.* --config=basic.yaml
+
+id: umd/GraphNativeBinary
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: GraphNativeBinary
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=GraphNativeBinary.* --config=basic.yaml
+
+id: umd/CommandGraph
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: CommandGraph
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=CommandGraph.* --config=basic.yaml
+
+id: umd/CommandGraphLongThreaded
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: CommandGraphLongThreaded
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=CommandGraphLongThreaded.* --config=basic.yaml
+
+id: umd/MemoryAllocation
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: MemoryAllocation
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=MemoryAllocation.* --config=basic.yaml
+
+id: umd/MemoryExecution
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: MemoryExecution
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=MemoryExecution.* --config=basic.yaml
+
+id: umd/MemoryAllocationThreaded
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: MemoryAllocationThreaded
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=MemoryAllocationThreaded.* --config=basic.yaml
+
+id: umd/PrimeBuffers
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: PrimeBuffers
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=PrimeBuffers.* --config=basic.yaml
+
+id: umd/CommandQueuePriority
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: CommandQueuePriority
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=CommandQueuePriority.create*:CommandQueuePriority.executeCopy* --config=basic.yaml
+
+id: umd/CommandMemoryFill
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: CommandMemoryFill
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=CommandMemoryFill.* --config=basic.yaml
+
+id: umd/MultiContext
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: MultiContext
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=MultiContext.* --config=basic.yaml
+
+id: umd/CommandCopyPerf
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: CommandCopyPerf
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=CommandCopyPerf.* --config=basic.yaml
+
+id: umd/SystemToSystem
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: SystemToSystem
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=SystemToSystem.* --config=basic.yaml
+
+id: umd/Sizes/MemoryAllocation
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: Sizes/MemoryAllocation
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=Sizes/MemoryAllocation.* --config=basic.yaml
+
+id: umd/Sizes/MemoryExecution
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: Sizes/MemoryExecution
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=Sizes/MemoryExecution.* --config=basic.yaml
+
+id: umd/Sizes/PrimeBuffers
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: Sizes/PrimeBuffers
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=Sizes/PrimeBuffers.export* --config=basic.yaml
+
+#
+# The tests below require the Metric Streamer feature that
+# is only available in newer kernels.
+#
+
+id: umd/Metric
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: Metric
+estimated_duration: 2s
+command:
+  if [ $(uname -r | cut -f2 -d.) -le 8 ]; then 
+    echo "Skipping as the Metric Streamer feature is only available in kernel version > 6.8"
+    exit 0
+  fi
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=Metric.* --config=basic.yaml
+
+id: umd/MetricQueryPool
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: MetricQueryPool
+estimated_duration: 2s
+command:
+  if [ $(uname -r | cut -f2 -d.) -le 8 ]; then 
+    echo "Skipping as the Metric Streamer feature is only available in kernel version > 6.8"
+    exit 0
+  fi
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=MetricQueryPool.* --config=basic.yaml
+
+id: umd/MetricQuery
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: MetricQuery
+estimated_duration: 2s
+command:
+  if [ $(uname -r | cut -f2 -d.) -le 8 ]; then 
+    echo "Skipping as the Metric Streamer feature is only available in kernel version > 6.8"
+    exit 0
+  fi
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=MetricQuery.* --config=basic.yaml
+
+id: umd/MetricQueryCopyEngine
+category_id: npu
+flags: simple
+requires: executable.name == 'intel-npu-driver.vpu-umd-test'
+_summary: MetricQueryCopyEngine
+estimated_duration: 2s
+command:
+  if [ $(uname -r | cut -f2 -d.) -le 8 ]; then 
+    echo "Skipping as the Metric Streamer feature is only available in kernel version > 6.8"
+    exit 0
+  fi
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.vpu-umd-test --gtest_filter=MetricQueryCopyEngine.* --config=basic.yaml
