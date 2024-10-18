@@ -42,9 +42,28 @@ test_data:
       sudo sysctl -p
     '
 
-    # Build and install checkbox-npu snap
+    # Build and install intel-npu-driver snap
     ssh ubuntu@$DEVICE_IP '
       lxd init --auto
+      cd ~ubuntu/intel-npu-driver-snap
+      snapcraft
+      sudo snap install --dangerous ./intel-npu-driver_*_amd64.snap
+    '
+
+    ssh ubuntu@$DEVICE_IP '
+      set -e
+      fw_search_path=$(sudo cat /sys/module/firmware_class/parameters/path)
+      if [ -z "${fw_search_path}" ]; then
+        >&2 echo "Error: Firmware search path not updated."
+        exit 1
+      fi
+      echo "Checking for firmware in expected path..."
+      ls "${fw_search_path}"/intel/vpu/ | grep ".*.bin$"
+      echo "Success! Found .bin file(s) in the expected path."
+    '
+
+    # Build and install checkbox-npu snap
+    ssh ubuntu@$DEVICE_IP '
       cd ~ubuntu/intel-npu-driver-snap/checkbox
       snapcraft
       sudo snap install --dangerous --classic ./checkbox-npu_*_amd64.snap
