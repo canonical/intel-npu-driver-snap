@@ -1,0 +1,65 @@
+name: checkbox-npu
+summary: Checkbox tests for the intel-npu-driver snap
+description: |
+  Collection of tests using Intel's user mode driver and compiler validation tool
+version: '1.0.0'
+confinement: classic
+grade: stable
+
+base: core24
+
+# Here are the available applications of the NPU checkbox provider snap
+# To run : snap run checkbox-npu.<app>
+#
+# checkbox-cli:
+#   - checkbox client, can be used to talk to the checkbox daemon
+# remote-slave:
+#   - checkbox slave daemon that will the responsible for running the test sesssion
+#     in the remote fashion (through checkbox-cli)
+# shell:
+#   - give shell access to the provider snap
+# test-runner / test-runner-automated:
+#   - execute all provider tests inside the snap environment
+#     the test execution is standalone and does not depend on the remote-slave daemon
+# install-full-deps:
+#   - install all depedencies needed for provider jobs
+apps:
+  checkbox-cli:
+    command-chain: [bin/wrapper_local]
+    command: bin/checkbox-cli-wrapper
+  remote-slave:
+    command-chain: [bin/wrapper_local]
+    command: bin/checkbox-cli-wrapper slave
+    daemon: simple
+    restart-condition: always
+  shell:
+    command-chain: [bin/wrapper_local]
+    command: bin/shell-wrapper
+  test-runner:
+    command-chain: [bin/wrapper_local]
+    command: bin/test-runner
+  test-runner-automated:
+    command-chain: [bin/wrapper_local]
+    command: bin/test-runner-automated
+  install-full-deps:
+    command: bin/install-full-deps
+
+parts:
+  checkbox-provider-npu:
+    plugin: dump
+    source: ./checkbox-provider-npu
+    source-type: local
+    build-snaps:
+      - checkbox-provider-tools
+      - checkbox24
+    override-build: |
+      for path in $(find "/snap/checkbox24/current/providers/" -mindepth 1 -maxdepth 1 -type d); do export PROVIDERPATH=$path${PROVIDERPATH:+:$PROVIDERPATH}; done
+      checkbox-provider-tools validate
+      checkbox-provider-tools build
+      checkbox-provider-tools install --layout=relocatable --prefix=/providers/checkbox-provider-npu --root="$SNAPCRAFT_PART_INSTALL"
+
+  bin:
+    plugin: dump
+    source: bin
+    organize:
+      '*': bin/
