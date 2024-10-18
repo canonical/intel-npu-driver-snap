@@ -11,9 +11,30 @@
 # Sizes/PrimeBuffers.importDeviceMemory/16MB
 # Sizes/PrimeBuffers.importDeviceMemory/255MB
 
+id: kmd/CharDevicePermissions
+category_id: npu
+flags: simple
+_summary: Check that user has read and write access to NPU char device node
+estimated_duration: 2s
+command:
+  if ! test -r /dev/accel/accel0 ; then
+    >&2 echo "Test failure: user must have read permissions to /dev/accel/accel0"
+    >&2 echo "Please run 'sudo usermod -a -G render $USER' then log out and back in"
+    >&2 echo "Then run 'sudo chown root:render /dev/accel/accel0 && sudo chmod g+rw /dev/accel/accel0'"
+    exit 1
+  fi
+  if ! test -w /dev/accel/accel0 ; then
+    >&2 echo "Test failure: user must have write permissions to /dev/accel/accel0"
+    >&2 echo "Please run 'sudo usermod -a -G render $USER' then log out and back in"
+    >&2 echo "Then run 'sudo chown root:render /dev/accel/accel0 && sudo chmod g+rw /dev/accel/accel0'"
+    exit 1
+  fi
+  echo "Test success: user has read and write access to /dev/accel/accel0"
+
 id: umd/Umd
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: Umd
 estimated_duration: 2s
@@ -24,6 +45,7 @@ command:
 id: umd/Command
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: Command
 estimated_duration: 2s
@@ -34,6 +56,7 @@ command:
 id: umd/CommandTimestamp
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: CommandTimestamp
 estimated_duration: 2s
@@ -44,6 +67,7 @@ command:
 id: umd/CommandCopy
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: CommandCopy
 estimated_duration: 2s
@@ -54,6 +78,7 @@ command:
 id: umd/CommandBarrier
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: CommandBarrier
 estimated_duration: 2s
@@ -64,6 +89,7 @@ command:
 id: umd/CommandStress
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: CommandStress
 estimated_duration: 2s
@@ -74,6 +100,7 @@ command:
 id: umd/Context
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: Context
 estimated_duration: 2s
@@ -84,6 +111,7 @@ command:
 id: umd/Device
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: Device
 estimated_duration: 2s
@@ -94,6 +122,7 @@ command:
 id: umd/Driver
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: Driver
 estimated_duration: 2s
@@ -104,6 +133,7 @@ command:
 id: umd/Event
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: Event
 estimated_duration: 2s
@@ -114,6 +144,7 @@ command:
 id: umd/EventSync
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: EventSync
 estimated_duration: 2s
@@ -124,6 +155,7 @@ command:
 id: umd/EventPool
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: EventPool
 estimated_duration: 2s
@@ -134,6 +166,7 @@ command:
 id: umd/Fence
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: Fence
 estimated_duration: 2s
@@ -144,6 +177,7 @@ command:
 id: umd/FenceSync
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: Fence Sync
 estimated_duration: 2s
@@ -154,6 +188,7 @@ command:
 id: umd/GraphNativeBase
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: GraphNativeBase
 estimated_duration: 2s
@@ -164,6 +199,7 @@ command:
 id: umd/GraphNativeBinary
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: GraphNativeBinary
 estimated_duration: 2s
@@ -174,6 +210,7 @@ command:
 id: umd/CommandGraph
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: CommandGraph
 estimated_duration: 2s
@@ -184,6 +221,7 @@ command:
 id: umd/CommandGraphLongThreaded
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: CommandGraphLongThreaded
 estimated_duration: 2s
@@ -194,6 +232,7 @@ command:
 id: umd/MemoryAllocation
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: MemoryAllocation
 estimated_duration: 2s
@@ -204,6 +243,7 @@ command:
 id: umd/MemoryExecution
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: MemoryExecution
 estimated_duration: 2s
@@ -214,6 +254,7 @@ command:
 id: umd/MemoryAllocationThreaded
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: MemoryAllocationThreaded
 estimated_duration: 2s
@@ -224,6 +265,7 @@ command:
 id: umd/PrimeBuffers
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: PrimeBuffers
 estimated_duration: 2s
@@ -234,6 +276,7 @@ command:
 id: umd/CommandQueuePriority
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: CommandQueuePriority
 estimated_duration: 2s
@@ -244,6 +287,7 @@ command:
 id: umd/CommandMemoryFill
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: CommandMemoryFill
 estimated_duration: 2s
@@ -254,6 +298,7 @@ command:
 id: umd/MultiContext
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: MultiContext
 estimated_duration: 2s
@@ -264,6 +309,7 @@ command:
 id: umd/CommandCopyPerf
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: CommandCopyPerf
 estimated_duration: 2s
@@ -271,19 +317,21 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.vpu-umd-test --gtest_filter=CommandCopyPerf.* --config=basic.yaml
 
-id: umd/SystemToSystem
+id: umd/SystemToSystem/CommandCopyFlag
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
-_summary: SystemToSystem
+_summary: SystemToSystem/CommandCopyFlag
 estimated_duration: 2s
 command:
   cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.vpu-umd-test --gtest_filter=SystemToSystem.* --config=basic.yaml
+  intel-npu-driver.vpu-umd-test --gtest_filter=SystemToSystem/CommandCopyFlag.* --config=basic.yaml
 
 id: umd/Sizes/MemoryAllocation
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: Sizes/MemoryAllocation
 estimated_duration: 2s
@@ -294,6 +342,7 @@ command:
 id: umd/Sizes/MemoryExecution
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: Sizes/MemoryExecution
 estimated_duration: 2s
@@ -304,6 +353,7 @@ command:
 id: umd/Sizes/PrimeBuffers
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: Sizes/PrimeBuffers
 estimated_duration: 2s
@@ -311,63 +361,58 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.vpu-umd-test --gtest_filter=Sizes/PrimeBuffers.export* --config=basic.yaml
 
-#
-# The tests below require the Metric Streamer feature that
-# is only available in newer kernels.
-#
+id: kmd/MetricStreamerSupport
+category_id: npu
+flags: simple
+_summary: Test if Metric Stream support available in intel_vpu kernel module
+estimated_duration: 2s
+command:
+  if [ $(uname -r | cut -f2 -d.) -le 8 ]; then
+    >&2 echo "Test failure: metric streamer feature not available in kernel $(uname -r), requires >= 6.9"
+    exit 1
+  fi
+  echo "Test success: metric streamer feature available in intel_npu kernel module!"
 
 id: umd/Metric
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions kmd/MetricStreamerSupport
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: Metric
 estimated_duration: 2s
 command:
-  if [ $(uname -r | cut -f2 -d.) -le 8 ]; then 
-    echo "Skipping as the Metric Streamer feature is only available in kernel version > 6.8"
-    exit 0
-  fi
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.vpu-umd-test --gtest_filter=Metric.* --config=basic.yaml
 
 id: umd/MetricQueryPool
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions kmd/MetricStreamerSupport
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: MetricQueryPool
 estimated_duration: 2s
 command:
-  if [ $(uname -r | cut -f2 -d.) -le 8 ]; then 
-    echo "Skipping as the Metric Streamer feature is only available in kernel version > 6.8"
-    exit 0
-  fi
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.vpu-umd-test --gtest_filter=MetricQueryPool.* --config=basic.yaml
 
 id: umd/MetricQuery
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions kmd/MetricStreamerSupport
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: MetricQuery
 estimated_duration: 2s
 command:
-  if [ $(uname -r | cut -f2 -d.) -le 8 ]; then 
-    echo "Skipping as the Metric Streamer feature is only available in kernel version > 6.8"
-    exit 0
-  fi
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.vpu-umd-test --gtest_filter=MetricQuery.* --config=basic.yaml
 
 id: umd/MetricQueryCopyEngine
 category_id: npu
 flags: simple
+depends: kmd/CharDevicePermissions kmd/MetricStreamerSupport
 requires: executable.name == 'intel-npu-driver.vpu-umd-test'
 _summary: MetricQueryCopyEngine
 estimated_duration: 2s
 command:
-  if [ $(uname -r | cut -f2 -d.) -le 8 ]; then 
-    echo "Skipping as the Metric Streamer feature is only available in kernel version > 6.8"
-    exit 0
-  fi
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.vpu-umd-test --gtest_filter=MetricQueryCopyEngine.* --config=basic.yaml
