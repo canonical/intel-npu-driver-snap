@@ -10,7 +10,6 @@ test_data:
 
     # Clone repo from appropriate branch/commit.
     ssh ubuntu@$DEVICE_IP '
-      exit -9
       sudo DEBIAN_FRONTEND=noninteractive apt update
       sudo DEBIAN_FRONTEND=noninteractive apt -y upgrade
       sudo DEBIAN_FRONTEND=noninteractive apt -y install git
