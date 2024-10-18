@@ -5,7 +5,7 @@ on:
     paths:
       - 'snap/**'
       - 'bin/**'
-      - '.github/workflows/create-snap-action.yaml'
+      - '.github/workflows/smoke-tests.yaml'
     branches:
       - main
       - frenchwr/testflinger-integration # temporary
@@ -13,7 +13,7 @@ on:
     paths:
       - 'snap/**'
       - 'bin/**'
-      - '.github/workflows/create-snap-action.yaml'
+      - '.github/workflows/smoke-tests.yaml'
     branches:
       - main
 
