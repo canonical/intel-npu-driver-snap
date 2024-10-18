@@ -6,7 +6,7 @@ version: '1.0.0'
 confinement: classic
 grade: stable
 
-base: core22
+base: core24
 
 # Here are the available applications of the NPU checkbox provider snap
 # To run : snap run checkbox-npu.<app>
@@ -51,9 +51,9 @@ parts:
     source-type: local
     build-snaps:
       - checkbox-provider-tools
-      - checkbox22
+      - checkbox24
     override-build: |
-      for path in $(find "/snap/checkbox22/current/providers/" -mindepth 1 -maxdepth 1 -type d); do export PROVIDERPATH=$path${PROVIDERPATH:+:$PROVIDERPATH}; done
+      for path in $(find "/snap/checkbox24/current/providers/" -mindepth 1 -maxdepth 1 -type d); do export PROVIDERPATH=$path${PROVIDERPATH:+:$PROVIDERPATH}; done
       checkbox-provider-tools validate
       checkbox-provider-tools build
       checkbox-provider-tools install --layout=relocatable --prefix=/providers/checkbox-provider-npu --root="$SNAPCRAFT_PART_INSTALL"
