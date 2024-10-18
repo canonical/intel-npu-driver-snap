@@ -9,6 +9,7 @@ fi
 if ! command -v intel-npu-driver.vpu-umd-test 2>&1 >/dev/null
 then
   echo "Error: intel-npu-driver.vpu-umd-test could not be found!"
+  echo "Either install the intel-npu-driver snap locally or from the store (using --install_from_store)"
   exit 1
 fi
 
