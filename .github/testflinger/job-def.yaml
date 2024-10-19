@@ -50,16 +50,35 @@ test_data:
       sudo snap install --dangerous ./intel-npu-driver_*_amd64.snap
     '
 
+    echo "[INFO]: Sleeping for 30 seconds to ensure the firmware search path is updated."
+    sleep 30
+
+    # Check firmware is deployed to the expected path
     ssh ubuntu@$DEVICE_IP '
       set -e
       fw_search_path=$(sudo cat /sys/module/firmware_class/parameters/path)
       if [ -z "${fw_search_path}" ]; then
-        >&2 echo "Error: Firmware search path not updated."
+        >&2 echo "Test error: Firmware search path not updated."
         exit 1
       fi
       echo "Checking for firmware in expected path..."
       ls "${fw_search_path}"/intel/vpu/ | grep ".*.bin$"
-      echo "Success! Found .bin file(s) in the expected path."
+      echo "Test success: Found .bin file(s) in the expected path."
+    '
+
+    # Check that the firmware is the expected version
+    ssh ubuntu@$DEVICE_IP '
+      set -e
+      snap_version=$(snap list intel-npu-driver | tail -n1 | awk '{print $2}')
+      if [ "${snap_version}" = "1.6.0" ]; then
+        echo "[INFO]: dmesg logs for intel_vpu kernel module: $(sudo dmesg | grep intel_vpu)"
+        intel_vpu_dmesg=$(sudo dmesg | grep "Firmware: intel/vpu" | tail -n1)
+        echo "${intel_vpu_dmesg}" | grep -w "20240726*MTL_CLIENT_SILICON-release*0004*ci_tag_ud202428_vpu_rc_20240726_0004*e4a99ed6b3e"
+        echo "Test success: expected firmware version successfully loaded to NPU device!"
+      else
+        >&2 echo "Test error: unexpected snap version ${snap_version}"
+        exit 1
+      fi
     '
 
     # Build and install checkbox-npu snap
@@ -78,7 +97,7 @@ test_data:
 
     # Install test dependencies
     ssh ubuntu@$DEVICE_IP '
-      checkbox-dss.install-full-deps
+      checkbox-npu.install-full-deps
     '
 
     # Run tests
