@@ -50,13 +50,16 @@ test_data:
       sudo snap install --dangerous ./intel-npu-driver_*_amd64.snap
     '
 
-    echo "[INFO]: Sleeping for 30 seconds to ensure the firmware search path is updated."
-    sleep 30
+    echo "[INFO]: Sleeping for 60 seconds to ensure the firmware search path is updated."
+    sleep 60
 
     # Check firmware is deployed to the expected path
     ssh ubuntu@$DEVICE_IP '
       set -e
       fw_search_path=$(sudo cat /sys/module/firmware_class/parameters/path)
+      echo "[INFO]: fw_search_path: ${fw_search_path}"
+      echo "[INFO]: $(snap services intel-npu-driver.load-npu-firmware)"
+      echo "[INFO]: $(sudo snap logs intel-npu-driver.load-npu-firmware)"
       if [ -z "${fw_search_path}" ]; then
         >&2 echo "Test error: Firmware search path not updated."
         exit 1
@@ -104,3 +107,7 @@ test_data:
     ssh ubuntu@$DEVICE_IP '
       checkbox-npu.test-runner-automated
     '
+reserve_data:
+  ssh_keys:
+    - lp:wfrench
+  timeout: 21600
