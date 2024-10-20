@@ -1,5 +1,5 @@
 job_queue: REPLACE_QUEUE
-output_timeout: 1800
+output_timeout: 7200
 provision_data:
   REPLACE_PROVISION_DATA
 test_data:
@@ -50,8 +50,8 @@ test_data:
       sudo snap install --dangerous ./intel-npu-driver_*_amd64.snap
     '
 
-    echo "[INFO]: Sleeping for 60 seconds to ensure the firmware search path is updated."
-    sleep 60
+    echo "[INFO]: Sleeping for 120 seconds to ensure the firmware search path is updated."
+    sleep 120
 
     # Check firmware is deployed to the expected path
     ssh ubuntu@$DEVICE_IP '
