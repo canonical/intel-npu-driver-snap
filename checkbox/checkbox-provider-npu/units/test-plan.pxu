@@ -1,0 +1,10 @@
+id: intel-npu
+unit: test plan
+_name: NPU user mode driver tests
+include:
+    kmd/.*
+    umd/.*
+bootstrap_include:
+    com.canonical.certification::executable
+    com.canonical.certification::snap
+
