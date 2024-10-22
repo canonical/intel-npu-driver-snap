@@ -12,7 +12,7 @@ test_data:
     ssh ubuntu@$DEVICE_IP '
       sudo DEBIAN_FRONTEND=noninteractive apt update
       sudo DEBIAN_FRONTEND=noninteractive apt -y upgrade
-      sudo DEBIAN_FRONTEND=noninteractive apt -y install git
+      sudo DEBIAN_FRONTEND=noninteractive apt -y install git curl
       git clone -b REPLACE_BRANCH \
         https://github.com/canonical/intel-npu-driver-snap.git \
         ~ubuntu/intel-npu-driver-snap
@@ -48,6 +48,9 @@ test_data:
       cd ~ubuntu/intel-npu-driver-snap
       snapcraft
       sudo snap install --dangerous ./intel-npu-driver_*_amd64.snap
+      sudo snap connect intel-npu-driver:intel-npu-fw
+      sudo snap connect intel-npu-driver:intel-npu-kmod
+      sudo snap connect intel-npu-driver:intel-npu-plug intel-npu-driver:intel-npu
     '
 
     echo "[INFO]: Sleeping for 120 seconds to ensure the firmware search path is updated."
