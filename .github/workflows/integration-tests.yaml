@@ -5,15 +5,20 @@ on:
     paths:
       - 'snap/**'
       - 'bin/**'
+      - 'checkbox/bin/**'
+      - 'checkbox/checkbox-provider-npu/**'
+      - 'checkbox/snap/**'
       - '.github/workflows/integration-tests.yaml'
       - '.github/testflinger/job-def.yaml'
     branches:
       - main
-      - frenchwr/testflinger-ci-integration # temporary
   pull_request:
     paths:
       - 'snap/**'
       - 'bin/**'
+      - 'checkbox/bin/**'
+      - 'checkbox/checkbox-provider-npu/**'
+      - 'checkbox/snap/**'
       - '.github/workflows/integration-tests.yaml'
       - '.github/testflinger/job-def.yaml'
     branches:

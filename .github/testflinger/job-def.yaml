@@ -114,7 +114,3 @@ test_data:
     ssh ubuntu@$DEVICE_IP '
       checkbox-npu.test-runner-automated
     '
-reserve_data:
-  ssh_keys:
-    - lp:wfrench
-  timeout: 21600

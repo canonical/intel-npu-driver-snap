@@ -8,7 +8,6 @@ on:
       - '.github/workflows/smoke-tests.yaml'
     branches:
       - main
-      - frenchwr/testflinger-ci-integration # temporary
   pull_request:
     paths:
       - 'snap/**'
