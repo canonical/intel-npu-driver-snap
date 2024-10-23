@@ -93,7 +93,7 @@ test_data:
     # Build and install checkbox-npu snap
     ssh ubuntu@$DEVICE_IP '
       cd ~ubuntu/intel-npu-driver-snap/checkbox
-      sudo snap install checkbox24
+      sudo snap install checkbox22
       snapcraft
       sudo snap install --dangerous --classic ./checkbox-npu_*_amd64.snap
     '

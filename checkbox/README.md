@@ -6,7 +6,7 @@ This directory contains the Checkbox NPU Provider, including the snap recipe for
 
 ```
 sudo snap install --classic snapcraft
-sudo snap install checkbox24
+sudo snap install checkbox22
 lxd init --auto
 git clone https://github.com/canonical/intel-npu-driver-snap.git
 cd intel-npu-driver-snap/checkbox
