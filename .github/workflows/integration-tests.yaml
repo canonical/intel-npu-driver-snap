@@ -1,0 +1,51 @@
+name: Build snap and run integration tests on testflinger device
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'snap/**'
+      - 'bin/**'
+      - 'checkbox/bin/**'
+      - 'checkbox/checkbox-provider-npu/**'
+      - 'checkbox/snap/**'
+      - '.github/workflows/integration-tests.yaml'
+      - '.github/testflinger/job-def.yaml'
+    branches:
+      - main
+  pull_request:
+    paths:
+      - 'snap/**'
+      - 'bin/**'
+      - 'checkbox/bin/**'
+      - 'checkbox/checkbox-provider-npu/**'
+      - 'checkbox/snap/**'
+      - '.github/workflows/integration-tests.yaml'
+      - '.github/testflinger/job-def.yaml'
+    branches:
+      - main
+
+env:
+  BRANCH: ${{ github.head_ref || github.ref_name }}
+
+jobs:
+  npu-driver-validation:
+    name: NPU Driver Validation
+    runs-on: [testflinger]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Build job file from template with oemscript provisioning
+        env:
+          QUEUE: "dell-xps-13-9340-c32267"
+          PROVISION_DATA: "url: http://10.102.196.9/somerville/Platforms/jellyfish-treecko/FVR_X113/dell-bto-jammy-jellyfish-treecko-X113-20240131-14.iso"
+        run: |
+          sed -e "s|REPLACE_BRANCH|${BRANCH}|" \
+          -e "s|REPLACE_QUEUE|${QUEUE}|" \
+          -e "s|REPLACE_PROVISION_DATA|${PROVISION_DATA}|" \
+          ${GITHUB_WORKSPACE}/.github/testflinger/job-def.yaml > \
+          ${GITHUB_WORKSPACE}/job.yaml
+      - name: Submit testflinger job
+        uses: canonical/testflinger/.github/actions/submit@main
+        with:
+          poll: true
+          job-path: ${GITHUB_WORKSPACE}/job.yaml

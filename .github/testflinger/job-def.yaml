@@ -1,0 +1,116 @@
+job_queue: REPLACE_QUEUE
+output_timeout: 7200
+provision_data:
+  REPLACE_PROVISION_DATA
+test_data:
+  test_cmds: |
+
+    # Exit immediately if a test fails
+    set -e
+
+    # Clone repo from appropriate branch/commit.
+    ssh ubuntu@$DEVICE_IP '
+      sudo DEBIAN_FRONTEND=noninteractive apt update
+      sudo DEBIAN_FRONTEND=noninteractive apt -y upgrade
+      sudo DEBIAN_FRONTEND=noninteractive apt -y install git curl
+      git clone -b REPLACE_BRANCH \
+        https://github.com/canonical/intel-npu-driver-snap.git \
+        ~ubuntu/intel-npu-driver-snap
+      cd ~ubuntu/intel-npu-driver-snap
+      echo "Current git branch: $(git branch --show-current)"
+      echo "Latest commit:"
+      git log --name-status HEAD^..HEAD
+    '
+
+    # Install dependencies
+    ssh ubuntu@$DEVICE_IP '
+      sudo snap install --classic snapcraft
+      sudo snap install lxd --channel=5.21/stable
+      sudo adduser ubuntu lxd
+      sudo snap refresh
+    '
+
+    # Disable swap and IPv6
+    ssh ubuntu@$DEVICE_IP '
+      sudo sysctl -w vm.swappiness=0
+      sudo echo "vm.swappiness = 0" | sudo tee -a /etc/sysctl.conf
+      sudo swapoff -a
+      echo "net.ipv6.conf.all.disable_ipv6=1" | sudo tee -a /etc/sysctl.conf
+      echo "net.ipv6.conf.default.disable_ipv6=1" | sudo tee -a /etc/sysctl.conf
+      echo "net.ipv6.conf.lo.disable_ipv6=1" | sudo tee -a /etc/sysctl.conf
+      sudo sysctl -p
+    '
+
+    # Build and install intel-npu-driver snap
+    ssh ubuntu@$DEVICE_IP '
+      lxd init --auto
+      cd ~ubuntu/intel-npu-driver-snap
+      snapcraft
+      sudo snap install --dangerous ./intel-npu-driver_*_amd64.snap
+      sudo snap connect intel-npu-driver:intel-npu-fw
+      sudo snap connect intel-npu-driver:intel-npu-kmod
+      sudo snap connect intel-npu-driver:intel-npu-plug intel-npu-driver:intel-npu
+    '
+
+    echo "[INFO]: Sleeping for 60 seconds to ensure the firmware search path is updated."
+    sleep 60
+
+    # Check firmware is deployed to the expected path
+    ssh ubuntu@$DEVICE_IP '
+      set -e
+      fw_search_path=$(sudo cat /sys/module/firmware_class/parameters/path)
+      echo "[INFO]: fw_search_path: ${fw_search_path}"
+      echo "[INFO]: $(snap services intel-npu-driver.load-npu-firmware)"
+      echo "[INFO]: $(sudo snap logs intel-npu-driver.load-npu-firmware)"
+      if [ -z "${fw_search_path}" ]; then
+        >&2 echo "Test error: Firmware search path not updated."
+        exit 1
+      fi
+      echo "Checking for firmware in expected path..."
+      ls "${fw_search_path}"/intel/vpu/ | grep ".*.bin$"
+      echo "Test success: Found .bin file(s) in the expected path."
+    '
+
+    # Check that the firmware is the expected version
+    ssh ubuntu@$DEVICE_IP '
+      set -e
+      if [ $(uname -r | cut -f2 -d.) -lt 8 ]; then
+        echo "[INFO]: intel_vpu kernel module does not show firmware version in dmesg"
+        exit 0
+      fi
+      snap_version=$(snap list intel-npu-driver | grep -Eo "([0-9]{1,}\.)+[0-9]{1,}")
+      if [ "${snap_version}" = "1.6.0" ]; then
+        echo "[INFO]: dmesg logs for intel_vpu kernel module: $(sudo dmesg | grep intel_vpu)"
+        intel_vpu_dmesg=$(sudo dmesg | grep "Firmware: intel/vpu" | tail -n1)
+        echo "${intel_vpu_dmesg}" | grep -w "20240726*MTL_CLIENT_SILICON-release*0004*ci_tag_ud202428_vpu_rc_20240726_0004*e4a99ed6b3e"
+        echo "Test success: expected firmware version successfully loaded to NPU device!"
+      else
+        >&2 echo "Test error: unexpected snap version ${snap_version}"
+        exit 1
+      fi
+    '
+
+    # Build and install checkbox-npu snap
+    ssh ubuntu@$DEVICE_IP '
+      cd ~ubuntu/intel-npu-driver-snap/checkbox
+      sudo snap install checkbox22
+      snapcraft
+      sudo snap install --dangerous --classic ./checkbox-npu_*_amd64.snap
+    '
+
+    # Enable non-root access to the NPU device node
+    ssh ubuntu@$DEVICE_IP '
+      sudo usermod -a -G render $USER
+      sudo chown root:render /dev/accel/accel0
+      sudo chmod g+rw /dev/accel/accel0
+    '
+
+    # Install test dependencies
+    ssh ubuntu@$DEVICE_IP '
+      checkbox-npu.install-full-deps
+    '
+
+    # Run tests
+    ssh ubuntu@$DEVICE_IP '
+      checkbox-npu.test-runner-automated
+    '
