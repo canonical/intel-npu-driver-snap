@@ -1,15 +1,15 @@
-# For 1.6.0 there are known issues with the following tests
+# For 1.10.1 there are known issues with the following tests
 # so we explictly filter them out below.
 # 
-# BuffersExport.GpuZeFillToNpuZeCopy
-# BuffersExport.NpuZeFillToGpuZeCopy
-# CompilerInDriver.CreatingGraphWithNullptrInputGraphExpectFailure
-# CompilerInDriver.CreatingGraphWithZeroGraphSizeExpectFailure
-# CompilerInDriver.CreatingGraphCorrectBlobFileAndDescExpectSuccess
-# CommandQueuePriority.executeManyLowPriorityJobsExpectHighPriorityJobCompletesFirst
-# Sizes/PrimeBuffers.importDeviceMemory/2KB
-# Sizes/PrimeBuffers.importDeviceMemory/16MB
-# Sizes/PrimeBuffers.importDeviceMemory/255MB
+# BuffersExport.GpuZeFillToNpuZeCopy -- Also in 1.6.0
+# BuffersExport.NpuZeFillToGpuZeCopy -- Also in 1.6.0
+# Device.GetZesEngineGetActivity -- New in 1.10.1
+# CommandGraphLongThreaded.RunAllBlobsInSingleContextSimultaneously -- New in 1.10.1
+# CommandQueuePriority.executeManyLowPriorityJobsExpectHighPriorityJobCompletesFirst -- Also in 1.6.0
+# ImportMemoryUsingDmaHeap.AllocDeviceMemory/2KB -- Also in 1.6.0
+# ImportMemoryUsingDmaHeap.AllocDeviceMemory/16MB -- Also in 1.6.0
+# ImportMemoryUsingDmaHeap.AllocDeviceMemory/255MB -- Also in 1.6.0
+# CommandGraphLong.InferenceDeviceResetInference/add_abc -- Also in 1.6.0
 
 id: kmd/CharDevicePermissions
 category_id: npu
@@ -108,6 +108,7 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=Context.* --config=basic.yaml
 
+# Filter out known failure Device.GetZesEngineGetActivity
 id: umd/Device
 category_id: npu
 flags: simple
@@ -117,7 +118,7 @@ _summary: Device
 estimated_duration: 2s
 command:
   cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.npu-umd-test -S --gtest_filter=Device.* --config=basic.yaml
+  intel-npu-driver.npu-umd-test -S --gtest_filter=Device.GetProp*:Device.GetGlobal*:Device.GetZesDevice* --config=basic.yaml
 
 id: umd/Driver
 category_id: npu
@@ -185,39 +186,18 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=FenceSync.* --config=basic.yaml
 
-id: umd/GraphNativeBase
+id: umd/GraphApi
 category_id: npu
 flags: simple
 depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.npu-umd-test'
-_summary: GraphNativeBase
+_summary: GraphApi
 estimated_duration: 2s
 command:
   cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.npu-umd-test -S --gtest_filter=GraphNativeBase.* --config=basic.yaml
+  intel-npu-driver.npu-umd-test -S --gtest_filter=GraphApi.* --config=basic.yaml
 
-id: umd/GraphNativeBinary
-category_id: npu
-flags: simple
-depends: kmd/CharDevicePermissions
-requires: executable.name == 'intel-npu-driver.npu-umd-test'
-_summary: GraphNativeBinary
-estimated_duration: 2s
-command:
-  cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.npu-umd-test -S --gtest_filter=GraphNativeBinary.* --config=basic.yaml
-
-id: umd/CommandGraph
-category_id: npu
-flags: simple
-depends: kmd/CharDevicePermissions
-requires: executable.name == 'intel-npu-driver.npu-umd-test'
-_summary: CommandGraph
-estimated_duration: 2s
-command:
-  cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.npu-umd-test -S --gtest_filter=CommandGraph.* --config=basic.yaml
-
+# filter out known failure CommandGraphLongThreaded.RunAllBlobsInSingleContextSimultaneously
 id: umd/CommandGraphLongThreaded
 category_id: npu
 flags: simple
@@ -227,7 +207,18 @@ _summary: CommandGraphLongThreaded
 estimated_duration: 2s
 command:
   cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.npu-umd-test -S --gtest_filter=CommandGraphLongThreaded.* --config=basic.yaml
+  intel-npu-driver.npu-umd-test -S --gtest_filter=CommandGraphLongThreaded.None* --config=basic.yaml
+
+id: umd/ImmediateCmdList
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: ImmediateCmdList
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -S --gtest_filter=ImmediateCmdList.*:-ImmediateCmdList.MetricQuerryTest --config=basic.yaml
 
 id: umd/MemoryAllocation
 category_id: npu
@@ -262,17 +253,7 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=MemoryAllocationThreaded.* --config=basic.yaml
 
-id: umd/PrimeBuffers
-category_id: npu
-flags: simple
-depends: kmd/CharDevicePermissions
-requires: executable.name == 'intel-npu-driver.npu-umd-test'
-_summary: PrimeBuffers
-estimated_duration: 2s
-command:
-  cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.npu-umd-test -S --gtest_filter=PrimeBuffers.* --config=basic.yaml
-
+# filter out known failure CommandQueuePriority.executeManyLowPriorityJobsExpectHighPriorityJobCompletesFirst
 id: umd/CommandQueuePriority
 category_id: npu
 flags: simple
@@ -328,6 +309,85 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=SystemToSystem/CommandCopyFlag.* --config=basic.yaml
 
+# for some reason this does not appear with --gtest_list_tests but it appears when running
+# intel-npu-driver.npu-umd-test --config=basic.yaml 2> /dev/null | grep "test* from"
+id: umd/CompilerInDriverLong
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: CompilerInDriverLong
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -S --gtest_filter=CompilerInDriverLong.* --config=basic.yaml
+
+# for some reason this does not appear with --gtest_list_tests but it appears when running
+# intel-npu-driver.npu-umd-test --config=basic.yaml 2> /dev/null | grep "test* from"
+id: umd/CompilerInDriverWithProfiling
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: CompilerInDriverWithProfiling
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -S --gtest_filter=CompilerInDriverWithProfiling.* --config=basic.yaml
+
+# for some reason this does not appear with --gtest_list_tests but it appears when running
+# intel-npu-driver.npu-umd-test --config=basic.yaml 2> /dev/null | grep "test* from"
+# filtering out known failure CommandGraphLong.InferenceDeviceResetInference/add_abc
+id: umd/CommandGraphLong
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: CommandGraphLong
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -S --gtest_filter=CommandGraphLong.*:-CommandGraphLong.Inference* --config=basic.yaml
+
+# for some reason this does not appear with --gtest_list_tests but it appears when running
+# intel-npu-driver.npu-umd-test --config=basic.yaml 2> /dev/null | grep "test* from"
+id: umd/GraphInference
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: GraphInference
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -S --gtest_filter=GraphInference.* --config=basic.yaml
+
+# for some reason this does not appear with --gtest_list_tests but it appears when running
+# intel-npu-driver.npu-umd-test --config=basic.yaml 2> /dev/null | grep "test* from"
+id: umd/GraphQueryNetwork
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: GraphQueryNetwork
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -S --gtest_filter=GraphQueryNetwork.* --config=basic.yaml
+
+# for some reason this does not appear with --gtest_list_tests but it appears when running
+# intel-npu-driver.npu-umd-test --config=basic.yaml 2> /dev/null | grep "test* from"
+id: umd/InferencePerformance
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: InferencePerformance
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -S --gtest_filter=InferencePerformance.* --config=basic.yaml
+
 id: umd/Sizes/MemoryAllocation
 category_id: npu
 flags: simple
@@ -349,17 +409,6 @@ estimated_duration: 2s
 command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=Sizes/MemoryExecution.* --config=basic.yaml
-
-id: umd/Sizes/PrimeBuffers
-category_id: npu
-flags: simple
-depends: kmd/CharDevicePermissions
-requires: executable.name == 'intel-npu-driver.npu-umd-test'
-_summary: Sizes/PrimeBuffers
-estimated_duration: 2s
-command:
-  cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.npu-umd-test -S --gtest_filter=Sizes/PrimeBuffers.export* --config=basic.yaml
 
 id: metric_streamer
 category_id: npu
@@ -412,15 +461,15 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=MetricQuery.* --config=basic.yaml
 
-id: umd/MetricQueryCopyEngine
+id: umd/ImmediateCmdList.MetricQuerryTest
 category_id: npu
 flags: simple
 depends: kmd/CharDevicePermissions
 requires:
   executable.name == 'intel-npu-driver.npu-umd-test'
   metric_streamer.state == 'supported'
-_summary: MetricQueryCopyEngine
+_summary: ImmediateCmdLIst.MetricQuerryTest
 estimated_duration: 2s
 command:
   cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.npu-umd-test -S --gtest_filter=MetricQueryCopyEngine.* --config=basic.yaml
+  intel-npu-driver.npu-umd-test -S --gtest_filter=ImmediateCmdList.MetricQuerryTest --config=basic.yaml

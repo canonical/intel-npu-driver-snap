@@ -6,9 +6,9 @@ if [ "${optional_arg}" = "--install_from_store" ]; then
   sudo snap install --beta intel-npu-driver
 fi
 
-if ! command -v intel-npu-driver.vpu-umd-test 2>&1 >/dev/null
+if ! command -v intel-npu-driver.npu-umd-test 2>&1 >/dev/null
 then
-  echo "Error: intel-npu-driver.vpu-umd-test could not be found!"
+  echo "Error: intel-npu-driver.npu-umd-test could not be found!"
   echo "Either install the intel-npu-driver snap locally or from the store (using --install_from_store)"
   exit 1
 fi
@@ -16,7 +16,7 @@ fi
 # $HOME/snap/intel-npu-driver/current is created the first time
 # an app from the snap is run. We simply pass the -l (list) option
 # to generate this directory for subsequent steps.
-intel-npu-driver.vpu-umd-test -l 2>&1 >/dev/null
+intel-npu-driver.npu-umd-test -l 2>&1 >/dev/null
 
 # Exit if any of the steps below fail
 set -e
