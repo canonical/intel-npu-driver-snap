@@ -1,6 +1,5 @@
 name: intel-npu-driver
 base: core24
-version: '1.6.0'
 summary: User Mode Driver with Compiler Software for the Intel® NPU
 description: |
   User mode driver (UMD) with compiler for the Intel® NPU software stack.
@@ -13,6 +12,7 @@ description: |
   For more info, see https://github.com/intel/linux-npu-driver
 grade: devel
 confinement: strict
+adopt-info: npu-driver
 
 slots:
   intel-npu:
@@ -51,8 +51,8 @@ hooks:
       - intel-npu-fw
 
 apps:
-  vpu-umd-test:
-    command: usr/bin/vpu-umd-test
+  npu-umd-test:
+    command: usr/bin/npu-umd-test
     plugs: [intel-npu-plug]
 
   load-npu-firmware:
@@ -70,15 +70,16 @@ parts:
   npu-driver:
     source-type: git
     source: https://github.com/intel/linux-npu-driver.git
-    source-tag: v1.6.0
+    source-tag: v1.10.1
     plugin: cmake
     cmake-parameters:
-      - -DENABLE_VPUX_COMPILER_BUILD=ON
+      - -DENABLE_NPU_COMPILER_BUILD=ON
       - -DCMAKE_INSTALL_PREFIX=/usr
     override-pull: |
       craftctl default
       git submodule update --init --recursive
       git lfs pull
+      craftctl set version="$(git describe --tags | tr -d 'v')"
     build-packages:
       - build-essential
       - git-lfs

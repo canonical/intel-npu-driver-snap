@@ -1,12 +1,12 @@
 # Intel NPU Driver Snap
 
-Snap recipe for the [Intel NPU Driver](https://github.com/intel/linux-npu-driver/). This snap is designed to be a producer snap providing NPU (neural processing unit) firmware, char device node access, and user-space libraries (including the user mode driver and NPU compiler) for consumption by application snaps. It exposes slots for consumer snaps to connect to (see below) but also provides firmware binary blobs for the NPU device and packages an app for validating the user space driver (`vpu-umd-test`).
+Snap recipe for the [Intel NPU Driver](https://github.com/intel/linux-npu-driver/). This snap is designed to be a producer snap providing NPU (neural processing unit) firmware, char device node access, and user-space libraries (including the user mode driver and NPU compiler) for consumption by application snaps. It exposes slots for consumer snaps to connect to (see below) but also provides firmware binary blobs for the NPU device and packages an app for validating the user space driver (`npu-umd-test`).
 
 ## Host OS Support
 
 ### Meteor Lake
 
-The [`vpu-umd-test` user mode driver validation tool](#running-the-vpu-umd-test-application) is used to validate the snap with the following host OS + kernel on a [Intel Core Ultra 7 155H](https://www.intel.com/content/www/us/en/products/sku/236847/intel-core-ultra-7-processor-155h-24m-cache-up-to-4-80-ghz/specifications.html).
+The [`npu-umd-test` user mode driver validation tool](#running-the-npu-umd-test-application) is used to validate the snap with the following host OS + kernel on a [Intel Core Ultra 7 155H](https://www.intel.com/content/www/us/en/products/sku/236847/intel-core-ultra-7-processor-155h-24m-cache-up-to-4-80-ghz/specifications.html).
 
 | Host OS | Kernel Version | NPU Kernel Driver Support | Test Results | Comments |
 | ----- | :--: | :----------------: | :------------: | :------------------------------: |
@@ -106,7 +106,7 @@ Typical output:
 
 In this example output the system initially boots with the firmware that ships with OS before reloading more recent firmware provided by the snap. Check the [upstream repo from Intel](https://github.com/intel/linux-npu-driver/releases) for the expected firmware version for your platform.
 
-### Running the vpu-umd-test application
+### Running the npu-umd-test application
 
 To allow non-root access to the NPU device, first ensure the appropriate user is in the `render` Unix group:
 
@@ -124,7 +124,7 @@ sudo chmod g+rw /dev/accel/accel0
 Create input for tests. Here we store input in a special directory that is accessible both inside and outside the snap. This directory is created the first time you run the application. This is not a strict requirement for consuming snaps, for example a consuming snap may allow access to a user's home directory through the [home interface](https://snapcraft.io/docs/home-interface).
 
 ```
-intel-npu-driver.vpu-umd-test --help
+intel-npu-driver.npu-umd-test --help
 ```
 
 Now move into the special directory and create the input:
@@ -134,11 +134,11 @@ cd $HOME/snap/intel-npu-driver/current
 mkdir -p models/add_abc
 curl -o models/add_abc/add_abc.xml https://raw.githubusercontent.com/openvinotoolkit/openvino/master/src/core/tests/models/ir/add_abc.xml
 touch models/add_abc/add_abc.bin
-curl -o basic.yaml https://raw.githubusercontent.com/intel/linux-npu-driver/v1.6.0/validation/umd-test/configs/basic.yaml
+curl -o basic.yaml https://raw.githubusercontent.com/intel/linux-npu-driver/v1.10.1/validation/umd-test/configs/basic.yaml
 ```
 
 Finally run the application:
 
 ```
-intel-npu-driver.vpu-umd-test --config=basic.yaml
+intel-npu-driver.npu-umd-test --config=basic.yaml
 ```
