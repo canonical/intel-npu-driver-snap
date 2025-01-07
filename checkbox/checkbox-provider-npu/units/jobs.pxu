@@ -31,6 +31,76 @@ command:
   fi
   echo "Test success: user has read and write access to /dev/accel/accel0"
 
+id: dmesg_logs_firmware_version
+category_id: npu
+plugin: resource
+_description: Creates resource for firwmare version logging support in dmesg
+estimated_duration: 2s
+command:
+  # support added in kernel version 6.8
+  MIN_VERSION=6.8
+  result=$(printf "${MIN_VERSION}\n$(uname -r | cut -f1-2 -d.)\n" | sort -V | head -n1)
+  if [ "${result}" = "${MIN_VERSION}" ]; then
+    # indicates that the running kernel is >= 6.8
+    echo "state: supported"
+  else
+    echo "state: unsupported"
+  fi
+
+id: npu_type
+category_id: npu
+plugin: resource
+_description: Creates resource for type of NPU
+estimated_duration: 2s
+command:
+  if lspci -nn | grep "Meteor Lake NPU"; then
+    echo "name: meteor_lake"
+  elif lspci -nn | grep "Lunar Lake NPU"; then
+    echo "name: lunar_lake"
+  elif lspci -nn | grep "Arrow Lake NPU"; then
+    echo "name: arrow_lake"
+  fi
+
+id: kmd/firmware_version_meteor_and_arrow_lake
+category_id: npu
+flags: simple
+requires:
+  dmesg_logs_firmware_version.state == 'supported'
+  npu_type.name in ['meteor_lake', 'arrow_lake']
+_summary: Check NPU firmware version for Meteor Lake and Arrow Lake
+estimated_duration: 2s
+command:
+  printf "[INFO]: dmesg logs for intel_vpu kernel module:\n $(sudo dmesg | grep intel_vpu)"
+  intel_vpu_dmesg=$(sudo dmesg | grep "Firmware: intel/vpu" | tail -n1)
+  # Expected version strings: https://github.com/intel/linux-npu-driver/releases/tag/v1.10.1
+  EXPECTED_VERSION="20241025\*MTL_CLIENT_SILICON-release\*1830\*ci_tag_ud202444_vpu_rc_20241025_1830\*ae072b315bc"
+  if echo "${intel_vpu_dmesg}" | grep -w "${EXPECTED_VERSION}"; then
+    echo "Test success: expected firmware version successfully loaded to NPU device!"
+  else
+    >&2 echo "Test failure: NPU not running expected version ${EXPECTED_VERSION}"
+    exit 1
+  fi
+
+id: kmd/firmware_version_lunar_lake
+category_id: npu
+flags: simple
+requires:
+  dmesg_logs_firmware_version.state == 'supported'
+  npu_type.name == 'lunar_lake'
+_summary: Check NPU firmware version for Lunar Lake
+estimated_duration: 2s
+command:
+  printf "[INFO]: dmesg logs for intel_vpu kernel module:\n $(sudo dmesg | grep intel_vpu)"
+  intel_vpu_dmesg=$(sudo dmesg | grep "Firmware: intel/vpu" | tail -n1)
+  # Expected version strings: https://github.com/intel/linux-npu-driver/releases/tag/v1.10.1
+  EXPECTED_VERSION="Oct 25 2024\*NPU40xx\*ci_tag_ud202444_vpu_eng_20241025_1500\*ae072b315bc135fb4cc60cfa758b2a926bd6498f"
+  if echo "${intel_vpu_dmesg}" | grep -w "${EXPECTED_VERSION}"; then
+    echo "Test success: expected firmware version successfully loaded to NPU device!"
+  else
+    >&2 echo "Test failure: NPU not running expected version ${EXPECTED_VERSION}"
+    exit 1
+  fi
+
 id: umd/Umd
 category_id: npu
 flags: simple
@@ -416,7 +486,11 @@ plugin: resource
 _description: Creates resource for metric streamer feature support
 estimated_duration: 2s
 command:
-  if [ $(uname -r | cut -f2 -d.) -gt 8 ]; then
+  # support added in kernel version 6.9
+  MIN_VERSION=6.9
+  result=$(printf "${MIN_VERSION}\n$(uname -r | cut -f1-2 -d.)\n" | sort -V | head -n1)
+  if [ "${result}" = "${MIN_VERSION}" ]; then
+    # indicates that the running kernel is >= 6.9
     echo "state: supported"
   else
     echo "state: unsupported"

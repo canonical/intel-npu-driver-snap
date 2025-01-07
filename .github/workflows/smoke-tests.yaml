@@ -63,4 +63,4 @@ jobs:
         shell: bash
         run: |
           echo "Checking for the user mode driver command in the snap..."
-          command -V intel-npu-driver.vpu-umd-test
+          command -V intel-npu-driver.npu-umd-test
