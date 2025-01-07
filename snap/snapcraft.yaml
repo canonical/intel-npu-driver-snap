@@ -78,7 +78,6 @@ parts:
     override-pull: |
       craftctl default
       git submodule update --init --recursive
-      git lfs pull
       craftctl set version="$(git describe --tags | tr -d 'v')"
     build-packages:
       - build-essential
