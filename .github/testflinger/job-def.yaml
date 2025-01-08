@@ -71,25 +71,6 @@ test_data:
       echo "Test success: Found .bin file(s) in the expected path."
     '
 
-    # Check that the firmware is the expected version
-    ssh ubuntu@$DEVICE_IP '
-      set -e
-      if [ $(uname -r | cut -f2 -d.) -lt 8 ]; then
-        echo "[INFO]: intel_vpu kernel module does not show firmware version in dmesg"
-        exit 0
-      fi
-      snap_version=$(snap list intel-npu-driver | grep -Eo "([0-9]{1,}\.)+[0-9]{1,}")
-      if [ "${snap_version}" = "1.6.0" ]; then
-        echo "[INFO]: dmesg logs for intel_vpu kernel module: $(sudo dmesg | grep intel_vpu)"
-        intel_vpu_dmesg=$(sudo dmesg | grep "Firmware: intel/vpu" | tail -n1)
-        echo "${intel_vpu_dmesg}" | grep -w "20240726*MTL_CLIENT_SILICON-release*0004*ci_tag_ud202428_vpu_rc_20240726_0004*e4a99ed6b3e"
-        echo "Test success: expected firmware version successfully loaded to NPU device!"
-      else
-        >&2 echo "Test error: unexpected snap version ${snap_version}"
-        exit 1
-      fi
-    '
-
     # Build and install checkbox-npu snap
     ssh ubuntu@$DEVICE_IP '
       cd ~ubuntu/intel-npu-driver-snap/checkbox

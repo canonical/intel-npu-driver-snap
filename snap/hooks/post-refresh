@@ -1,0 +1,10 @@
+#!/bin/bash
+
+INSTALL_DIR="${SNAP_DATA}"/intel/vpu
+mkdir -p "${INSTALL_DIR}"
+
+# Note that the -f flag is required here because during a snap refresh
+# SNAP_DATA is copied from the previous snap revision to the new one,
+# so below we are actually overwriting the firmware files that have
+# already been copied over, and need the -f flag to allow this.
+cp -avf "${SNAP}"/lib/firmware/updates/intel/vpu/* "${INSTALL_DIR}"
