@@ -8,7 +8,11 @@ One advantage of packaging the NPU software stack as a snap is the portability a
 
 ### Validation on Ubuntu
 
-We have validated the snap using the [`npu-umd-test` user mode driver validation tool](#running-the-npu-umd-test-application) on the following versions of Ubuntu running either a meteor lake [Intel Core Ultra 7 155H](https://www.intel.com/content/www/us/en/products/sku/236847/intel-core-ultra-7-processor-155h-24m-cache-up-to-4-80-ghz/specifications.html) or lunar lake [Intel Core Ultra 7 268V](https://www.intel.com/content/www/us/en/products/sku/240958/intel-core-ultra-7-processor-268v-12m-cache-up-to-5-00-ghz/specifications.html) processor.
+We have validated the snap using the [`npu-umd-test` user mode driver validation tool](#running-the-npu-umd-test-application) on the following Intel Core Ultra CPUs and Ubuntu versions:
+
+- [Intel Core Ultra 7 155H](https://www.intel.com/content/www/us/en/products/sku/236847/intel-core-ultra-7-processor-155h-24m-cache-up-to-4-80-ghz/specifications.html) (codename: Meteor Lake)
+- [Intel Core Ultra 7 268V](https://www.intel.com/content/www/us/en/products/sku/240958/intel-core-ultra-7-processor-268v-12m-cache-up-to-5-00-ghz/specifications.html) (codename: Lunar Lake)
+- [Intel Core Ultra 7 265H](https://www.intel.com/content/www/us/en/products/sku/241750/intel-core-ultra-7-processor-265h-24m-cache-up-to-5-30-ghz/specifications.html) (codename: Arrow Lake)
 
 | Host OS | Kernel Version | NPU Kernel Driver Support | Test Results |
 | ----- | :--: | :----------------: | :------------: |
@@ -24,9 +28,9 @@ Skipped tests common across all host OS and kernel versions:
 
 - GPU driver not present (2 tests)
 - DMA capabilities require tests to be run as root (3 tests)
+- Device GetZesEngineGetActivity test requires access to a file in `/sys/devices` for monitoring NPU utilization - this feature is considered non-critical (1 test)
 - Command graph long and command graph long threaded under investigation (2 tests)
 - Command queue priority under investigation (1 test)
-- Device GetZesEngineGetActivity under investigation (1 test)
 
 ## Instructions for building and running the snap
 
