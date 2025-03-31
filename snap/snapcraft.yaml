@@ -15,20 +15,6 @@ confinement: strict
 adopt-info: npu-driver
 
 slots:
-  intel-npu:
-    interface: custom-device
-    custom-device: intel-npu-device
-    devices:
-      - /dev/accel/accel[0-9]
-      - /dev/accel/accel[1-5][0-9]
-      - /dev/accel/accel6[0-3]
-    udev-tagging:
-      - kernel: accel[0-9]
-        subsystem: accel
-      - kernel: accel[1-5][0-9]
-        subsystem: accel
-      - kernel: accel6[0-3]
-        subsystem: accel
   npu-libs:
     interface: content
     content: npu-libs-2404
@@ -36,9 +22,8 @@ slots:
       - $SNAP/usr/lib/x86_64-linux-gnu
 
 plugs:
-  intel-npu-plug: # append -plug as plug name cannot match slot name in same snap
-    interface: custom-device
-    custom-device: intel-npu-device
+  accel:
+    interface: accel
   intel-npu-kmod:
     interface: kernel-module-control
   intel-npu-fw:
@@ -53,7 +38,7 @@ hooks:
 apps:
   npu-umd-test:
     command: usr/bin/npu-umd-test
-    plugs: [intel-npu-plug]
+    plugs: [accel]
 
   load-npu-firmware:
     command: usr/bin/load-npu-firmware
