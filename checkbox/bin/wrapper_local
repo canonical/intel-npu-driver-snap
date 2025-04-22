@@ -20,7 +20,7 @@ esac
 
 RUNTIME=/snap/checkbox24/current
 if [ ! -d "$RUNTIME" ]; then
-    echo "You need to install the checkbox22 snap."
+    echo "You need to install the checkbox24 snap."
     echo ""
     echo "You can do this with this command:"
     echo "snap install checkbox24"
