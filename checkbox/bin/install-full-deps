@@ -26,4 +26,4 @@ cd $HOME/snap/intel-npu-driver/current
 mkdir -p models/add_abc
 curl -s -o models/add_abc/add_abc.xml https://raw.githubusercontent.com/openvinotoolkit/openvino/master/src/core/tests/models/ir/add_abc.xml
 touch models/add_abc/add_abc.bin
-curl -s -o basic.yaml https://raw.githubusercontent.com/intel/linux-npu-driver/v1.10.1/validation/umd-test/configs/basic.yaml
+curl -s -o basic.yaml https://raw.githubusercontent.com/intel/linux-npu-driver/v1.16.0/validation/umd-test/configs/basic.yaml

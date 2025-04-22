@@ -70,7 +70,7 @@ parts:
   npu-driver:
     source-type: git
     source: https://github.com/intel/linux-npu-driver.git
-    source-tag: v1.10.1
+    source-tag: v1.16.0
     plugin: cmake
     cmake-parameters:
       - -DENABLE_NPU_COMPILER_BUILD=ON
@@ -103,7 +103,8 @@ lint:
       # shared object, but rather dynamically
       # loaded by apps.
       - usr/lib/x86_64-linux-gnu/libze_validation_layer*
-      - usr/lib/x86_64-linux-gnu/libze_intel_vpu*
+      - usr/lib/x86_64-linux-gnu/libze_intel_npu*
+      - usr/lib/x86_64-linux-gnu/libze_tracing_layer*
       - usr/lib/x86_64-linux-gnu/libnpu_driver_compiler*
       - usr/lib/x86_64-linux-gnu/libtbb*
       - usr/lib/x86_64-linux-gnu/libhwloc*

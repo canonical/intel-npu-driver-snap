@@ -1,15 +1,15 @@
-# For 1.10.1 there are known issues with the following tests
-# so we explictly filter them out below.
-# 
-# BuffersExport.GpuZeFillToNpuZeCopy -- Also in 1.6.0
-# BuffersExport.NpuZeFillToGpuZeCopy -- Also in 1.6.0
-# Device.GetZesEngineGetActivity -- New in 1.10.1
-# CommandGraphLongThreaded.RunAllBlobsInSingleContextSimultaneously -- New in 1.10.1
-# CommandQueuePriority.executeManyLowPriorityJobsExpectHighPriorityJobCompletesFirst -- Also in 1.6.0
-# ImportMemoryUsingDmaHeap.AllocDeviceMemory/2KB -- Also in 1.6.0
-# ImportMemoryUsingDmaHeap.AllocDeviceMemory/16MB -- Also in 1.6.0
-# ImportMemoryUsingDmaHeap.AllocDeviceMemory/255MB -- Also in 1.6.0
-# CommandGraphLong.InferenceDeviceResetInference/add_abc -- Also in 1.6.0
+# For 1.16.0 there are known tests that we do not run in the test plan
+#
+# Device.GetZesEngineGetActivity -- No sysfs access for NPU activity data
+# ExternalMemoryZe.GpuZeFillToNpuZeCopy -- No GPU support for test
+# ExternalMemoryZe.NpuZeFillToGpuZeCopy -- No GPU support for test
+# ModelCacheTest.CheckIfModelIsCachedWithBuildLog -- Requires cached model, awaiting upstream docs
+# CommandQueuePriority.executeManyLowPriorityJobsExpectHighPriorityJobCompletesFirst -- known failure since 1.6.0
+# ExternalMemoryDmaHeap.DmaHeapToNpu/2KB -- requires access to /dev/dma_heap/system
+# ExternalMemoryDmaHeap.DmaHeapToNpu/16MB -- requires access to /dev/dma_heap/system
+# ExternalMemoryDmaHeap.DmaHeapToNpu/255MB -- requires access to /dev/dma_heap/system
+# CommandGraphLong.InferenceDeviceResetInference/add_abc -- known failure
+#
 
 id: kmd/CharDevicePermissions
 category_id: npu
@@ -31,36 +31,6 @@ command:
   fi
   echo "Test success: user has read and write access to /dev/accel/accel0"
 
-id: dmesg_logs_firmware_version
-category_id: npu
-plugin: resource
-_description: Creates resource for firwmare version logging support in dmesg
-estimated_duration: 2s
-command:
-  # support added in kernel version 6.8
-  MIN_VERSION=6.8
-  result=$(printf "${MIN_VERSION}\n$(uname -r | cut -f1-2 -d.)\n" | sort -V | head -n1)
-  if [ "${result}" = "${MIN_VERSION}" ]; then
-    # indicates that the running kernel is >= 6.8
-    echo "state: supported"
-  else
-    echo "state: unsupported"
-  fi
-
-id: npu_type
-category_id: npu
-plugin: resource
-_description: Creates resource for type of NPU
-estimated_duration: 2s
-command:
-  if lspci -nn | grep "Meteor Lake NPU"; then
-    echo "name: meteor_lake"
-  elif lspci -nn | grep "Lunar Lake NPU"; then
-    echo "name: lunar_lake"
-  elif lspci -nn | grep "Arrow Lake NPU"; then
-    echo "name: arrow_lake"
-  fi
-
 id: kmd/firmware_version_meteor_and_arrow_lake
 category_id: npu
 flags: simple
@@ -73,7 +43,8 @@ command:
   printf "[INFO]: dmesg logs for intel_vpu kernel module:\n $(sudo dmesg | grep intel_vpu)"
   intel_vpu_dmesg=$(sudo dmesg | grep "Firmware: intel/vpu" | tail -n1)
   # Expected version strings: https://github.com/intel/linux-npu-driver/releases/tag/v1.10.1
-  EXPECTED_VERSION="20241025\*MTL_CLIENT_SILICON-release\*1830\*ci_tag_ud202444_vpu_rc_20241025_1830\*ae072b315bc"
+  # Don't forget to escape special characters (asterix) in the following string
+  EXPECTED_VERSION="20250306\*MTL_CLIENT_SILICON-release\*1130\*ci_tag_ud202512_vpu_rc_20250306_1130\*5064b5debc3"
   if echo "${intel_vpu_dmesg}" | grep -w "${EXPECTED_VERSION}"; then
     echo "Test success: expected firmware version successfully loaded to NPU device!"
   else
@@ -93,7 +64,8 @@ command:
   printf "[INFO]: dmesg logs for intel_vpu kernel module:\n $(sudo dmesg | grep intel_vpu)"
   intel_vpu_dmesg=$(sudo dmesg | grep "Firmware: intel/vpu" | tail -n1)
   # Expected version strings: https://github.com/intel/linux-npu-driver/releases/tag/v1.10.1
-  EXPECTED_VERSION="Oct 25 2024\*NPU40xx\*ci_tag_ud202444_vpu_eng_20241025_1500\*ae072b315bc135fb4cc60cfa758b2a926bd6498f"
+  # Don't forget to escape special characters (asterix) in the following string
+  EXPECTED_VERSION="Mar  6 2025\*NPU40xx\*ci_tag_ud202512_vpu_rc_20250306_1130\*5064b5debc377e1c4b74f69dc14e2e536dba393d"
   if echo "${intel_vpu_dmesg}" | grep -w "${EXPECTED_VERSION}"; then
     echo "Test success: expected firmware version successfully loaded to NPU device!"
   else
@@ -188,7 +160,7 @@ _summary: Device
 estimated_duration: 2s
 command:
   cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.npu-umd-test -S --gtest_filter=Device.GetProp*:Device.GetGlobal*:Device.GetZesDevice* --config=basic.yaml
+  intel-npu-driver.npu-umd-test -S --gtest_filter=Device.GetProp*:Device.GetGlobal*:Device.GetZesDevice*:Device.Verify* --config=basic.yaml
 
 id: umd/Driver
 category_id: npu
@@ -200,6 +172,18 @@ estimated_duration: 2s
 command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=Driver.* --config=basic.yaml
+
+id: umd/DriverCache
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: DriverCache
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  sed 's|graph_execution|driver_cache|' basic.yaml > driver_cache.yaml
+  intel-npu-driver.npu-umd-test -S --gtest_filter=DriverCache.* --config=driver_cache.yaml
 
 id: umd/Event
 category_id: npu
@@ -234,6 +218,18 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=EventPool.* --config=basic.yaml
 
+# Not running ExternalMemoryZe.* due to need for GPU support
+id: umd/ExternalMemory
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: ExternalMemory
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -S --gtest_filter=ExternalMemory.* --config=basic.yaml
+
 id: umd/Fence
 category_id: npu
 flags: simple
@@ -256,6 +252,17 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=FenceSync.* --config=basic.yaml
 
+id: umd/GraphApiBase
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: GraphApiBase
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -S --gtest_filter=GraphApiBase.* --config=basic.yaml
+
 id: umd/GraphApi
 category_id: npu
 flags: simple
@@ -267,17 +274,8 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=GraphApi.* --config=basic.yaml
 
-# filter out known failure CommandGraphLongThreaded.RunAllBlobsInSingleContextSimultaneously
-id: umd/CommandGraphLongThreaded
-category_id: npu
-flags: simple
-depends: kmd/CharDevicePermissions
-requires: executable.name == 'intel-npu-driver.npu-umd-test'
-_summary: CommandGraphLongThreaded
-estimated_duration: 2s
-command:
-  cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.npu-umd-test -S --gtest_filter=CommandGraphLongThreaded.None* --config=basic.yaml
+# Skipping ModelCacheTest.CheckIfModelIsCachedWithBuildLog for now while we
+# await for instructions from upstream
 
 id: umd/ImmediateCmdList
 category_id: npu
@@ -289,6 +287,30 @@ estimated_duration: 2s
 command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=ImmediateCmdList.*:-ImmediateCmdList.MetricQuerryTest --config=basic.yaml
+
+# note, the ZeInitDrivers tests must be run in serial
+id: umd/ZeInitDrivers.FailWithoutInit
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: ZeInitDrivers.FailWithoutInit
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -I zeInitDrivers.FailWithoutInit
+
+# note, the ZeInitDrivers tests must be run in serial
+id: umd/ZeInitDrivers.InitializeAndExecuteCopyCommand
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: ZeInitDrivers.InitializeAndExecuteCopyCommand
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -I zeInitDrivers.InitializeAndExecuteCopyCommand
 
 id: umd/MemoryAllocation
 category_id: npu
@@ -357,6 +379,17 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=MultiContext.* --config=basic.yaml
 
+id: umd/MultiContextGraph
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: MultiContextGraph
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -S --gtest_filter=MultiContextGraph.* --config=basic.yaml
+
 id: umd/CommandCopyPerf
 category_id: npu
 flags: simple
@@ -379,8 +412,9 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=SystemToSystem/CommandCopyFlag.* --config=basic.yaml
 
-# for some reason this does not appear with --gtest_list_tests but it appears when running
-# intel-npu-driver.npu-umd-test --config=basic.yaml 2> /dev/null | grep "test* from"
+# Skipping three ExternalMemoryDmaHeap.* tests due to needing access
+# to /dev/dma_heap/system
+
 id: umd/CompilerInDriverLong
 category_id: npu
 flags: simple
@@ -392,8 +426,6 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CompilerInDriverLong.* --config=basic.yaml
 
-# for some reason this does not appear with --gtest_list_tests but it appears when running
-# intel-npu-driver.npu-umd-test --config=basic.yaml 2> /dev/null | grep "test* from"
 id: umd/CompilerInDriverWithProfiling
 category_id: npu
 flags: simple
@@ -405,8 +437,6 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CompilerInDriverWithProfiling.* --config=basic.yaml
 
-# for some reason this does not appear with --gtest_list_tests but it appears when running
-# intel-npu-driver.npu-umd-test --config=basic.yaml 2> /dev/null | grep "test* from"
 # filtering out known failure CommandGraphLong.InferenceDeviceResetInference/add_abc
 id: umd/CommandGraphLong
 category_id: npu
@@ -419,8 +449,17 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CommandGraphLong.*:-CommandGraphLong.Inference* --config=basic.yaml
 
-# for some reason this does not appear with --gtest_list_tests but it appears when running
-# intel-npu-driver.npu-umd-test --config=basic.yaml 2> /dev/null | grep "test* from"
+id: umd/CommandGraphLongThreaded
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: CommandGraphLongThreaded
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -S --gtest_filter=CommandGraphLongThreaded.* --config=basic.yaml
+
 id: umd/GraphInference
 category_id: npu
 flags: simple
@@ -432,8 +471,6 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=GraphInference.* --config=basic.yaml
 
-# for some reason this does not appear with --gtest_list_tests but it appears when running
-# intel-npu-driver.npu-umd-test --config=basic.yaml 2> /dev/null | grep "test* from"
 id: umd/GraphQueryNetwork
 category_id: npu
 flags: simple
@@ -445,8 +482,6 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=GraphQueryNetwork.* --config=basic.yaml
 
-# for some reason this does not appear with --gtest_list_tests but it appears when running
-# intel-npu-driver.npu-umd-test --config=basic.yaml 2> /dev/null | grep "test* from"
 id: umd/InferencePerformance
 category_id: npu
 flags: simple
@@ -458,43 +493,64 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=InferencePerformance.* --config=basic.yaml
 
-id: umd/Sizes/MemoryAllocation
+# note, the ZeInit tests must be run in serial
+id: umd/ZeInit.CallzeInitThenzeInitDriversThenExecuteCopyCommand/0
 category_id: npu
 flags: simple
 depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.npu-umd-test'
-_summary: Sizes/MemoryAllocation
+_summary: ZeInit.CallzeInitThenzeInitDriversThenExecuteCopyCommand/0
 estimated_duration: 2s
 command:
   cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.npu-umd-test -S --gtest_filter=Sizes/MemoryAllocation.* --config=basic.yaml
+  intel-npu-driver.npu-umd-test -I zeInit.CallzeInitThenzeInitDriversThenExecuteCopyCommand/0
 
-id: umd/Sizes/MemoryExecution
+# note, the ZeInit tests must be run in serial
+id: umd/ZeInit.CallzeInitThenzeInitDriversThenExecuteCopyCommand/1
 category_id: npu
 flags: simple
 depends: kmd/CharDevicePermissions
 requires: executable.name == 'intel-npu-driver.npu-umd-test'
-_summary: Sizes/MemoryExecution
+_summary: ZeInit.CallzeInitThenzeInitDriversThenExecuteCopyCommand/1
 estimated_duration: 2s
 command:
   cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.npu-umd-test -S --gtest_filter=Sizes/MemoryExecution.* --config=basic.yaml
+  intel-npu-driver.npu-umd-test -I zeInit.CallzeInitThenzeInitDriversThenExecuteCopyCommand/1
 
-id: metric_streamer
+# note, the ZeInit tests must be run in serial
+id: umd/ZeInit.CallzeInitThenExecuteCopyCommand/0
 category_id: npu
-plugin: resource
-_description: Creates resource for metric streamer feature support
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: ZeInit.CallzeInitThenExecuteCopyCommand/0
 estimated_duration: 2s
 command:
-  # support added in kernel version 6.9
-  MIN_VERSION=6.9
-  result=$(printf "${MIN_VERSION}\n$(uname -r | cut -f1-2 -d.)\n" | sort -V | head -n1)
-  if [ "${result}" = "${MIN_VERSION}" ]; then
-    # indicates that the running kernel is >= 6.9
-    echo "state: supported"
-  else
-    echo "state: unsupported"
-  fi
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -I zeInit.CallzeInitThenExecuteCopyCommand/0
+
+# note, the ZeInit tests must be run in serial
+id: umd/ZeInit.CallzeInitThenExecuteCopyCommand/1
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: ZeInit.CallzeInitThenExecuteCopyCommand/1
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -I zeInit.CallzeInitThenExecuteCopyCommand/1
+
+id: umd/MultiMemoryExecution
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires: executable.name == 'intel-npu-driver.npu-umd-test'
+_summary: MultiMemoryExecution
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -S --gtest_filter=MultiMemoryExecution.* --config=basic.yaml
 
 id: umd/Metric
 category_id: npu
