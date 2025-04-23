@@ -286,7 +286,20 @@ _summary: ImmediateCmdList
 estimated_duration: 2s
 command:
   cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.npu-umd-test -S --gtest_filter=ImmediateCmdList.*:-ImmediateCmdList.MetricQuerryTest --config=basic.yaml
+  intel-npu-driver.npu-umd-test -S --gtest_filter=ImmediateCmdList.Create*:ImmediateCmdList.Get* --config=basic.yaml
+
+id: umd/ImmediateCmdList.FillCopyUsingBarriers
+category_id: npu
+flags: simple
+depends: kmd/CharDevicePermissions
+requires:
+  executable.name == 'intel-npu-driver.npu-umd-test'
+  ivpu_bo_create.state == 'supported'
+_summary: ImmediateCmdList.FillCopyUsingBarriers
+estimated_duration: 2s
+command:
+  cd $HOME/snap/intel-npu-driver/current
+  intel-npu-driver.npu-umd-test -S --gtest_filter=ImmediateCmdList.FillCopyUsingBarriers --config=basic.yaml
 
 # note, the ZeInitDrivers tests must be run in serial
 id: umd/ZeInitDrivers.FailWithoutInit
@@ -361,7 +374,9 @@ id: umd/CommandMemoryFill
 category_id: npu
 flags: simple
 depends: kmd/CharDevicePermissions
-requires: executable.name == 'intel-npu-driver.npu-umd-test'
+requires:
+  executable.name == 'intel-npu-driver.npu-umd-test'
+  ivpu_bo_create.state == 'supported'
 _summary: CommandMemoryFill
 estimated_duration: 2s
 command:
@@ -430,7 +445,9 @@ id: umd/CompilerInDriverWithProfiling
 category_id: npu
 flags: simple
 depends: kmd/CharDevicePermissions
-requires: executable.name == 'intel-npu-driver.npu-umd-test'
+requires:
+  executable.name == 'intel-npu-driver.npu-umd-test'
+  ivpu_bo_create.state == 'supported'
 _summary: CompilerInDriverWithProfiling
 estimated_duration: 2s
 command:

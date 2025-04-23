@@ -10,4 +10,4 @@ bootstrap_include:
     com.canonical.certification::dmesg_logs_firmware_version
     com.canonical.certification::npu_type
     com.canonical.certification::metric_streamer
-
+    com.canonical.certification::ivpu_bo_create
