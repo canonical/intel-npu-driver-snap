@@ -52,6 +52,14 @@ parts:
     build-snaps:
       - checkbox-provider-tools
       - checkbox24
+    build-attributes:
+      - enable-patchelf
+      # See: https://snapcraft.io/docs/linters-classic
+      # This patches the python interpreter to allow use of the dynamic linker from core24
+    stage-packages:
+      - python3-minimal
+      - python3.12-minimal
+      # This provides a python interpreter for checkbox to use that works properly with classic confinement
     override-build: |
       for path in $(find "/snap/checkbox24/current/providers/" -mindepth 1 -maxdepth 1 -type d); do export PROVIDERPATH=$path${PROVIDERPATH:+:$PROVIDERPATH}; done
       checkbox-provider-tools validate
