@@ -17,7 +17,7 @@ command:
 id: npu_type
 category_id: npu
 plugin: resource
-_description: Creates resource for type of NPU
+_description: Detects NPU type, if available, on the platform
 estimated_duration: 2s
 command:
   if lspci -nn | grep "Meteor Lake NPU"; then

@@ -19,6 +19,7 @@ We have validated the snap using the [`npu-umd-test` user mode driver validation
 | 22.04 | 5.15 | :x:                | N/A            |
 | 24.04 | 6.8  | :white_check_mark: | 194/209 passed |
 | 24.10 | 6.11 | :white_check_mark: | 200/209 passed |
+| 25.04 | 6.14 | :white_check_mark: | 200/209 passed |
 
 Skipped tests on kernel 6.8 and lower only:
 

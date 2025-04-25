@@ -218,7 +218,9 @@ command:
   cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=EventPool.* --config=basic.yaml
 
-# Not running ExternalMemoryZe.* due to need for GPU support
+# Not running ExternalMemoryZe.* (which would usually run next when
+# all tests are run without gtest filters) due to need for GPU support
+
 id: umd/ExternalMemory
 category_id: npu
 flags: simple
