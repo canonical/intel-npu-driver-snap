@@ -17,8 +17,9 @@ We have validated the snap using the [`npu-umd-test` user mode driver validation
 | Host OS | Kernel Version | NPU Kernel Driver Support | Test Results |
 | ----- | :--: | :----------------: | :------------: |
 | 22.04 | 5.15 | :x:                | N/A            |
-| 24.04 | 6.8  | :white_check_mark: | 185/200 passed |
-| 24.10 | 6.11 | :white_check_mark: | 191/200 passed |
+| 24.04 | 6.8  | :white_check_mark: | 194/209 passed |
+| 24.10 | 6.11 | :white_check_mark: | 200/209 passed |
+| 25.04 | 6.14 | :white_check_mark: | 200/209 passed |
 
 Skipped tests on kernel 6.8 and lower only:
 
@@ -27,10 +28,21 @@ Skipped tests on kernel 6.8 and lower only:
 Skipped tests common across all host OS and kernel versions:
 
 - GPU driver not present (2 tests)
-- DMA capabilities require tests to be run as root (3 tests)
+- DMA capabilities require access to `/dev/dma_heap/system` (3 tests)
 - Device GetZesEngineGetActivity test requires access to a file in `/sys/devices` for monitoring NPU utilization - this feature is considered non-critical (1 test)
-- Command graph long and command graph long threaded under investigation (2 tests)
+- Command graph long under investigation (1 tests)
 - Command queue priority under investigation (1 test)
+- Model cache awaiting instructions from upstream developers (1 test)
+
+### Known issues
+
+There is an issue on older kernel versions (e.g. 6.8) where messages like the following may flood the kernel logs:
+
+```
+[drm] *ERROR* ivpu_ipc_send_receive_internal(): IPC receive failed: type VPU_JSM_MSG_SSID_RELEASE, ret -74]
+```
+
+These messages can be safely ignored and should not affect NPU funtionality.
 
 ## Instructions for building and running the snap
 

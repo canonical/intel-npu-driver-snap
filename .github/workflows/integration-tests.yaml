@@ -48,4 +48,4 @@ jobs:
         uses: canonical/testflinger/.github/actions/submit@main
         with:
           poll: true
-          job-path: ${GITHUB_WORKSPACE}/job.yaml
+          job-path: ${{ github.workspace }}/job.yaml
