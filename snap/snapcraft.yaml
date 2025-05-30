@@ -10,7 +10,7 @@ description: |
   the oneAPI Level-Zero and UMD with compiler libraries. It also distributes
   an app for validating the UMD.
   For more info, see https://github.com/intel/linux-npu-driver
-grade: devel
+grade: stable
 confinement: strict
 adopt-info: npu-driver
 
