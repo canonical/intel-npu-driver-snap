@@ -2,6 +2,8 @@
 
 Snap recipe for the [Intel NPU user mode driver](https://github.com/intel/linux-npu-driver/). This snap is designed to be a content producer snap providing NPU (neural processing unit) firmware, char device node access, and user-space libraries (including the user mode driver and NPU compiler) for consumption by application snaps. It exposes slots for content consumer snaps to connect with, provides firmware binary blobs for the NPU device, and distributes an app for validating the user space driver (`npu-umd-test`).
 
+[![Get it from the Snap Store](https://snapcraft.io/en/light/install.svg)](https://snapcraft.io/intel-npu-driver)
+
 ## Host OS Support
 
 One advantage of packaging the NPU software stack as a snap is the portability across different OS versions and even Linux distributions. The main requirements for running are (i) support for snaps and (ii) a reasonably recent kernel version containing the NPU kernel driver.
