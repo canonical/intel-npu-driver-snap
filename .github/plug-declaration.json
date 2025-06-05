@@ -1,0 +1,4 @@
+{
+    "kernel-firmware-control": { "allow-installation": "true" },
+    "kernel-module-control": { "allow-installation": "true" }
+}
