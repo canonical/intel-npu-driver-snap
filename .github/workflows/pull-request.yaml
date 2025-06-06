@@ -53,11 +53,6 @@ jobs:
         run: |
           echo "Checking for the user mode driver command in the snap..."
           command -V intel-npu-driver.npu-umd-test
-      - name: Setup snapcraft
-        id: setup
-        shell: bash
-        run: |
-          sudo snap install snapcraft --classic
       - name: Release to latest/edge
         id: publish
         shell: bash
@@ -65,7 +60,7 @@ jobs:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_STORE_PE_BOT }}
           SNAP_FILE: ${{ steps.build.outputs.snap }}
         run: |
-          snapcraft_out="$(snapcraft push "$SNAP_FILE" --release=latest/edge")"
+          snapcraft_out="$(snapcraft push "$SNAP_FILE" --release=latest/edge)"
           revision="$(echo "$snapcraft_out" | grep -Po "Revision \K[^ ]+")"
           echo "revision=${revision}" >> "$GITHUB_OUTPUT"
       - name: Create and push tag for revision
