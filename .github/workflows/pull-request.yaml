@@ -53,16 +53,22 @@ jobs:
         run: |
           echo "Checking for the user mode driver command in the snap..."
           command -V intel-npu-driver.npu-umd-test
-      - name: Release to latest/edge
-        id: publish
-        shell: bash
-        env:
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_STORE_PE_BOT }}
-          SNAP_FILE: ${{ steps.build.outputs.snap }}
-        run: |
-          snapcraft_out="$(snapcraft push "$SNAP_FILE" --release=latest/edge)"
-          revision="$(echo "$snapcraft_out" | grep -Po "Revision \K[^ ]+")"
-          echo "revision=${revision}" >> "$GITHUB_OUTPUT"
+      # The Snap Store is missing an override for this snap to allow their automated review
+      # to pass for checking new revisions. They have added an override to their review-tools
+      # snap but it has not yet been released to stable, so for now this step fails and we must
+      # request a manual review from the Store team. Once review-tools is released this can
+      # be uncommented. For now, commenting this will allow the last step below to be tested.
+      #
+      #- name: Release to latest/edge
+      #  id: publish
+      #  shell: bash
+      #  env:
+      #    SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_STORE_PE_BOT }}
+      #    SNAP_FILE: ${{ steps.build.outputs.snap }}
+      #  run: |
+      #    snapcraft_out="$(snapcraft push "$SNAP_FILE" --release=latest/edge)"
+      #    revision="$(echo "$snapcraft_out" | grep -Po "Revision \K[^ ]+")"
+      #    echo "revision=${revision}" >> "$GITHUB_OUTPUT"
       - name: Create and push tag for revision
         shell: bash
         env:
