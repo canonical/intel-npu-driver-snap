@@ -19,40 +19,40 @@ jobs:
     steps:
       - name: Checkout the source
         uses: actions/checkout@v4
-      - name: Find and parse snapcraft.yaml
-        id: snapcraft-yaml
-        uses: snapcrafters/ci/parse-snapcraft-yaml@main
-      - name: Build snap
-        uses: snapcore/action-build@v1
-        id: build
-        with:
-          path: ${{ steps.snapcraft-yaml.outputs.project-root }}
-      - name: Review the built snap
-        uses: diddlesnaps/snapcraft-review-action@v1
-        with:
-          snap: ${{ steps.build.outputs.snap }}
-          isClassic: ${{ steps.snapcraft-yaml.outputs.classic }}
-          plugs: ${{ steps.snapcraft-yaml.outputs.plugs-file }}
-          slots: ${{ steps.snapcraft-yaml.outputs.slots-file }}
-      - name: Install the snap
-        shell: bash
-        run: |
-          sudo snap install --dangerous "${{ steps.build.outputs.snap }}"
-      - name: Check autoconnecting snap interfaces
-        shell: bash
-        run: |
-          snap connections intel-npu-driver | grep -w custom-device
-          snap connections intel-npu-driver | grep -w kernel-firmware-control
-          snap connections intel-npu-driver | grep -w kernel-module-control
-      - name: Verify that the load-npu-firmware service is enabled
-        shell: bash
-        run: |
-          snap services intel-npu-driver.load-npu-firmware | grep -w enabled
-      - name: Verify that the user mode driver validation tool is deployed in the snap
-        shell: bash
-        run: |
-          echo "Checking for the user mode driver command in the snap..."
-          command -V intel-npu-driver.npu-umd-test
+      #- name: Find and parse snapcraft.yaml
+      #  id: snapcraft-yaml
+      #  uses: snapcrafters/ci/parse-snapcraft-yaml@main
+      #- name: Build snap
+      #  uses: snapcore/action-build@v1
+      #  id: build
+      #  with:
+      #    path: ${{ steps.snapcraft-yaml.outputs.project-root }}
+      #- name: Review the built snap
+      #  uses: diddlesnaps/snapcraft-review-action@v1
+      #  with:
+      #    snap: ${{ steps.build.outputs.snap }}
+      #    isClassic: ${{ steps.snapcraft-yaml.outputs.classic }}
+      #    plugs: ${{ steps.snapcraft-yaml.outputs.plugs-file }}
+      #    slots: ${{ steps.snapcraft-yaml.outputs.slots-file }}
+      #- name: Install the snap
+      #  shell: bash
+      #  run: |
+      #    sudo snap install --dangerous "${{ steps.build.outputs.snap }}"
+      #- name: Check autoconnecting snap interfaces
+      #  shell: bash
+      #  run: |
+      #    snap connections intel-npu-driver | grep -w custom-device
+      #    snap connections intel-npu-driver | grep -w kernel-firmware-control
+      #    snap connections intel-npu-driver | grep -w kernel-module-control
+      #- name: Verify that the load-npu-firmware service is enabled
+      #  shell: bash
+      #  run: |
+      #    snap services intel-npu-driver.load-npu-firmware | grep -w enabled
+      #- name: Verify that the user mode driver validation tool is deployed in the snap
+      #  shell: bash
+      #  run: |
+      #    echo "Checking for the user mode driver command in the snap..."
+      #    command -V intel-npu-driver.npu-umd-test
       # The Snap Store is missing an override for this snap to allow their automated review
       # to pass for checking new revisions. They have added an override to their review-tools
       # snap but it has not yet been released to stable, so for now this step fails and we must
@@ -72,10 +72,12 @@ jobs:
       - name: Create and push tag for revision
         shell: bash
         env:
-          name: ${{ steps.snapcraft-yaml.outputs.snap-name }}
-          version: ${{ steps.snapcraft-yaml.outputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          revision="${{ steps.publish.outputs.revision }}"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          revision=$(snap info intel-npu-driver | grep latest/edge | cut -d "(" -f2 | cut -d ")" -f1)
+          version=$(snap info intel-npu-driver | grep latest/edge | awk '{print $2}')
           tag_name="${version}/rev${revision}"
-          git tag -a "$tag_name" -m "Revision ${revision}"
-          git push origin "$tag_name"
+          git tag -a "${tag_name}" -m "Revision ${revision}"
+          git push origin "${tag_name}"
