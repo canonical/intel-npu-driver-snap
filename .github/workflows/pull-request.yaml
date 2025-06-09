@@ -78,6 +78,6 @@ jobs:
           git config --local user.name "GitHub Action"
           revision=$(snap info intel-npu-driver | grep latest/edge | cut -d "(" -f2 | cut -d ")" -f1)
           version=$(snap info intel-npu-driver | grep latest/edge | awk '{print $2}')
-          tag_name="${version}/rev${revision}"
+          tag_name="${version}-rev${revision}"
           git tag -a "${tag_name}" -m "Revision ${revision}"
           git push origin "${tag_name}"
