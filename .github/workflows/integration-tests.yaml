@@ -26,7 +26,8 @@ env:
 jobs:
   build-checkbox-provider:
     name: Checkbox provider build
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
+    steps:
       - name: Check out code
         uses: actions/checkout@v4
       - name: Find and parse snapcraft.yaml
