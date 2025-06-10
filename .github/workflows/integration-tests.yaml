@@ -1,6 +1,6 @@
-name: Build snap and run integration tests on testflinger device
+name: Integration tests
+
 on:
-  workflow_dispatch:
   push:
     paths:
       - 'snap/**'
@@ -11,25 +11,16 @@ on:
       - '.github/workflows/integration-tests.yaml'
       - '.github/testflinger/job-def.yaml'
     branches:
-      - main
-  pull_request:
-    paths:
-      - 'snap/**'
-      - 'bin/**'
-      - 'checkbox/bin/**'
-      - 'checkbox/checkbox-provider-npu/**'
-      - 'checkbox/snap/**'
-      - '.github/workflows/integration-tests.yaml'
-      - '.github/testflinger/job-def.yaml'
-    branches:
-      - main
+      - "main"
+  workflow_dispatch:
 
-env:
-  BRANCH: ${{ github.head_ref || github.ref_name }}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  npu-driver-validation:
-    name: NPU Driver Validation
+  testflinger-validation:
+    name: Testflinger Validation
     runs-on: [testflinger]
     steps:
       - name: Check out code
@@ -39,8 +30,7 @@ jobs:
           QUEUE: "dell-xps-13-9340-c32267"
           PROVISION_DATA: "url: http://10.102.196.9/somerville/Platforms/jellyfish-treecko/FVR_X113/dell-bto-jammy-jellyfish-treecko-X113-20240131-14.iso"
         run: |
-          sed -e "s|REPLACE_BRANCH|${BRANCH}|" \
-          -e "s|REPLACE_QUEUE|${QUEUE}|" \
+          sed -e "s|REPLACE_QUEUE|${QUEUE}|" \
           -e "s|REPLACE_PROVISION_DATA|${PROVISION_DATA}|" \
           ${GITHUB_WORKSPACE}/.github/testflinger/job-def.yaml > \
           ${GITHUB_WORKSPACE}/job.yaml
@@ -49,3 +39,19 @@ jobs:
         with:
           poll: true
           job-path: ${{ github.workspace }}/job.yaml
+  tag:
+    name: Push tag for revision
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create and push tag for revision
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          revision=$(snap info intel-npu-driver | grep latest/edge | cut -d "(" -f2 | cut -d ")" -f1)
+          version=$(snap info intel-npu-driver | grep latest/edge | awk '{print $2}')
+          tag_name="${version}-rev${revision}"
+          git tag -a "${tag_name}" -m "Revision ${revision}"
+          git push origin "${tag_name}"

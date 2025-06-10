@@ -13,13 +13,6 @@ test_data:
       sudo DEBIAN_FRONTEND=noninteractive apt update
       sudo DEBIAN_FRONTEND=noninteractive apt -y upgrade
       sudo DEBIAN_FRONTEND=noninteractive apt -y install git curl
-      git clone -b REPLACE_BRANCH \
-        https://github.com/canonical/intel-npu-driver-snap.git \
-        ~ubuntu/intel-npu-driver-snap
-      cd ~ubuntu/intel-npu-driver-snap
-      echo "Current git branch: $(git branch --show-current)"
-      echo "Latest commit:"
-      git log --name-status HEAD^..HEAD
     '
 
     # Install dependencies
@@ -41,15 +34,10 @@ test_data:
       sudo sysctl -p
     '
 
-    # Build and install intel-npu-driver snap
+    # Install intel-npu-driver snap from latest/edge, where it was published in latest PR
     ssh ubuntu@$DEVICE_IP '
       lxd init --auto
-      cd ~ubuntu/intel-npu-driver-snap
-      snapcraft
-      sudo snap install --dangerous ./intel-npu-driver_*_amd64.snap
-      sudo snap connect intel-npu-driver:intel-npu-fw
-      sudo snap connect intel-npu-driver:intel-npu-kmod
-      sudo snap connect intel-npu-driver:intel-npu-plug intel-npu-driver:intel-npu
+      sudo snap install intel-npu-driver --channel latest/edge
     '
 
     echo "[INFO]: Sleeping for 60 seconds to ensure the firmware search path is updated."
