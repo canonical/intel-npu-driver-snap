@@ -22,7 +22,8 @@ concurrency:
 jobs:
   testflinger-validation:
     name: Testflinger Validation
-    runs-on: [self-hosted, self-hosted-linux-amd64-jammy-private-endpoint-medium]
+    runs-on: [testflinger]
+    #runs-on: [self-hosted, self-hosted-linux-amd64-jammy-private-endpoint-medium]
     strategy:
       matrix:
         device:
