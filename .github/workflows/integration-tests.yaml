@@ -22,7 +22,7 @@ concurrency:
 jobs:
   testflinger-validation:
     name: Testflinger Validation
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, self-hosted-linux-amd64-jammy-private-endpoint-medium]
     strategy:
       matrix:
         device:
@@ -61,6 +61,8 @@ jobs:
     name: Push tag for revision
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout the source
+        uses: actions/checkout@v4
       - name: Create and push tag for revision
         shell: bash
         env:
