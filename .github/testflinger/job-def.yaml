@@ -6,7 +6,8 @@ test_data:
   attachments:
     - local: REPLACE_ATTACHMENT
       agent: "checkbox-npu.snap"
-    - local: "check-npu-fw.sh"
+    - local: ".github/testflinger/check-npu-fw.sh"
+      agent: "check-npu-fw.sh"
   test_cmds: |
 
     set -x
@@ -41,6 +42,15 @@ test_data:
     _run sudo usermod -a -G render $USER
     _run sudo chown root:render /dev/accel/accel0
     _run sudo chmod g+rw /dev/accel/accel0
+
+    _run checkbox-npu.install-full-deps
+    _run checkbox-npu.test-runner-automated
+
+    # Upgrade apt packages, primarily to revalidate against a newer kernel
+    _run sudo apt-get update
+    _run sudo apt-get -y upgrade
+    _run sudo reboot
+    wait_for_ssh --allow-degraded
 
     _run checkbox-npu.install-full-deps
     _run checkbox-npu.test-runner-automated
