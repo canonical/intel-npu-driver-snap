@@ -19,9 +19,35 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  SNAP_ARTIFACT_NAME: checkbox-npu-snap
+  SNAP_FILE: checkbox-npu.snap
+
 jobs:
+  build-checkbox-provider:
+    name: Checkbox provider build
+    runs-on: [ubuntu-latest]
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Find and parse snapcraft.yaml
+        id: snapcraft-yaml
+        uses: snapcrafters/ci/parse-snapcraft-yaml@main
+        with:
+          snapcraft-project-root: checkbox
+      - name: Build snap
+        uses: snapcore/action-build@v1
+        id: build
+        with:
+          path: ${{ steps.snapcraft-yaml.outputs.project-root }}
+          snapcraft-args: "-o ${{ env.SNAP_FILE }}"
+      - name: Upload snap artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.SNAP_ARTIFACT_NAME }}
+          path: ${{ steps.build.outputs.snap }}
   testflinger-validation:
     name: Testflinger Validation
+    needs: build-checkbox-provider
     runs-on: [testflinger]
     #runs-on: [self-hosted, self-hosted-linux-amd64-jammy-private-endpoint-medium]
     strategy:
@@ -36,21 +62,14 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-      - name: Find and parse snapcraft.yaml
-        id: snapcraft-yaml
-        uses: snapcrafters/ci/parse-snapcraft-yaml@main
-        with: 
-          snapcraft-project-root: checkbox
-      - name: Build snap
-        uses: snapcore/action-build@v1
-        id: build
+      - uses: actions/download-artifact@v4
         with:
-          path: ${{ steps.snapcraft-yaml.outputs.project-root }}
+          name: ${{ env.SNAP_ARTIFACT_NAME }}
       - name: Build job file from template with oemscript provisioning
         run: |
           sed -e "s|REPLACE_QUEUE|${{ matrix.device.queue }}|" \
           -e "s|REPLACE_IMAGE_URL|${{ matrix.device.image }}|" \
-          -e "s|REPLACE_ATTACHMENT|${{ steps.build.outputs.snap }}|" \
+          -e "s|REPLACE_ATTACHMENT|${{ env.SNAP_FILE }}|" \
           ${GITHUB_WORKSPACE}/.github/testflinger/job-def.yaml > \
           ${GITHUB_WORKSPACE}/job.yaml
       - name: Submit testflinger job
@@ -60,6 +79,7 @@ jobs:
           job-path: ${{ github.workspace }}/job.yaml
   tag:
     name: Push tag for revision
+    needs: testflinger-validation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the source
