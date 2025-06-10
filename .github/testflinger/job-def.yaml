@@ -1,85 +1,46 @@
 job_queue: REPLACE_QUEUE
 output_timeout: 7200
 provision_data:
-  REPLACE_PROVISION_DATA
+  url: REPLACE_IMAGE_URL
 test_data:
+  attachments:
+    - local: REPLACE_ATTACHMENT
+      agent: "checkbox-npu.snap"
+    - local: "check-npu-fw.sh"
   test_cmds: |
 
-    # Exit immediately if a test fails
-    set -e
+    set -x
 
-    # Clone repo from appropriate branch/commit.
-    ssh ubuntu@$DEVICE_IP '
-      sudo DEBIAN_FRONTEND=noninteractive apt update
-      sudo DEBIAN_FRONTEND=noninteractive apt -y upgrade
-      sudo DEBIAN_FRONTEND=noninteractive apt -y install git curl
-    '
+    # retrieve the tools installer
+    curl -Ls -o install_tools.sh https://raw.githubusercontent.com/canonical/hwcert-jenkins-tools/main/install_tools.sh
+    # install the scriptlets and other tools on the agent and the device, as necessary
+    export TOOLS_PATH=tools
+    source install_tools.sh $TOOLS_PATH
 
-    # Install dependencies
-    ssh ubuntu@$DEVICE_IP '
-      sudo snap install --classic snapcraft
-      sudo snap install lxd --channel=5.21/stable
-      sudo adduser ubuntu lxd
-      sudo snap refresh
-    '
+    # ensure device is available before continuing
+    wait_for_ssh --allow-degraded
 
-    # Disable swap and IPv6
-    ssh ubuntu@$DEVICE_IP '
-      sudo sysctl -w vm.swappiness=0
-      sudo echo "vm.swappiness = 0" | sudo tee -a /etc/sysctl.conf
-      sudo swapoff -a
-      echo "net.ipv6.conf.all.disable_ipv6=1" | sudo tee -a /etc/sysctl.conf
-      echo "net.ipv6.conf.default.disable_ipv6=1" | sudo tee -a /etc/sysctl.conf
-      echo "net.ipv6.conf.lo.disable_ipv6=1" | sudo tee -a /etc/sysctl.conf
-      sudo sysctl -p
-    '
+    echo
+    echo "====== TARGET DEVICE CONNECTION INFO ======"
+    echo
+    echo DEVICE_IP: ubuntu@$DEVICE_IP
+    echo
+    echo "==========================================="
+    echo
 
-    # Install intel-npu-driver snap from latest/edge, where it was published in latest PR
-    ssh ubuntu@$DEVICE_IP '
-      lxd init --auto
-      sudo snap install intel-npu-driver --channel latest/edge
-    '
+    _run sudo snap install intel-npu-driver --channel latest/edge
 
     echo "[INFO]: Sleeping for 60 seconds to ensure the firmware search path is updated."
     sleep 60
 
-    # Check firmware is deployed to the expected path
-    ssh ubuntu@$DEVICE_IP '
-      set -e
-      fw_search_path=$(sudo cat /sys/module/firmware_class/parameters/path)
-      echo "[INFO]: fw_search_path: ${fw_search_path}"
-      echo "[INFO]: $(snap services intel-npu-driver.load-npu-firmware)"
-      echo "[INFO]: $(sudo snap logs intel-npu-driver.load-npu-firmware)"
-      if [ -z "${fw_search_path}" ]; then
-        >&2 echo "Test error: Firmware search path not updated."
-        exit 1
-      fi
-      echo "Checking for firmware in expected path..."
-      ls "${fw_search_path}"/intel/vpu/ | grep ".*.bin$"
-      echo "Test success: Found .bin file(s) in the expected path."
-    '
+    _run attachments/test/check-npu-fw.sh
 
-    # Build and install checkbox-npu snap
-    ssh ubuntu@$DEVICE_IP '
-      cd ~ubuntu/intel-npu-driver-snap/checkbox
-      sudo snap install checkbox24
-      snapcraft
-      sudo snap install --dangerous --classic ./checkbox-npu_*_amd64.snap
-    '
+    _run sudo snap install checkbox24
+    _run sudo snap install --dangerous --classic attachments/test/checkbox-npu.snap
 
-    # Enable non-root access to the NPU device node
-    ssh ubuntu@$DEVICE_IP '
-      sudo usermod -a -G render $USER
-      sudo chown root:render /dev/accel/accel0
-      sudo chmod g+rw /dev/accel/accel0
-    '
+    _run sudo usermod -a -G render $USER
+    _run sudo chown root:render /dev/accel/accel0
+    _run sudo chmod g+rw /dev/accel/accel0
 
-    # Install test dependencies
-    ssh ubuntu@$DEVICE_IP '
-      checkbox-npu.install-full-deps
-    '
-
-    # Run tests
-    ssh ubuntu@$DEVICE_IP '
-      checkbox-npu.test-runner-automated
-    '
+    _run checkbox-npu.install-full-deps
+    _run checkbox-npu.test-runner-automated

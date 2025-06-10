@@ -9,9 +9,10 @@ on:
       - 'checkbox/checkbox-provider-npu/**'
       - 'checkbox/snap/**'
       - '.github/workflows/integration-tests.yaml'
-      - '.github/testflinger/job-def.yaml'
+      - '.github/testflinger/**'
     branches:
       - "main"
+      - "frenchwr/cert-team-tooling" # temporary for testing
   workflow_dispatch:
 
 concurrency:
@@ -21,17 +22,34 @@ concurrency:
 jobs:
   testflinger-validation:
     name: Testflinger Validation
-    runs-on: [testflinger]
+    runs-on: [self-hosted]
+    strategy:
+      matrix:
+        device:
+          # Dell XPS 13 9340, Meteor Lake, 22.04
+          - { queue: dell-xps-13-9340-c32267, image: http://10.102.196.9/somerville/Platforms/jellyfish-treecko/FVR_X113/dell-bto-jammy-jellyfish-treecko-X113-20240131-14.iso }
+          # Dell XPS 13 9340, Meteor Lake, 24.04
+          - { queue: dell-xps-13-9340-c34207, image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04a/20240729-53/somerville-noble-oem-24.04a-20240729-53.iso }
+          # Dell Pro Max 14, Arrow Lake, 24.04
+          - { queue: dell-precision-5680-c31665, image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04a/20240729-53/somerville-noble-oem-24.04a-20240729-53.iso }
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+      - name: Find and parse snapcraft.yaml
+        id: snapcraft-yaml
+        uses: snapcrafters/ci/parse-snapcraft-yaml@main
+        with: 
+          snapcraft-project-root: checkbox
+      - name: Build snap
+        uses: snapcore/action-build@v1
+        id: build
+        with:
+          path: ${{ steps.snapcraft-yaml.outputs.project-root }}
       - name: Build job file from template with oemscript provisioning
-        env:
-          QUEUE: "dell-xps-13-9340-c32267"
-          PROVISION_DATA: "url: http://10.102.196.9/somerville/Platforms/jellyfish-treecko/FVR_X113/dell-bto-jammy-jellyfish-treecko-X113-20240131-14.iso"
         run: |
-          sed -e "s|REPLACE_QUEUE|${QUEUE}|" \
-          -e "s|REPLACE_PROVISION_DATA|${PROVISION_DATA}|" \
+          sed -e "s|REPLACE_QUEUE|${{ matrix.device.queue }}|" \
+          -e "s|REPLACE_IMAGE_URL|${{ matrix.device.image }}|" \
+          -e "s|REPLACE_ATTACHMENT|${{ steps.build.outputs.snap }}|" \
           ${GITHUB_WORKSPACE}/.github/testflinger/job-def.yaml > \
           ${GITHUB_WORKSPACE}/job.yaml
       - name: Submit testflinger job
