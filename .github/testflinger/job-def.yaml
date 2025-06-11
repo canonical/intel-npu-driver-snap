@@ -56,8 +56,8 @@ test_data:
     #
     _run sudo bash run-checkbox-npu.sh
 
-    _run sudo apt-get update
-    _run sudo apt-get -y upgrade
+    _run sudo apt update
+    _run sudo apt -y upgrade
     _run sudo reboot
     wait_for_ssh --allow-degraded
 
