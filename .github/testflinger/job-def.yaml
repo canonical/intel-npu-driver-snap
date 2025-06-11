@@ -29,6 +29,7 @@ test_data:
     echo "==========================================="
     echo
 
+    _run sudo snap refresh
     _run sudo snap install intel-npu-driver --channel latest/edge
 
     echo "[INFO]: Sleeping for 60 seconds to ensure the firmware search path is updated."
@@ -57,6 +58,8 @@ test_data:
     echo
     _run checkbox-npu.test-runner-automated
 
+    # Avoid GPG errors on old unsupported versions of Chrome, which we don't test anyway
+    _run sudo rm /etc/apt/sources.list.d/google-chrome.list
     # Upgrade apt packages, primarily to revalidate against a newer kernel
     _run sudo apt-get update
     _run sudo apt-get -y upgrade
