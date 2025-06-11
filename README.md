@@ -53,7 +53,7 @@ To install the snap, you most likely want to install it from the Snap Store. For
 ### Installing the snap from the snap store
 
 ```
-sudo snap install intel-npu-driver --beta
+sudo snap install intel-npu-driver
 ```
 
 ### Building and installing the snap locally
