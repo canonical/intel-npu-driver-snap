@@ -22,6 +22,7 @@ intel-npu-driver.npu-umd-test -l 2>&1 >/dev/null
 set -e
 
 # Download the data for the test and create a simple config
+sudo apt-get install -y curl
 cd $HOME/snap/intel-npu-driver/current
 mkdir -p models/add_abc
 curl -s -o models/add_abc/add_abc.xml https://raw.githubusercontent.com/openvinotoolkit/openvino/master/src/core/tests/models/ir/add_abc.xml
