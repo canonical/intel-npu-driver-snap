@@ -1,0 +1,69 @@
+name: Pull Request
+
+on:
+  pull_request:
+    paths:
+      - 'snap/**'
+      - 'bin/**'
+      - '.github/workflows/pull-request.yaml'
+    branches: ["**"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build snap, run smoke tests, release to edge
+    runs-on: [self-hosted, linux, X64, xlarge, jammy]
+    steps:
+      - name: Checkout the source
+        uses: actions/checkout@v4
+      - name: Find and parse snapcraft.yaml
+        id: snapcraft-yaml
+        uses: snapcrafters/ci/parse-snapcraft-yaml@main
+      - name: Build snap
+        uses: snapcore/action-build@v1
+        id: build
+        with:
+          path: ${{ steps.snapcraft-yaml.outputs.project-root }}
+      - name: Review the built snap
+        uses: diddlesnaps/snapcraft-review-action@v1
+        with:
+          snap: ${{ steps.build.outputs.snap }}
+          isClassic: ${{ steps.snapcraft-yaml.outputs.classic }}
+          plugs: ${{ steps.snapcraft-yaml.outputs.plugs-file }}
+          slots: ${{ steps.snapcraft-yaml.outputs.slots-file }}
+      - name: Install the snap
+        shell: bash
+        run: |
+          sudo snap install --dangerous "${{ steps.build.outputs.snap }}"
+      - name: Check autoconnecting snap interfaces
+        shell: bash
+        run: |
+          snap connections intel-npu-driver | grep -w custom-device
+          snap connections intel-npu-driver | grep -w kernel-firmware-control
+          snap connections intel-npu-driver | grep -w kernel-module-control
+      - name: Verify that the load-npu-firmware service is enabled
+        shell: bash
+        run: |
+          snap services intel-npu-driver.load-npu-firmware | grep -w enabled
+      - name: Verify that the user mode driver validation tool is deployed in the snap
+        shell: bash
+        run: |
+          echo "Checking for the user mode driver command in the snap..."
+          command -V intel-npu-driver.npu-umd-test
+      - name: Release to latest/edge
+        id: publish
+        shell: bash
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_STORE_PE_BOT }}
+          SNAP_FILE: ${{ steps.build.outputs.snap }}
+        run: |
+          snapcraft push "$SNAP_FILE" --release=latest/edge || true
+          # Note, the || true is temporary because the Snap Store is missing
+          # an override for this snap to allow their automated review
+          # to pass for new revisions. They have added an override to their review-tools
+          # snap but it has not yet been released to stable, so for now we force this
+          # step to succeed but need to manually request the revision to be approved
+          # in the store.
