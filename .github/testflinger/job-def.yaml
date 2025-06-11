@@ -8,6 +8,8 @@ test_data:
       agent: "checkbox-npu.snap"
     - local: ".github/testflinger/check-npu-fw.sh"
       agent: "check-npu-fw.sh"
+    - local: ".github/testflinger/run-checkbox-npu.sh"
+      agent: "run-checkbox-npu.sh"
   test_cmds: |
 
     set -x
@@ -29,6 +31,9 @@ test_data:
     echo "==========================================="
     echo
 
+    # Avoid GPG errors on old unsupported versions of Chrome, which we don't test anyway
+    _run sudo rm /etc/apt/sources.list.d/google-chrome.list
+
     _run sudo snap refresh
     _run sudo snap install intel-npu-driver --channel latest/edge
 
@@ -42,37 +47,18 @@ test_data:
     _put attachments/test/checkbox-npu.snap :/home/ubuntu/checkbox-npu.snap
     _run sudo snap install --dangerous --classic /home/ubuntu/checkbox-npu.snap
 
-    _run sudo usermod -a -G render ubuntu
-    _run sudo chown root:render /dev/accel/accel0
-    _run sudo chmod g+rw /dev/accel/accel0
+    _put attachments/test/run-checkbox-npu.sh :/home/ubuntu/run-checkbox-npu.sh
 
-    _run sudo apt-get install -y curl
-    _run checkbox-npu.install-full-deps
-    echo
-    echo "========= Checkbox NPU ========="
-    echo "====== DEVICE KERNEL INFO ======"
-    echo
-    _run uname -a
-    echo
-    echo "==========================================="
-    echo
-    _run checkbox-npu.test-runner-automated
+    # Run the validation twice:
+    #
+    # Run 1: original debs and kernel from the certified image
+    # Run 2: upgraded debs and kernel, following a reboot
+    #
+    _run sudo bash run-checkbox-npu.sh
 
-    # Avoid GPG errors on old unsupported versions of Chrome, which we don't test anyway
-    _run sudo rm /etc/apt/sources.list.d/google-chrome.list
-    # Upgrade apt packages, primarily to revalidate against a newer kernel
     _run sudo apt-get update
     _run sudo apt-get -y upgrade
     _run sudo reboot
     wait_for_ssh --allow-degraded
 
-    _run checkbox-npu.install-full-deps
-    echo
-    echo "========= Checkbox NPU ========="
-    echo "====== DEVICE KERNEL INFO ======"
-    echo
-    _run uname -a
-    echo
-    echo "==========================================="
-    echo
-    _run checkbox-npu.test-runner-automated
+    _run sudo bash run-checkbox-npu.sh
