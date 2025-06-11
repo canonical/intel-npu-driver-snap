@@ -12,7 +12,6 @@ on:
       - '.github/testflinger/**'
     branches:
       - "main"
-      - "frenchwr/cert-team-tooling" # temporary for testing
   workflow_dispatch:
 
 concurrency:
