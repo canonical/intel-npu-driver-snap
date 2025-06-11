@@ -34,16 +34,27 @@ test_data:
     echo "[INFO]: Sleeping for 60 seconds to ensure the firmware search path is updated."
     sleep 60
 
-    _run attachments/test/check-npu-fw.sh
+    _put attachments/test/check-npu-fw.sh :/home/ubuntu/check-npu-fw.sh
+    _run bash check-npu-fw.sh
 
     _run sudo snap install checkbox24
-    _run sudo snap install --dangerous --classic attachments/test/checkbox-npu.snap
+    _put attachments/test/checkbox-npu.snap :/home/ubuntu/checkbox-npu.snap
+    _run sudo snap install --dangerous --classic /home/ubuntu/checkbox-npu.snap
 
-    _run sudo usermod -a -G render $USER
+    _run sudo usermod -a -G render ubuntu
     _run sudo chown root:render /dev/accel/accel0
     _run sudo chmod g+rw /dev/accel/accel0
 
+    _run sudo apt-get install -y curl
     _run checkbox-npu.install-full-deps
+    echo
+    echo "========= Checkbox NPU ========="
+    echo "====== DEVICE KERNEL INFO ======"
+    echo
+    _run uname -a
+    echo
+    echo "==========================================="
+    echo
     _run checkbox-npu.test-runner-automated
 
     # Upgrade apt packages, primarily to revalidate against a newer kernel
@@ -53,4 +64,12 @@ test_data:
     wait_for_ssh --allow-degraded
 
     _run checkbox-npu.install-full-deps
+    echo
+    echo "========= Checkbox NPU ========="
+    echo "====== DEVICE KERNEL INFO ======"
+    echo
+    _run uname -a
+    echo
+    echo "==========================================="
+    echo
     _run checkbox-npu.test-runner-automated
