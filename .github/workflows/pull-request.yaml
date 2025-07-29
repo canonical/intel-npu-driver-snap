@@ -60,10 +60,4 @@ jobs:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_STORE_PE_BOT }}
           SNAP_FILE: ${{ steps.build.outputs.snap }}
         run: |
-          snapcraft push "$SNAP_FILE" --release=latest/edge || true
-          # Note, the || true is temporary because the Snap Store is missing
-          # an override for this snap to allow their automated review
-          # to pass for new revisions. They have added an override to their review-tools
-          # snap but it has not yet been released to stable, so for now we force this
-          # step to succeed but need to manually request the revision to be approved
-          # in the store.
+          snapcraft upload "$SNAP_FILE" --release=latest/edge
