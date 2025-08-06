@@ -62,7 +62,7 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: ${{ env.SNAP_ARTIFACT_NAME }}
       - name: Build job file from template with oemscript provisioning
