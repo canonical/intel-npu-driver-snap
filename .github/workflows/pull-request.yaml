@@ -16,6 +16,7 @@ jobs:
   build:
     name: Build snap, run smoke tests, release to edge
     runs-on: [self-hosted, linux, X64, xlarge, jammy]
+    if: ${{ github.actor != 'renovate[bot]' }}
     steps:
       - name: Checkout the source
         uses: actions/checkout@v5
