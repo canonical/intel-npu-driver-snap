@@ -18,7 +18,7 @@ jobs:
     runs-on: [self-hosted, linux, X64, xlarge, jammy]
     steps:
       - name: Checkout the source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Find and parse snapcraft.yaml
         id: snapcraft-yaml
         uses: snapcrafters/ci/parse-snapcraft-yaml@main
