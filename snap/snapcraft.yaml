@@ -70,7 +70,7 @@ parts:
   npu-driver:
     source-type: git
     source: https://github.com/intel/linux-npu-driver.git
-    source-tag: v1.19.0
+    source-tag: v1.22.0
     plugin: cmake
     cmake-parameters:
       - -DENABLE_NPU_COMPILER_BUILD=ON
