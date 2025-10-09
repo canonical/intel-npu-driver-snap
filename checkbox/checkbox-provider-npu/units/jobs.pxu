@@ -42,9 +42,9 @@ estimated_duration: 2s
 command:
   printf "[INFO]: dmesg logs for intel_vpu kernel module:\n $(sudo dmesg | grep intel_vpu)"
   intel_vpu_dmesg=$(sudo dmesg | grep "Firmware: intel/vpu" | tail -n1)
-  # Expected version strings: https://github.com/intel/linux-npu-driver/releases/tag/v1.10.1
+  # Expected version strings: https://github.com/intel/linux-npu-driver/releases/tag/v1.24.0
   # Don't forget to escape special characters (asterix) in the following string
-  EXPECTED_VERSION="20250306\*MTL_CLIENT_SILICON-release\*1130\*ci_tag_ud202512_vpu_rc_20250306_1130\*5064b5debc3"
+  EXPECTED_VERSION="20250925\*MTL_CLIENT_SILICON-NVR+NN-deployment\*2485cfeafeed591eaa9a320bfae2407c1b83b29f\*2485cfeafeed591eaa9a320bfae2407c1b83b29f\*2485cfeafee"
   if echo "${intel_vpu_dmesg}" | grep -w "${EXPECTED_VERSION}"; then
     echo "Test success: expected firmware version successfully loaded to NPU device!"
   else
@@ -63,9 +63,9 @@ estimated_duration: 2s
 command:
   printf "[INFO]: dmesg logs for intel_vpu kernel module:\n $(sudo dmesg | grep intel_vpu)"
   intel_vpu_dmesg=$(sudo dmesg | grep "Firmware: intel/vpu" | tail -n1)
-  # Expected version strings: https://github.com/intel/linux-npu-driver/releases/tag/v1.10.1
+  # Expected version strings: https://github.com/intel/linux-npu-driver/releases/tag/v1.24.0
   # Don't forget to escape special characters (asterix) in the following string
-  EXPECTED_VERSION="Mar  6 2025\*NPU40xx\*ci_tag_ud202512_vpu_rc_20250306_1130\*5064b5debc377e1c4b74f69dc14e2e536dba393d"
+  EXPECTED_VERSION="Sep 25 2025\*NPU40xx\*build/ci/npu-fw-ci-ci_branch_UD202538_PTL_PV_npu_release_25ww35-20250915_222036-29036-1-g2485cfeafee\*2485cfeafeed591eaa9a320bfae2407c1b83b29f"
   if echo "${intel_vpu_dmesg}" | grep -w "${EXPECTED_VERSION}"; then
     echo "Test success: expected firmware version successfully loaded to NPU device!"
   else
