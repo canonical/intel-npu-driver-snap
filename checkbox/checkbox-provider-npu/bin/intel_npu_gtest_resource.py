@@ -20,15 +20,14 @@ def main() -> int:
         if '.' in line:
             category, test_name = line.split('.', 1)
     
+            extra_flags = []
             if category.startswith("ZeInit"):
-                use_serial = "-I"
-            else:
-                use_serial = "-S"
+                extra_flags.append("--ze-init-tests")
     
             print_as_resource({
                 "name": test_name,
                 "category": category,
-                "use_serial": use_serial
+                "extra_flags": " ".join(extra_flags)
                 })
 
 if __name__ == "__main__":
