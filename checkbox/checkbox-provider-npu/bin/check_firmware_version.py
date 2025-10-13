@@ -11,7 +11,7 @@ VERSION_PATTERN = re.compile(r"^(\d{8}\*|[A-Z][a-z]{2}\s+\d{1,2}\s+\d{4}\*).*")
 def get_active_firmware_line() -> Optional[str]:
     try:
         result = subprocess.run(
-            ['sudo', 'dmesg'],
+            ['sudo', 'journalctl', '--dmesg'],
             capture_output=True, text=True, check=True, encoding='utf-8'
         )
         all_lines = result.stdout.splitlines()
