@@ -1,4 +1,11 @@
 unit: category
 id: npu
-_name: Intel NPU user mode driver validation
+_name: Intel NPU
 
+unit: category
+id: npu_kmd
+_name: Intel NPU kernel mode driver validation
+
+unit: category
+id: npu_umd
+_name: Intel NPU user mode driver validation
