@@ -1,16 +1,3 @@
-# For 1.16.0 there are known tests that we do not run in the test plan
-#
-# Device.GetZesEngineGetActivity -- No sysfs access for NPU activity data
-# ExternalMemoryZe.GpuZeFillToNpuZeCopy -- No GPU support for test
-# ExternalMemoryZe.NpuZeFillToGpuZeCopy -- No GPU support for test
-# ModelCacheTest.CheckIfModelIsCachedWithBuildLog -- Requires cached model, awaiting upstream docs
-# CommandQueuePriority.executeManyLowPriorityJobsExpectHighPriorityJobCompletesFirst -- known failure since 1.6.0
-# ExternalMemoryDmaHeap.DmaHeapToNpu/2KB -- requires access to /dev/dma_heap/system
-# ExternalMemoryDmaHeap.DmaHeapToNpu/16MB -- requires access to /dev/dma_heap/system
-# ExternalMemoryDmaHeap.DmaHeapToNpu/255MB -- requires access to /dev/dma_heap/system
-# CommandGraphLong.InferenceDeviceResetInference/add_abc -- known failure
-#
-
 id: kmd/CharDevicePermissions
 category_id: npu_kmd
 flags: simple
@@ -33,7 +20,10 @@ id: umd/{category}.{name}
 category_id: npu_umd
 depends: kmd/CharDevicePermissions
 flags: simple
-requires: executable.name == 'intel-npu-driver.npu-umd-test'
+requires:
+  executable.name == 'intel-npu-driver.npu-umd-test'
+  metric_streamer.state in "{metric_streamer_allowed_states}"
+  ivpu_bo_create.state in "{ivpu_bo_create_allowed_states}"
 _summary: {category} {name}
 estimated_duration: 2s
 command:

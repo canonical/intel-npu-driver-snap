@@ -21,6 +21,7 @@ command: min_kernel_version.py 6.6
 
 plugin: resource
 id: intel_npu_gtest_resource
+category_id: npu
 requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: Produces a resource per test of Intel NPU Umd test
 _purpose: Creates a resource for accessing tests for NPU drivers.
