@@ -4,7 +4,7 @@ import subprocess, os, sys
 def print_resource_line(key: str, value: str):
     print(f"{key}: {value}")
 
-def print_as_resource(d: dict):
+def print_as_resource(d: dict) -> None:
     for k, v in d.items():
         print_resource_line(k, v)
 
