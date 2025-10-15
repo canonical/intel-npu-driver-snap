@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import subprocess, os, sys
 
-def print_resource_line(key: str, value: str):
+def print_resource_line(key: str, value: str) -> None:
     print(f"{key}: {value}")
 
 def print_as_resource(d: dict) -> None:
