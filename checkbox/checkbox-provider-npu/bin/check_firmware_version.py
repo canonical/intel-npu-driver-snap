@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 from typing import Optional, List
 
-FIRMWARE_SEARCH_DIR = Path("/snap/intel-npu-driver/current/lib/firmware/updates/intel/vpu")
+FIRMWARE_SEARCH_DIR = Path("/var/snap/intel-npu-driver/current/intel/vpu")
 VERSION_PATTERN = re.compile(r"^(\d{8}\*|[A-Z][a-z]{2}\s+\d{1,2}\s+\d{4}\*).*")
 
 def get_active_firmware_line() -> Optional[str]:
