@@ -27,5 +27,5 @@ requires:
 _summary: {category} {name}
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
-  intel-npu-driver.npu-umd-test -S {extra_flags} --gtest_filter={category}.{name} --config=basic.yaml
+  cd "$HOME/snap/intel-npu-driver/current" && \
+   intel-npu-driver.npu-umd-test -S {extra_flags} --gtest_filter={category}.{name} --config=basic.yaml

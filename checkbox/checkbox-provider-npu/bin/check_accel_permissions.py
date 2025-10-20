@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
+
 def find_npu_device_path() -> Optional[Path]:
     base_sys_path = Path("/sys/class/accel")
     if not base_sys_path.is_dir():
@@ -22,19 +23,26 @@ def find_npu_device_path() -> Optional[Path]:
             continue
     return None
 
+
 def print_permission_error(device_path: Path):
     user = os.getenv('USER', 'your_user')
-    print(f"Test Failure: User lacks required permissions for {device_path}", file=sys.stderr)
-    print("   Please ensure you are part of the 'render' group and the device has the correct ownership.", file=sys.stderr)
+    print(f"Test Failure: User lacks required permissions for {device_path}",
+          file=sys.stderr)
+    print("   Please ensure you are part of the 'render' group and the device \
+          has the correct ownership.", file=sys.stderr)
     print("   Suggested commands:", file=sys.stderr)
-    print(f"   1. sudo usermod -a -G render {user}  (then log out and back in)", file=sys.stderr)
-    print(f"   2. sudo chown root:render {device_path} && sudo chmod g+rw {device_path}", file=sys.stderr)
-    
+    print(f"   1. sudo usermod -a -G render {user}  (then log out and back \
+          in)", file=sys.stderr)
+    print(f"   2. sudo chown root:render {device_path} && sudo chmod g+rw \
+          {device_path}", file=sys.stderr)
+
+
 def main() -> int:
     npu_device = find_npu_device_path()
 
     if not npu_device:
-        print("Test Failure: Could not find an Intel NPU device in /sys/class/accel.", file=sys.stderr)
+        print("Test Failure: Could not find an Intel NPU device in \
+              /sys/class/accel.", file=sys.stderr)
         return 1
 
     # Check for read and write permissions
@@ -46,6 +54,7 @@ def main() -> int:
     else:
         print_permission_error(npu_device)
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())
