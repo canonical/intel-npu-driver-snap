@@ -15,8 +15,7 @@ def parse_version(version_str: str) -> Tuple[int, ...]:
         # Convert the list of number strings to a tuple of integers
         return tuple(map(int, numbers))
     except (ValueError, TypeError):
-        print("state: unsupported")
-        sys.exit(1)
+        return None
 
 def main() -> int:
     parser = argparse.ArgumentParser(
@@ -33,12 +32,12 @@ def main() -> int:
     current_version = parse_version(current_version_str)
     required_version = parse_version(args.required_version)
     
-    if current_version >= required_version:
+    if current_version is not None and \
+            required_version is not None and \
+            current_version >= required_version:
         print("state: supported")
-        return 0
     else:
         print("state: unsupported")
-        return 1
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

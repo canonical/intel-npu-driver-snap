@@ -10,7 +10,6 @@ category_id: npu_kmd
 flags: simple
 requires:
   dmesg_logs_firmware_version.state == 'supported'
-  snap.name == 'intel-npu-driver'
 _summary: Check NPU firmware version
 estimated_duration: 2s
 command: check_firmware_version.py
@@ -23,8 +22,6 @@ category_id: npu_umd
 depends: kmd/CharDevicePermissions
 flags: simple
 requires:
-  snap.name == 'intel-npu-driver'
-  executable.name == 'intel-npu-driver.npu-umd-test'
   metric_streamer.state in "{metric_streamer_allowed_states}"
   ivpu_bo_create.state in "{ivpu_bo_create_allowed_states}"
 _summary: {category} {name}
