@@ -11,7 +11,7 @@ def print_as_resource(d: dict) -> None:
     print("")
 
 
-def get_extra_flags() -> list[str]:
+def get_extra_flags(category) -> list[str]:
     extra_flags = []
     if category.startswith("ZeInit"):
         extra_flags.append("--ze-init-tests")
@@ -25,13 +25,15 @@ def get_metric_streamer_allowed_states(category: str) -> list[str]:
         return ["supported", "unsupported"]
 
 
-def get_ivpu_bo_create_allowed_states(category: str, test_name: str) -> list[str]:
-    if category in ["CompilerInDriverWithProfiling",
-                    "CommandMemoryFill"] or\
-            (category  == "ImmediateCmdList" and test_name == "FillCopyUsingBarriers"):
-        ivpu_bo_create_allowed_states = ["supported"]
+def get_ivpu_bo_create_allowed_states(category: str, test_name: str)\
+        -> list[str]:
+    if category in ["CompilerInDriverWithProfiling", "CommandMemoryFill"] or\
+            (category == "ImmediateCmdList" and
+             test_name == "FillCopyUsingBarriers"):
+        return ["supported"]
     else:
         return ["supported", "unsupported"]
+
 
 # Known failures:
 # - Device.GetZesEngineGetActivity:
@@ -66,9 +68,11 @@ def main() -> int:
         if '.' in line:
             category, test_name = line.split('.', 1)
 
-            extra_flags = []
-            metric_streamer_allowed_states = get_metric_streamer_allowed_states(category)
-            ivpu_bo_create_allowed_states = get_ivpu_bo_create_allowed_states(category, test_name)
+            extra_flags = get_extra_flags(category)
+            metric_streamer_allowed_states = \
+                get_metric_streamer_allowed_states(category)
+            ivpu_bo_create_allowed_states = \
+                get_ivpu_bo_create_allowed_states(category, test_name)
             known_failure = is_known_failure(category, test_name)
 
             print_as_resource({
