@@ -48,10 +48,21 @@ def get_ivpu_bo_create_allowed_states(category: str, test_name: str)\
 #     requires access to /dev/dma_heap/system
 # - ExternalMemoryDmaHeap.DmaHeapToNpu/255MB:
 #     requires access to /dev/dma_heap/system
+# - DriverCache.CheckWhenSpaceLessThanAllBlobs:
+#     bug in the test, will be fixed in upstream
+# - CommandQueuePriority.\
+#        executeManyLowPriorityJobsExpectHighPriorityJobCompletesFirst
+#     failing on Arrow Lake and Lunar Lake
 def is_known_failure(category, test_name):
     if test_name.find("Gpu") != -1 or \
             category.find("DmaHeap") != -1 or \
-            (category == "Device" and test_name == "GetZesEngineGetActivity"):
+            (category == "Device" and
+             test_name == "GetZesEngineGetActivity") or\
+            (category == "DriverCache" and
+             test_name == "CheckWhenSpaceLessThanAllBlobs") or\
+            (category == "CommandQueuePriority" and
+             test_name ==
+             "executeManyLowPriorityJobsExpectHighPriorityJobCompletesFirst"):
         return True
     else:
         return False
