@@ -86,16 +86,16 @@ def main() -> int:
                 get_ivpu_bo_create_allowed_states(category, test_name)
             known_failure = is_known_failure(category, test_name)
 
-            print_as_resource({
-                "name": test_name,
-                "category": category,
-                "extra_flags": " ".join(extra_flags),
-                "metric_streamer_allowed_states":
-                    metric_streamer_allowed_states,
-                "ivpu_bo_create_allowed_states":
-                    ivpu_bo_create_allowed_states,
-                "known_failure": known_failure
-                })
+            if not known_failure:
+                print_as_resource({
+                    "name": test_name,
+                    "category": category,
+                    "extra_flags": " ".join(extra_flags),
+                    "metric_streamer_allowed_states":
+                        metric_streamer_allowed_states,
+                    "ivpu_bo_create_allowed_states":
+                        ivpu_bo_create_allowed_states
+                    })
 
 
 if __name__ == "__main__":
