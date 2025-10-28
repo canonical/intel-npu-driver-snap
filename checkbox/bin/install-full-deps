@@ -28,3 +28,23 @@ mkdir -p models/add_abc
 curl -s -o models/add_abc/add_abc.xml https://raw.githubusercontent.com/openvinotoolkit/openvino/master/src/core/tests/models/ir/add_abc.xml
 touch models/add_abc/add_abc.bin
 curl -s -o basic.yaml https://raw.githubusercontent.com/intel/linux-npu-driver/v1.16.0/validation/umd-test/configs/basic.yaml
+# Add the driver cache section with the same contents as the graph_execution section to the end of the config file
+awk 'graph_execution == 1 {
+	buffer = buffer $0 "\n"
+     }
+     /^\S/ && graph_execution == 1 {
+     	graph_execution=0
+     }
+     /^graph_execution:/ {
+     	graph_execution=1
+     }
+     {
+	print $0
+     }
+     END {
+     	if (buffer != "") {
+     		print "driver_cache:\n" buffer;
+	}
+     }' basic.yaml > basic.yaml.new
+
+mv basic.yaml.new basic.yaml
