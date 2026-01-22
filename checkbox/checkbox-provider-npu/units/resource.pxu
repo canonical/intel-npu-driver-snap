@@ -26,6 +26,8 @@ command:
     echo "name: lunar_lake"
   elif lspci -nn | grep "Arrow Lake NPU"; then
     echo "name: arrow_lake"
+  elif lspci -nn | grep "Panther Lake NPU"; then
+    echo "name: panther_lake"
   fi
 
 id: metric_streamer
