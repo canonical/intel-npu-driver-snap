@@ -50,6 +50,10 @@ hooks:
       - intel-npu-kmod
       - intel-npu-fw
 
+layout:
+  /usr/share/vpu:
+    bind: $SNAP/usr/share/vpu
+
 apps:
   npu-umd-test:
     command: usr/bin/npu-umd-test
@@ -93,6 +97,12 @@ parts:
     source: bin/
     organize:
       '*': usr/bin/
+
+  npu-umd-test-config:
+    plugin: dump
+    source: config/
+    organize:
+      '*': usr/share/vpu/
 
 lint:
   ignore:
