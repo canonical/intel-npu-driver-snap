@@ -14,18 +14,6 @@ snapcraft
 sudo snap install --dangerous --classic ./checkbox-npu_1.0.0_amd64.snap
 ```
 
-## Installing test dependencies
-
-```
-checkbox-npu.install-full-deps
-```
-
-Note this will NOT install the `intel-npu-driver` snap by default. This is by design as typically tests will be run on a modified version of the snap built and installed locally. To install the latest version from the `latest/beta` channel in the Snap Store use:
-
-```
-checkbox-npu.install-full-deps --install_from_store
-```
-
 ## Automated run
 
 ```

@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# Script to output known failing tests from intel-npu-driver.npu-umd-test
+# This centralizes test exclusion logic while also accounting for kernel version
+
+set -e
+
+# Get kernel version
+KERNEL_VERSION=$(uname -r | cut -f1-2 -d.)
+
+# Helper function to check if kernel version is older than specified version
+# Returns 0 (true) if kernel is older, 1 (false) if kernel is same or newer
+kernel_older_than() {
+  local min_version="$1"
+  local result=$(printf "${min_version}\n${KERNEL_VERSION}\n" | sort -V | head -n1)
+  [ "${result}" != "${min_version}" ]
+}
+
+# Test that fails due to lack of sysfs access for NPU activity monitoring (1 test)
+cat << 'EOF'
+Device.GetZesEngineGetActivity
+EOF
+
+# Tests that fail due to missing GPU support (2 tests)
+cat << 'EOF'
+ExternalMemoryZe.GpuZeFillToNpuZeCopy
+ExternalMemoryZe.NpuZeFillToGpuZeCopy
+EOF
+
+# Tests that always fail due to unknown reason (28 tests)
+# https://github.com/intel/linux-npu-driver/issues/122
+cat << 'EOF'
+ImportSystemMemory.MultipleImportSystemMemory
+ImportSystemMemory.AllocMemoryThenExecuteCopy/256B
+ImportSystemMemory.AllocMemoryThenExecuteCopy/3KB
+ImportSystemMemory.AllocMemoryThenExecuteCopy/64KB
+ImportSystemMemory.AllocMemoryThenExecuteCopy/4MB
+ImportSystemMemory.AllocMemoryThenExecuteCopy/32MB
+ImportSystemMemory.MmapAnonymousThenExecuteCopy/256B
+ImportSystemMemory.MmapAnonymousThenExecuteCopy/3KB
+ImportSystemMemory.MmapAnonymousThenExecuteCopy/64KB
+ImportSystemMemory.MmapAnonymousThenExecuteCopy/4MB
+ImportSystemMemory.MmapAnonymousThenExecuteCopy/32MB
+ImportSystemMemory.OpenFileMmapSharedThenExecuteCopy/256B
+ImportSystemMemory.OpenFileMmapSharedThenExecuteCopy/3KB
+ImportSystemMemory.OpenFileMmapSharedThenExecuteCopy/64KB
+ImportSystemMemory.OpenFileMmapSharedThenExecuteCopy/4MB
+ImportSystemMemory.OpenFileMmapSharedThenExecuteCopy/32MB
+ImportSystemMemory.OpenFileMmapPrivateFileThenExecuteCopy/256B
+ImportSystemMemory.OpenFileMmapPrivateFileThenExecuteCopy/3KB
+ImportSystemMemory.OpenFileMmapPrivateFileThenExecuteCopy/64KB
+ImportSystemMemory.OpenFileMmapPrivateFileThenExecuteCopy/4MB
+ImportSystemMemory.OpenFileMmapPrivateFileThenExecuteCopy/32MB
+ImportSystemMemory.OpenFileInReadOnlyThenExecuteCopy/256B
+ImportSystemMemory.OpenFileInReadOnlyThenExecuteCopy/3KB
+ImportSystemMemory.OpenFileInReadOnlyThenExecuteCopy/64KB
+ImportSystemMemory.OpenFileInReadOnlyThenExecuteCopy/4MB
+ImportSystemMemory.OpenFileInReadOnlyThenExecuteCopy/32MB
+CommandGraphImportSystemMemory.GetNativeBinaryThenImportItAndRunInference/add_abc
+CommandGraphImportSystemMemory.WriteNativeBinaryToFileThenImportItAndRunInference/add_abc
+EOF
+
+# Tests that fail due to lack of DMA heap access (3 tests)
+cat << 'EOF'
+ExternalMemoryDmaHeap.DmaHeapToNpu/2KB
+ExternalMemoryDmaHeap.DmaHeapToNpu/16MB
+ExternalMemoryDmaHeap.DmaHeapToNpu/255MB
+EOF
+
+# Kernel version specific failures
+
+# DRM_IOCTL_IVPU_BO_CREATE support requires kernel >= 6.6
+if kernel_older_than "6.6"; then
+  cat << 'EOF'
+ImmediateCmdList.FillCopyUsingBarriers
+CommandMemoryFill.FillMemoryWithPattern/0
+CommandMemoryFill.FillMemoryWithPattern/1
+CommandMemoryFill.FillMemoryWithPattern/2
+CompilerInDriverWithProfiling.CompileModelWithGraphProfilingFlag/add_abc
+EOF
+fi
+
+# Metric streamer feature requires kernel >= 6.9
+if kernel_older_than "6.9"; then
+  cat << 'EOF'
+ImmediateCmdList.MetricQuerryTest
+Metric.GetProperties
+MetricQueryPool.ActivateAndCreateMetricQueryPool
+MetricQueryPool.ActivateAndCreateMetricQuery
+MetricQuery.RunMetricQueryOnEmptyCommandList
+EOF
+fi
+
+# Test success requires kernel >= 6.17
+if kernel_older_than "6.17"; then
+  cat << 'EOF'
+CommandQueuePriority.executeManyLowPriorityJobsExpectHighPriorityJobCompletesFirst
+EOF
+fi

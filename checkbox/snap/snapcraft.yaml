@@ -21,8 +21,6 @@ base: core24
 # test-runner / test-runner-automated:
 #   - execute all provider tests inside the snap environment
 #     the test execution is standalone and does not depend on the remote-slave daemon
-# install-full-deps:
-#   - install all depedencies needed for provider jobs
 apps:
   checkbox-cli:
     command-chain: [bin/wrapper_local]
@@ -41,8 +39,6 @@ apps:
   test-runner-automated:
     command-chain: [bin/wrapper_local]
     command: bin/test-runner-automated
-  install-full-deps:
-    command: bin/install-full-deps
 
 parts:
   checkbox-provider-npu:

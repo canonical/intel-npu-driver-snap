@@ -59,6 +59,9 @@ apps:
     command: usr/bin/npu-umd-test
     plugs: [intel-npu-plug]
 
+  known-failures:
+    command: usr/bin/known-failures
+
   load-npu-firmware:
     command: usr/bin/load-npu-firmware
     daemon: simple
@@ -92,7 +95,7 @@ parts:
     stage-packages:
       - libtbb12
 
-  load-npu-firmware:
+  commands:
     plugin: dump
     source: bin/
     organize:

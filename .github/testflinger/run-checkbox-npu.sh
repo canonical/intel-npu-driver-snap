@@ -6,8 +6,6 @@ usermod -a -G render ubuntu
 chown root:render /dev/accel/accel0
 chmod g+rw /dev/accel/accel0
 
-checkbox-npu.install-full-deps
-
 echo
 echo "========= Checkbox NPU ========="
 echo "====== DEVICE KERNEL INFO ======"

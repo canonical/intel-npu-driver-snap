@@ -1,8 +1,8 @@
 # Intel NPU Driver Snap
 
-Snap recipe for the [Intel NPU user mode driver](https://github.com/intel/linux-npu-driver/). This snap is designed to be a content producer snap providing NPU (neural processing unit) firmware, char device node access, and user-space libraries (including the user mode driver and NPU compiler) for consumption by application snaps. It exposes slots for content consumer snaps to connect with, provides firmware binary blobs for the NPU device, and distributes an app for validating the user space driver (`npu-umd-test`).
-
 [![Get it from the Snap Store](https://snapcraft.io/en/light/install.svg)](https://snapcraft.io/intel-npu-driver)
+
+Snap recipe for the [Intel NPU user mode driver](https://github.com/intel/linux-npu-driver/). This snap is designed to be a content producer snap providing NPU (neural processing unit) firmware, char device node access, and user-space libraries (including the user mode driver and NPU compiler) for consumption by application snaps. It exposes slots for content consumer snaps to connect with, provides firmware binary blobs for the NPU device, and distributes an app for validating the user space driver (`npu-umd-test`).
 
 ## Host OS Support
 
@@ -15,26 +15,7 @@ We have validated the snap using the [`npu-umd-test` user mode driver validation
 - [Intel Core Ultra 7 155H](https://www.intel.com/content/www/us/en/products/sku/236847/intel-core-ultra-7-processor-155h-24m-cache-up-to-4-80-ghz/specifications.html) (codename: Meteor Lake)
 - [Intel Core Ultra 7 268V](https://www.intel.com/content/www/us/en/products/sku/240958/intel-core-ultra-7-processor-268v-12m-cache-up-to-5-00-ghz/specifications.html) (codename: Lunar Lake)
 - [Intel Core Ultra 7 265H](https://www.intel.com/content/www/us/en/products/sku/241750/intel-core-ultra-7-processor-265h-24m-cache-up-to-5-30-ghz/specifications.html) (codename: Arrow Lake)
-
-| Host OS | Kernel Version | NPU Kernel Driver Support | Test Results |
-| ----- | :--: | :----------------: | :------------: |
-| 22.04 | 5.15 | :x:                | N/A            |
-| 24.04 | 6.8  | :white_check_mark: | 194/209 passed |
-| 24.10 | 6.11 | :white_check_mark: | 200/209 passed |
-| 25.04 | 6.14 | :white_check_mark: | 200/209 passed |
-
-Skipped tests on kernel 6.8 and lower only:
-
-- Metric streamer feature missing from `intel_vpu` kernel module (6 tests)
-
-Skipped tests common across all host OS and kernel versions:
-
-- GPU driver not present (2 tests)
-- DMA capabilities require access to `/dev/dma_heap/system` (3 tests)
-- Device GetZesEngineGetActivity test requires access to a file in `/sys/devices` for monitoring NPU utilization - this feature is considered non-critical (1 test)
-- Command graph long under investigation (1 tests)
-- Command queue priority under investigation (1 test)
-- Model cache awaiting instructions from upstream developers (1 test)
+- Early access Panther Lake starting on version 1.28.0
 
 ### Known issues
 
@@ -170,3 +151,5 @@ Finally run the application:
 ```
 intel-npu-driver.npu-umd-test --config=basic.yaml
 ```
+
+Starting in version 1.28.0 of the snap, there is a `basic.yaml` built into the snap that will automatically load when running the command above unless you have created your own version inside of the $HOME/snap/intel-npu-driver/current as described above. When using the built-in version of `basic.yaml`, `intel-npu-driver.npu-umd-test` may be run from any arbitrary directory.
