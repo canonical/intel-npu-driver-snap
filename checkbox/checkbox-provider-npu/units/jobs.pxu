@@ -103,7 +103,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: Umd
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=Umd.* --config=basic.yaml
 
 id: umd/Command
@@ -114,7 +113,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: Command
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=Command.* --config=basic.yaml
 
 id: umd/CommandTimestamp
@@ -125,7 +123,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: CommandTimestamp
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CommandTimestamp.* --config=basic.yaml
 
 id: umd/CommandCopy
@@ -136,7 +133,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: CommandCopy
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CommandCopy.* --config=basic.yaml
 
 id: umd/CommandBarrier
@@ -147,7 +143,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: CommandBarrier
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CommandBarrier.* --config=basic.yaml
 
 id: umd/CommandStress
@@ -158,7 +153,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: CommandStress
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CommandStress.* --config=basic.yaml
 
 id: umd/Context
@@ -169,7 +163,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: Context
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=Context.* --config=basic.yaml
 
 # Filter out known failure Device.GetZesEngineGetActivity
@@ -181,7 +174,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: Device
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=Device.GetProp*:Device.GetGlobal*:Device.GetZesDevice*:Device.Verify* --config=basic.yaml
 
 id: umd/Driver
@@ -192,7 +184,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: Driver
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=Driver.* --config=basic.yaml
 
 id: umd/DriverCache
@@ -203,9 +194,7 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: DriverCache
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
-  sed 's|graph_execution|driver_cache|' basic.yaml > driver_cache.yaml
-  intel-npu-driver.npu-umd-test -S --gtest_filter=DriverCache.* --config=driver_cache.yaml
+  intel-npu-driver.npu-umd-test -S --gtest_filter=DriverCache.* --config=basic.yaml
 
 id: umd/CompilationLog
 category_id: npu
@@ -215,7 +204,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: CompilationLog
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CompilationLog.* --config=basic.yaml
 
 id: umd/Event
@@ -226,7 +214,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: Event
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=Event.* --config=basic.yaml
 
 id: umd/EventSync
@@ -237,7 +224,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: EventSync
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=EventSync.* --config=basic.yaml
 
 id: umd/EventPool
@@ -248,7 +234,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: EventPool
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=EventPool.* --config=basic.yaml
 
 id: umd/ExternalMemory
@@ -259,7 +244,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: ExternalMemory
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=ExternalMemory.* --config=basic.yaml
 
 # Not running ExternalMemoryZe.* (which would usually run next when
@@ -273,7 +257,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: Fence
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=Fence.* --config=basic.yaml
 
 id: umd/FenceSync
@@ -284,7 +267,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: Fence Sync
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=FenceSync.* --config=basic.yaml
 
 id: umd/GraphApiBase
@@ -295,7 +277,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: GraphApiBase
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=GraphApiBase.* --config=basic.yaml
 
 id: umd/GraphApi
@@ -306,7 +287,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: GraphApi
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=GraphApi.* --config=basic.yaml
 
 id: umd/ImmediateCmdList
@@ -317,7 +297,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: ImmediateCmdList
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=ImmediateCmdList.Create*:ImmediateCmdList.Get* --config=basic.yaml
 
 id: umd/ImmediateCmdList.FillCopyUsingBarriers
@@ -330,7 +309,6 @@ requires:
 _summary: ImmediateCmdList.FillCopyUsingBarriers
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=ImmediateCmdList.FillCopyUsingBarriers --config=basic.yaml
 
 # Not running ImportSystemMemory.* (which would usually run next when
@@ -346,7 +324,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: ZeInitDrivers.FailWithoutInit
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -I zeInitDrivers.FailWithoutInit
 
 # note, the ZeInitDrivers tests must be run in serial
@@ -358,7 +335,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: ZeInitDrivers.InitializeAndExecuteCopyCommand
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -I zeInitDrivers.InitializeAndExecuteCopyCommand
 
 id: umd/InOrderExecution
@@ -369,7 +345,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: InOrderExecution
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=InOrderExecution.* --config=basic.yaml
 
 id: umd/MemoryAllocation
@@ -380,7 +355,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: MemoryAllocation
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=MemoryAllocation.* --config=basic.yaml
 
 id: umd/MemoryExecution
@@ -391,7 +365,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: MemoryExecution
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=MemoryExecution.* --config=basic.yaml
 
 id: umd/MemoryAllocationThreaded
@@ -402,7 +375,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: MemoryAllocationThreaded
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=MemoryAllocationThreaded.* --config=basic.yaml
 
 # filter out known failure CommandQueuePriority.executeManyLowPriorityJobsExpectHighPriorityJobCompletesFirst
@@ -414,7 +386,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: CommandQueuePriority
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CommandQueuePriority.create*:CommandQueuePriority.executeCopy* --config=basic.yaml
 
 id: umd/CommandMemoryFill
@@ -427,7 +398,6 @@ requires:
 _summary: CommandMemoryFill
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CommandMemoryFill.* --config=basic.yaml
 
 id: umd/MultiContext
@@ -438,7 +408,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: MultiContext
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=MultiContext.* --config=basic.yaml
 
 id: umd/MultiContextGraph
@@ -449,7 +418,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: MultiContextGraph
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=MultiContextGraph.* --config=basic.yaml
 
 id: umd/CommandCopyPerf
@@ -460,7 +428,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: CommandCopyPerf
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CommandCopyPerf.* --config=basic.yaml
 
 id: umd/SystemToSystem/CommandCopyFlag
@@ -471,7 +438,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: SystemToSystem/CommandCopyFlag
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=SystemToSystem/CommandCopyFlag.* --config=basic.yaml
 
 # Skipping three ExternalMemoryDmaHeap.* tests due to needing access
@@ -485,7 +451,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: CompilerInDriverLong
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CompilerInDriverLong.* --config=basic.yaml
 
 id: umd/CompilerInDriverWithProfiling
@@ -498,7 +463,6 @@ requires:
 _summary: CompilerInDriverWithProfiling
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CompilerInDriverWithProfiling.* --config=basic.yaml
 
 id: umd/CommandGraphLong
@@ -509,7 +473,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: CommandGraphLong
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CommandGraphLong.* --config=basic.yaml
 
 id: umd/CommandGraphLongThreaded
@@ -520,7 +483,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: CommandGraphLongThreaded
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=CommandGraphLongThreaded.* --config=basic.yaml
 
 id: umd/GraphInference
@@ -531,7 +493,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: GraphInference
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=GraphInference.* --config=basic.yaml
 
 id: umd/GraphQueryNetwork
@@ -542,7 +503,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: GraphQueryNetwork
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=GraphQueryNetwork.* --config=basic.yaml
 
 # Not running CommandGraphImportSystemMemory.* (which would usually run next when
@@ -557,7 +517,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: InferencePerformance
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=InferencePerformance.* --config=basic.yaml
 
 # note, the ZeInit tests must be run in serial
@@ -569,7 +528,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: ZeInit.CallzeInitThenzeInitDriversThenExecuteCopyCommand/0
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -I zeInit.CallzeInitThenzeInitDriversThenExecuteCopyCommand/0
 
 # note, the ZeInit tests must be run in serial
@@ -581,7 +539,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: ZeInit.CallzeInitThenzeInitDriversThenExecuteCopyCommand/1
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -I zeInit.CallzeInitThenzeInitDriversThenExecuteCopyCommand/1
 
 # note, the ZeInit tests must be run in serial
@@ -593,7 +550,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: ZeInit.CallzeInitThenExecuteCopyCommand/0
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -I zeInit.CallzeInitThenExecuteCopyCommand/0
 
 # note, the ZeInit tests must be run in serial
@@ -605,7 +561,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: ZeInit.CallzeInitThenExecuteCopyCommand/1
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -I zeInit.CallzeInitThenExecuteCopyCommand/1
 
 id: umd/InOrderInference
@@ -616,7 +571,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: InOrderInference
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=InOrderInference.* --config=basic.yaml
 
 id: umd/MemoryCopyExecution
@@ -627,7 +581,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: MemoryCopyExecution
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=MemoryCopyExecution.* --config=basic.yaml
 
 id: umd/MultiMemoryExecution
@@ -638,7 +591,6 @@ requires: executable.name == 'intel-npu-driver.npu-umd-test'
 _summary: MultiMemoryExecution
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=MultiMemoryExecution.* --config=basic.yaml
 
 id: umd/Metric
@@ -651,7 +603,6 @@ requires:
 _summary: Metric
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=Metric.* --config=basic.yaml
 
 id: umd/MetricQueryPool
@@ -664,7 +615,6 @@ requires:
 _summary: MetricQueryPool
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=MetricQueryPool.* --config=basic.yaml
 
 id: umd/MetricQuery
@@ -677,7 +627,6 @@ requires:
 _summary: MetricQuery
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=MetricQuery.* --config=basic.yaml
 
 id: umd/ImmediateCmdList.MetricQuerryTest
@@ -690,5 +639,4 @@ requires:
 _summary: ImmediateCmdLIst.MetricQuerryTest
 estimated_duration: 2s
 command:
-  cd $HOME/snap/intel-npu-driver/current
   intel-npu-driver.npu-umd-test -S --gtest_filter=ImmediateCmdList.MetricQuerryTest --config=basic.yaml
