@@ -11,7 +11,7 @@
 # the License.
 
 log_level: ERROR # supported levels:QUIET ERROR, WARNING, INFO, VERBOSE
-model_dir: models/
+model_dir: /usr/share/vpu/models/
 
 driver_cache:
   # add_abc.xml can be copied from OpenVINO repository:
