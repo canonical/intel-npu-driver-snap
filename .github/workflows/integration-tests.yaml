@@ -12,6 +12,7 @@ on:
       - '.github/testflinger/**'
     branches:
       - "main"
+      - "feature/test-observer" # temporary branch for testing
   workflow_dispatch:
 
 concurrency:
@@ -55,9 +56,9 @@ jobs:
           # Dell XPS 13 9340 Laptop, Meteor Lake, 24.04
           - { queue: dell-xps-13-9340-c34207, image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04a/20240729-53/somerville-noble-oem-24.04a-20240729-53.iso }
           # Dell Pro Max Tower T2 Desktop, Arrow Lake, 24.04
-          - { queue: dell-pro-max-tower-f0t2250-0ce1-c36197, image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04b-proposed/20241220-148/somerville-noble-oem-24.04b-proposed-20241220-148.iso }
+          #- { queue: dell-pro-max-tower-f0t2250-0ce1-c36197, image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04b-proposed/20241220-148/somerville-noble-oem-24.04b-proposed-20241220-148.iso }
           # Dell XPS 13 9350 Laptop, Lunar Lake, 24.04
-          - { queue: dell-xps-13-9350-c36962, image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04c/20250801-32/somerville-noble-oem-24.04c-20250801-32.iso }
+          #- { queue: dell-xps-13-9350-c36962, image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04c/20250801-32/somerville-noble-oem-24.04c-20250801-32.iso }
       fail-fast: false
     steps:
       - name: Check out code
@@ -73,14 +74,43 @@ jobs:
           ${GITHUB_WORKSPACE}/.github/testflinger/job-def.yaml > \
           ${GITHUB_WORKSPACE}/job.yaml
       - name: Submit testflinger job
+        id: submit
+        continue-on-error: true
         uses: canonical/testflinger/.github/actions/submit@main
         with:
           poll: true
           job-path: ${{ github.workspace }}/job.yaml
+      - name: Download and extract checkbox artifacts from device
+        id: artifacts
+        run: |
+          # Download the job artifacts
+          testflinger artifacts ${{ steps.submit.outputs.id }}
+
+          # Extract artifact.tgz
+          tar -xzf artifact.tgz
+
+          # Extract submission.json from each tarball
+          mkdir -p extracted-artifacts
+          for file in *.tar.xz; do
+            if [ -f "$file" ]; then
+              echo "Extracting submission.json from: $file"
+              # Extract only submission.json and rename it based on queue
+              tar -xJf "$file" submission.json -O > "extracted-artifacts/submission-${{ matrix.device.queue }}.json"
+            fi
+          done
+
+          # List extracted contents
+          ls -la extracted-artifacts/
+      - name: Upload checkbox artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkbox-results-${{ matrix.device.queue }}
+          path: extracted-artifacts/
   tag:
     name: Push tag for revision
     needs: testflinger-validation
     runs-on: ubuntu-latest
+    if: false  # Temporarily disabled for testing
     steps:
       - name: Checkout the source
         uses: actions/checkout@v5

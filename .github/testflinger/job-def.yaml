@@ -55,6 +55,8 @@ test_data:
     # Run 2: upgraded debs and kernel, following a reboot
     #
     _run sudo bash run-checkbox-npu.sh
+    mkdir -p artifacts
+    _get '/home/ubuntu/.local/share/checkbox-ng/*.tar.xz' artifacts/
 
     _run sudo apt update
     _run sudo apt -y upgrade
@@ -62,3 +64,4 @@ test_data:
     wait_for_ssh --allow-degraded
 
     _run sudo bash run-checkbox-npu.sh
+    _get '/home/ubuntu/.local/share/checkbox-ng/*.tar.xz' artifacts/
