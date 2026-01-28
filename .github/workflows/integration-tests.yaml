@@ -78,19 +78,17 @@ jobs:
           ${GITHUB_WORKSPACE}/job.yaml
       - name: Submit testflinger job
         id: submit
-        if: false  # Temporarily disabled for testing
         continue-on-error: true
         uses: canonical/testflinger/.github/actions/submit@main
         with:
           poll: true
           job-path: ${{ github.workspace }}/job.yaml
+          dry-run: true
       - name: Download checkbox artifacts
         id: artifacts
         run: |
           # Download the job artifacts
           #testflinger artifacts ${{ steps.submit.outputs.id }}
-          sudo snap install testflinger-cli # temporary
-          sudo snap install jq # temporary
           testflinger artifacts 1df9f2a3-5e7a-44eb-81e9-16943d6ae8ab # Temporary hardcoded job ID for testing
 
           # Extract artifact.tgz
