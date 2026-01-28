@@ -90,17 +90,29 @@ jobs:
           tar -xzf artifacts.tgz
 
           # Extract submission.json from each tarball
-          mkdir -p extracted-artifacts
+          queue="${{ matrix.device.queue }}"
+          mkdir -p "extracted-artifacts/$queue"
+          i=0
           for file in artifacts/*.tar.xz; do
             if [ -f "$file" ]; then
               echo "Extracting submission.json from: $file"
-              # Extract only submission.json and rename it based on queue
-              tar -xJf "$file" submission.json -O > "extracted-artifacts/submission-${{ matrix.device.queue }}.json"
+              run_dir="extracted-artifacts/$queue/run-$i"
+              mkdir -p "$run_dir"
+
+              # Extract only submission.json
+              tar -xJf "$file" submission.json -O > "$run_dir/submission.json"
+
+              # Extract kernel version and save to kernel.txt
+              jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Kernel")) | .value] | first' "$run_dir/submission.json" > "$run_dir/kernel.txt" || echo "unknown" > "$run_dir/kernel.txt"
+
+              i=$((i + 1))
             fi
           done
 
-          # List extracted contents
-          ls -la extracted-artifacts/
+          # Show extracted structure and kernel versions
+          find extracted-artifacts -type f -printf "%10s %p\n"
+          echo "=== Kernel versions ==="
+          find extracted-artifacts -name "kernel.txt" -exec sh -c 'echo "{}:"; cat "{}"' \;
       - name: Upload checkbox artifacts
         uses: actions/upload-artifact@v4
         with:
