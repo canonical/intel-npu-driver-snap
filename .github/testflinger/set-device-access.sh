@@ -14,5 +14,3 @@ uname -a
 echo
 echo "================================"
 echo
-
-checkbox-npu.test-runner-automated
