@@ -142,9 +142,15 @@ jobs:
             "execution_stage": "edge"
           }
           EOF
+      - name: Checkout private action repo
+        uses: actions/checkout@v5
+        with:
+          repository: canonical/oemqa-testing-ci
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: .github/actions/oemqa-testing-ci
       - name: Upload first test results to test observer
         if: steps.artifacts.outputs.tarball0 != ''
-        uses: canonical/oemqa-testing-ci/.github/actions/test-observer-uploader@main
+        uses: ./.github/actions/oemqa-testing-ci/.github/actions/test-observer-uploader
         with:
           start_test_api_payload: start_payload.json
           ci_link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
