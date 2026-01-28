@@ -8,8 +8,8 @@ test_data:
       agent: "checkbox-npu.snap"
     - local: ".github/testflinger/check-npu-fw.sh"
       agent: "check-npu-fw.sh"
-    - local: ".github/testflinger/run-checkbox-npu.sh"
-      agent: "run-checkbox-npu.sh"
+    - local: ".github/testflinger/set-device-access.sh"
+      agent: "set-device-access.sh"
   test_cmds: |
 
     set -x
@@ -47,14 +47,15 @@ test_data:
     _put attachments/test/checkbox-npu.snap :/home/ubuntu/checkbox-npu.snap
     _run sudo snap install --dangerous --classic /home/ubuntu/checkbox-npu.snap
 
-    _put attachments/test/run-checkbox-npu.sh :/home/ubuntu/run-checkbox-npu.sh
+    _put attachments/test/set-device-access.sh :/home/ubuntu/set-device-access.sh
 
     # Run the validation twice:
     #
     # Run 1: original debs and kernel from the certified image
     # Run 2: upgraded debs and kernel, following a reboot
     #
-    _run sudo bash run-checkbox-npu.sh
+    _run sudo bash set-device-access.sh
+    _run checkbox-npu.test-runner-automated
     mkdir -p artifacts
     _get '/home/ubuntu/.local/share/checkbox-ng/*.tar.xz' artifacts/
 
@@ -63,5 +64,6 @@ test_data:
     _run sudo reboot
     wait_for_ssh --allow-degraded
 
-    _run sudo bash run-checkbox-npu.sh
+    _run sudo bash set-device-access.sh
+    _run checkbox-npu.test-runner-automated
     _get '/home/ubuntu/.local/share/checkbox-ng/*.tar.xz' artifacts/
