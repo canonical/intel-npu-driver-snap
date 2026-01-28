@@ -91,7 +91,7 @@ jobs:
 
           # Extract submission.json from each tarball
           mkdir -p extracted-artifacts
-          for file in *.tar.xz; do
+          for file in artifacts/*.tar.xz; do
             if [ -f "$file" ]; then
               echo "Extracting submission.json from: $file"
               # Extract only submission.json and rename it based on queue
