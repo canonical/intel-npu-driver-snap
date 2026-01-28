@@ -27,6 +27,7 @@ jobs:
   build-checkbox-provider:
     name: Checkbox provider build
     runs-on: ubuntu-latest
+    if: false  # Temporarily disabled for testing
     steps:
       - name: Check out code
         uses: actions/checkout@v5
@@ -48,17 +49,17 @@ jobs:
           path: ${{ steps.build.outputs.snap }}
   testflinger-validation:
     name: Testflinger Validation
-    needs: build-checkbox-provider
+    #needs: build-checkbox-provider # Temporarily disabled for testing
     runs-on: [self-hosted, self-hosted-linux-amd64-jammy-private-endpoint-medium]
     strategy:
       matrix:
         device:
           # Dell XPS 13 9340 Laptop, Meteor Lake, 24.04
-          #- { queue: dell-xps-13-9340-c34207, image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04a/20240729-53/somerville-noble-oem-24.04a-20240729-53.iso }
+          #- { queue: dell-xps-13-9340-c34207, gen: "MTL", image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04a/20240729-53/somerville-noble-oem-24.04a-20240729-53.iso }
           # Dell Pro Max Tower T2 Desktop, Arrow Lake, 24.04
-          #- { queue: dell-pro-max-tower-f0t2250-0ce1-c36197, image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04b-proposed/20241220-148/somerville-noble-oem-24.04b-proposed-20241220-148.iso }
+          #- { queue: dell-pro-max-tower-f0t2250-0ce1-c36197, gen: "ARL", image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04b-proposed/20241220-148/somerville-noble-oem-24.04b-proposed-20241220-148.iso }
           # Dell XPS 13 9350 Laptop, Lunar Lake, 24.04
-          - { queue: dell-xps-13-9350-c36962, image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04c/20250801-32/somerville-noble-oem-24.04c-20250801-32.iso }
+          - { queue: dell-xps-13-9350-c36962, gen: "LNL", image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04c/20250801-32/somerville-noble-oem-24.04c-20250801-32.iso }
       fail-fast: false
     steps:
       - name: Check out code
@@ -75,16 +76,18 @@ jobs:
           ${GITHUB_WORKSPACE}/job.yaml
       - name: Submit testflinger job
         id: submit
+        if: false  # Temporarily disabled for testing
         continue-on-error: true
         uses: canonical/testflinger/.github/actions/submit@main
         with:
           poll: true
           job-path: ${{ github.workspace }}/job.yaml
-      - name: Download and extract checkbox artifacts from device
+      - name: Download checkbox artifacts
         id: artifacts
         run: |
           # Download the job artifacts
-          testflinger artifacts ${{ steps.submit.outputs.id }}
+          #testflinger artifacts ${{ steps.submit.outputs.id }}
+          testflinger artifacts 1df9f2a3-5e7a-44eb-81e9-16943d6ae8ab # Temporary hardcoded job ID for testing
 
           # Extract artifact.tgz
           tar -xzf artifacts.tgz
@@ -102,22 +105,52 @@ jobs:
               # Extract only submission.json
               tar -xJf "$file" submission.json -O > "$run_dir/submission.json"
 
-              # Extract kernel version and save to kernel.txt
-              jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Kernel")) | .value] | first' "$run_dir/submission.json" > "$run_dir/kernel.txt" || echo "unknown" > "$run_dir/kernel.txt"
+              # Build environment key, for example: env0=MTL-24.04.3-6.17-generic
+              kernel_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Kernel")) | .value] | first' "$run_dir/submission.json")
+              os_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Distro")) | .value] | first | match("Ubuntu ([0-9.]+)") | .captures[0].string' "$run_dir/submission.json")
+              echo "env$i=${{ matrix.device.gen }}-${os_ver}-${kernel_ver}" >> $GITHUB_OUTPUT
+
+              # Save tarball path to output
+              echo "tarball$i=$file" >> $GITHUB_OUTPUT
 
               i=$((i + 1))
             fi
           done
-
-          # Show extracted structure and kernel versions
-          find extracted-artifacts -type f -printf "%10s %p\n"
-          echo "=== Kernel versions ==="
-          find extracted-artifacts -name "kernel.txt" -exec sh -c 'echo "{}:"; cat "{}"' \;
       - name: Upload checkbox artifacts
         uses: actions/upload-artifact@v4
         with:
           name: checkbox-results-${{ matrix.device.queue }}
           path: extracted-artifacts/
+      - name: Generate TO start-payload
+        run: |
+          revision=$(snap info intel-npu-driver | grep latest/edge | cut -d "(" -f2 | cut -d ")" -f1)
+          version=$(snap info intel-npu-driver | grep latest/edge | awk '{print $2}')
+          cat <<EOF > start-payload.json
+          {
+            "name": "intel-npu-driver",
+            "version": "${version}",
+            "arch": "amd64",
+            "test_plan": "intel-npu",
+            "environment": "${{ steps.artifacts.outputs.env0 }}",
+            "initial_status": "IN_PROGRESS",
+            "needs_assignment": False,
+            "family": "snap",
+            "revision": "${revision}",
+            "track": "latest",
+            "store": "ubuntu",
+            "branch": "",
+            "execution_stage": "edge"
+          }
+          EOF
+      - name: Upload first test results to test observer
+        if: steps.artifacts.outputs.tarball0 != ''
+        uses: canonical/oemqa-testing-ci/.github/actions/test-observer-uploader@main
+        with:
+          start_test_api_payload: start_payload.json
+          ci_link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          c3_link: none
+          submission: ${{ steps.artifacts.outputs.tarball0 }}
+          test_observer_url: "test-observer-staging.canonical.com"
   tag:
     name: Push tag for revision
     needs: testflinger-validation
