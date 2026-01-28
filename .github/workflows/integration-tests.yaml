@@ -65,9 +65,11 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v5
       - uses: actions/download-artifact@v5
+        if: false  # Temporarily disabled for testing
         with:
           name: ${{ env.SNAP_ARTIFACT_NAME }}
       - name: Build job file from template with oemscript provisioning
+        if: false  # Temporarily disabled for testing
         run: |
           sed -e "s|REPLACE_QUEUE|${{ matrix.device.queue }}|" \
           -e "s|REPLACE_IMAGE_URL|${{ matrix.device.image }}|" \
