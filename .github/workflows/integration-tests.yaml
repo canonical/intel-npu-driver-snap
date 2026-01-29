@@ -87,6 +87,13 @@ jobs:
           testflinger artifacts ${{ steps.submit.outputs.id }}
           tar -xzf artifacts.tgz
 
+          # Check if any .tar.xz files exist
+          if ! ls artifacts/*.tar.xz 1> /dev/null 2>&1; then
+            echo "Error: No .tar.xz files found in artifacts/"
+            ls -la artifacts/
+            exit 1
+          fi
+
           # Extract submission.json from each tarball.
           #
           # This is necessary because the intel-npu test plan is run twice:
