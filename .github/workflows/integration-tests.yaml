@@ -159,7 +159,7 @@ jobs:
           ci_link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           c3_link: none
           submission: ${{ steps.artifacts.outputs.tarball0 }}
-          test_observer_url: "test-observer-staging.canonical.com"
+          test_observer_url: "https://test-observer-api-staging.canonical.com"
   tag:
     name: Push tag for revision
     needs: testflinger-validation
