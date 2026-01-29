@@ -143,6 +143,8 @@ jobs:
             "execution_stage": "edge"
           }
           EOF
+          cat start-payload.json
+          readlink -f start-payload.json
       - name: Checkout private action repo
         uses: actions/checkout@v5
         with:
@@ -153,7 +155,7 @@ jobs:
         if: steps.artifacts.outputs.tarball0 != ''
         uses: ./.github/actions/oemqa-testing-ci/.github/actions/test-observer-uploader
         with:
-          start_test_api_payload: start_payload.json
+          start_test_api_payload: start-payload.json
           ci_link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           c3_link: none
           submission: ${{ steps.artifacts.outputs.tarball0 }}
