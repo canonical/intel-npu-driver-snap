@@ -122,11 +122,17 @@ jobs:
         with:
           name: checkbox-results-${{ matrix.device.queue }}
           path: extracted-artifacts/
+      - name: Checkout private oemqa-testing-ci repo
+        uses: actions/checkout@v5
+        with:
+          repository: canonical/oemqa-testing-ci
+          token: ${{ secrets.PE_BOT_PAT }}
+          path: .github/actions/oemqa-testing-ci
       - name: Generate TO start-payload
         run: |
           revision=$(snap info intel-npu-driver | grep latest/edge | cut -d "(" -f2 | cut -d ")" -f1)
           version=$(snap info intel-npu-driver | grep latest/edge | awk '{print $2}')
-          cat <<EOF > start-payload.json
+          cat <<EOF > start-payload-0.json
           {
             "name": "intel-npu-driver",
             "version": "${version}",
@@ -143,22 +149,24 @@ jobs:
             "execution_stage": "edge"
           }
           EOF
-          cat start-payload.json
-          readlink -f start-payload.json
-      - name: Checkout private action repo
-        uses: actions/checkout@v5
-        with:
-          repository: canonical/oemqa-testing-ci
-          token: ${{ secrets.PE_BOT_PAT }}
-          path: .github/actions/oemqa-testing-ci
+          jq '.environment = "${{ steps.artifacts.outputs.env1 }}"' start-payload-0.json > start-payload-1.json
       - name: Upload first test results to test observer
         if: steps.artifacts.outputs.tarball0 != ''
         uses: ./.github/actions/oemqa-testing-ci/.github/actions/test-observer-uploader
         with:
-          start_test_api_payload: start-payload.json
+          start_test_api_payload: start-payload-0.json
           ci_link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           c3_link: none
           submission: ${{ steps.artifacts.outputs.tarball0 }}
+          test_observer_url: "https://test-observer-api-staging.canonical.com"
+      - name: Upload second test results to test observer
+        if: steps.artifacts.outputs.tarball1 != ''
+        uses: ./.github/actions/oemqa-testing-ci/.github/actions/test-observer-uploader
+        with:
+          start_test_api_payload: start-payload-1.json
+          ci_link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          c3_link: none
+          submission: ${{ steps.artifacts.outputs.tarball1 }}
           test_observer_url: "https://test-observer-api-staging.canonical.com"
   tag:
     name: Push tag for revision
