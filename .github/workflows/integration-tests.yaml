@@ -27,7 +27,6 @@ jobs:
   build-checkbox-provider:
     name: Checkbox provider build
     runs-on: ubuntu-latest
-    if: false  # Temporarily disabled for testing
     steps:
       - name: Check out code
         uses: actions/checkout@v5
@@ -49,15 +48,15 @@ jobs:
           path: ${{ steps.build.outputs.snap }}
   testflinger-validation:
     name: Testflinger Validation
-    #needs: build-checkbox-provider # Temporarily disabled for testing
+    needs: build-checkbox-provider
     runs-on: [self-hosted, self-hosted-linux-amd64-jammy-private-endpoint-medium]
     strategy:
       matrix:
         device:
           # Dell XPS 13 9340 Laptop, Meteor Lake, 24.04
-          #- { queue: dell-xps-13-9340-c34207, gen: "MTL", image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04a/20240729-53/somerville-noble-oem-24.04a-20240729-53.iso }
+          - { queue: dell-xps-13-9340-c34207, gen: "MTL", image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04a/20240729-53/somerville-noble-oem-24.04a-20240729-53.iso }
           # Dell Pro Max Tower T2 Desktop, Arrow Lake, 24.04
-          #- { queue: dell-pro-max-tower-f0t2250-0ce1-c36197, gen: "ARL", image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04b-proposed/20241220-148/somerville-noble-oem-24.04b-proposed-20241220-148.iso }
+          - { queue: dell-pro-max-tower-f0t2250-0ce1-c36197, gen: "ARL", image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04b-proposed/20241220-148/somerville-noble-oem-24.04b-proposed-20241220-148.iso }
           # Dell XPS 13 9350 Laptop, Lunar Lake, 24.04
           - { queue: dell-xps-13-9350-c36962, gen: "LNL", image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04c/20250801-32/somerville-noble-oem-24.04c-20250801-32.iso }
       fail-fast: false
@@ -65,7 +64,6 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v5
       - uses: actions/download-artifact@v5
-        if: false  # Temporarily disabled for testing
         with:
           name: ${{ env.SNAP_ARTIFACT_NAME }}
       - name: Build job file from template with oemscript provisioning
@@ -82,18 +80,23 @@ jobs:
         with:
           poll: true
           job-path: ${{ github.workspace }}/job.yaml
-          dry-run: true
       - name: Download checkbox artifacts
         id: artifacts
         run: |
           # Download the job artifacts
-          #testflinger artifacts ${{ steps.submit.outputs.id }}
-          testflinger artifacts 1df9f2a3-5e7a-44eb-81e9-16943d6ae8ab # Temporary hardcoded job ID for testing
-
-          # Extract artifact.tgz
+          testflinger artifacts ${{ steps.submit.outputs.id }}
           tar -xzf artifacts.tgz
 
-          # Extract submission.json from each tarball
+          # Extract submission.json from each tarball.
+          #
+          # This is necessary because the intel-npu test plan is run twice:
+          # - Once on the original OEM image
+          # - Once after upgrading all apt packages and rebooting
+          #
+          # The test observer uploader action cannot account for multiple
+          # submissions in a single run, so we need to extract them here and
+          # upload them separately.
+          #
           queue="${{ matrix.device.queue }}"
           mkdir -p "extracted-artifacts/$queue"
           i=0
@@ -126,6 +129,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: canonical/oemqa-testing-ci
+          ref: 70ab30670c45da648f872f379d4d392616574f65
           token: ${{ secrets.PE_BOT_PAT }}
           path: .github/actions/oemqa-testing-ci
       - name: Generate TO start-payload
