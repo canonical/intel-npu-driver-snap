@@ -44,7 +44,7 @@ sudo snap install intel-npu-driver
 Build the snap:
 
 ```
-snapcraft
+snapcraft pack
 ```
 
 ```
@@ -153,3 +153,11 @@ intel-npu-driver.npu-umd-test --config=basic.yaml
 ```
 
 Starting in version 1.28.0 of the snap, there is a `basic.yaml` built into the snap that will automatically load when running the command above unless you have created your own version inside of the $HOME/snap/intel-npu-driver/current as described above. When using the built-in version of `basic.yaml`, `intel-npu-driver.npu-umd-test` may be run from any arbitrary directory.
+
+Note that there are some known test failures that may be viewed by running the following command:
+
+```
+intel-npu-driver.known-failures
+```
+
+This command accounts for tests that fail due to missing features in older kernel versions, so the output depends on the kernel version running on your host.
