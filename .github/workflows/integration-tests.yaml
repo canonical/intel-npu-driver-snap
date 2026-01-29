@@ -134,7 +134,7 @@ jobs:
             "test_plan": "intel-npu",
             "environment": "${{ steps.artifacts.outputs.env0 }}",
             "initial_status": "IN_PROGRESS",
-            "needs_assignment": False,
+            "needs_assignment": false,
             "family": "snap",
             "revision": "${revision}",
             "track": "latest",
@@ -147,7 +147,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: canonical/oemqa-testing-ci
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PE_BOT_PAT }}
           path: .github/actions/oemqa-testing-ci
       - name: Upload first test results to test observer
         if: steps.artifacts.outputs.tarball0 != ''
