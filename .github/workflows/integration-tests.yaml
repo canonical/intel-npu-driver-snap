@@ -41,7 +41,7 @@ jobs:
           path: ${{ steps.snapcraft-yaml.outputs.project-root }}
           snapcraft-args: "-o ${{ env.SNAP_FILE }}"
       - name: Upload snap artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.SNAP_ARTIFACT_NAME }}
           path: ${{ steps.build.outputs.snap }}
@@ -62,7 +62,7 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v5
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v7
         with:
           name: ${{ env.SNAP_ARTIFACT_NAME }}
       - name: Build job file from template with oemscript provisioning
