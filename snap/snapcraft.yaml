@@ -50,10 +50,17 @@ hooks:
       - intel-npu-kmod
       - intel-npu-fw
 
+layout:
+  /usr/share/vpu:
+    bind: $SNAP/usr/share/vpu
+
 apps:
   npu-umd-test:
     command: usr/bin/npu-umd-test
     plugs: [intel-npu-plug]
+
+  known-failures:
+    command: usr/bin/known-failures
 
   load-npu-firmware:
     command: usr/bin/load-npu-firmware
@@ -70,7 +77,7 @@ parts:
   npu-driver:
     source-type: git
     source: https://github.com/intel/linux-npu-driver.git
-    source-tag: v1.24.0
+    source-tag: v1.28.0
     plugin: cmake
     cmake-parameters:
       - -DENABLE_NPU_COMPILER_BUILD=ON
@@ -88,11 +95,17 @@ parts:
     stage-packages:
       - libtbb12
 
-  load-npu-firmware:
+  commands:
     plugin: dump
     source: bin/
     organize:
       '*': usr/bin/
+
+  npu-umd-test-config:
+    plugin: dump
+    source: config/
+    organize:
+      '*': usr/share/vpu/
 
 lint:
   ignore:
