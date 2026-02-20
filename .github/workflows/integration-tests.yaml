@@ -132,13 +132,13 @@ jobs:
         with:
           name: checkbox-results-${{ matrix.device.queue }}
           path: extracted-artifacts/
-      - name: Checkout private oemqa-testing-ci repo
+      - name: Checkout partner-eng-gh-actions repo
         uses: actions/checkout@v5
         with:
-          repository: canonical/oemqa-testing-ci
-          ref: 70ab30670c45da648f872f379d4d392616574f65
+          repository: canonical/partner-eng-gh-actions
+          ref: frenchwr/test-observer-uploader-generic # update to main once changes merged
           token: ${{ secrets.PE_BOT_PAT }}
-          path: .github/actions/oemqa-testing-ci
+          path: .github/actions/partner-eng-gh-actions
       - name: Generate TO start-payload
         run: |
           revision=$(snap info intel-npu-driver | grep latest/edge | cut -d "(" -f2 | cut -d ")" -f1)
@@ -163,21 +163,23 @@ jobs:
           jq '.environment = "${{ steps.artifacts.outputs.env1 }}"' start-payload-0.json > start-payload-1.json
       - name: Upload first test results to test observer
         if: steps.artifacts.outputs.tarball0 != ''
-        uses: ./.github/actions/oemqa-testing-ci/.github/actions/test-observer-uploader
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/test-observer-uploader
         with:
+          results_type: checkbox
+          owner: kobuk
           start_test_api_payload: start-payload-0.json
-          ci_link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          c3_link: none
-          submission: ${{ steps.artifacts.outputs.tarball0 }}
+          ci_link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ github.job }}#pre-upgrade
+          checkbox_submission: ${{ steps.artifacts.outputs.tarball0 }}
           test_observer_url: "https://test-observer-api-staging.canonical.com"
       - name: Upload second test results to test observer
         if: steps.artifacts.outputs.tarball1 != ''
-        uses: ./.github/actions/oemqa-testing-ci/.github/actions/test-observer-uploader
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/test-observer-uploader
         with:
+          results_type: checkbox
+          owner: kobuk
           start_test_api_payload: start-payload-1.json
-          ci_link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          c3_link: none
-          submission: ${{ steps.artifacts.outputs.tarball1 }}
+          ci_link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ github.job }}#post-upgrade
+          checkbox_submission: ${{ steps.artifacts.outputs.tarball1 }}
           test_observer_url: "https://test-observer-api-staging.canonical.com"
   tag:
     name: Push tag for revision
