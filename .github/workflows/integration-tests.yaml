@@ -12,7 +12,6 @@ on:
       - '.github/testflinger/**'
     branches:
       - "main"
-      - "feature/test-observer" # temporary branch for testing
   workflow_dispatch:
 
 concurrency:
@@ -208,7 +207,6 @@ jobs:
     name: Push tag for revision
     needs: testflinger-validation
     runs-on: ubuntu-latest
-    if: false  # Temporarily disabled for testing
     steps:
       - name: Checkout the source
         uses: actions/checkout@v5
