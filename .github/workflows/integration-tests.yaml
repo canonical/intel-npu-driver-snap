@@ -159,7 +159,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: canonical/partner-eng-gh-actions
-          ref: frenchwr/test-observer-uploader-generic # update to main once changes merged
+          ref: main
           token: ${{ secrets.PE_BOT_PAT }}
           path: .github/actions/partner-eng-gh-actions
       - name: Generate TO start-payload
