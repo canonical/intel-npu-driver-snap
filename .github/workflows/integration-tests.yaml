@@ -21,6 +21,7 @@ concurrency:
 env:
   SNAP_ARTIFACT_NAME: checkbox-npu-snap
   SNAP_FILE: checkbox-npu.snap
+  TEST_OBSERVER_URL: https://test-observer-api.canonical.com
 
 jobs:
   build-checkbox-provider:
@@ -53,11 +54,11 @@ jobs:
       matrix:
         device:
           # Dell XPS 13 9340 Laptop, Meteor Lake, 24.04
-          - { queue: dell-xps-13-9340-c34207, image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04a/20240729-53/somerville-noble-oem-24.04a-20240729-53.iso }
+          - { queue: dell-xps-13-9340-c34051, gen: "MTL", image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04a/20240729-53/somerville-noble-oem-24.04a-20240729-53.iso }
           # Dell Pro Max Tower T2 Desktop, Arrow Lake, 24.04
-          - { queue: dell-pro-max-tower-f0t2250-0ce1-c36197, image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04b-proposed/20241220-148/somerville-noble-oem-24.04b-proposed-20241220-148.iso }
+          - { queue: dell-pro-max-tower-f0t2250-0ce1-c36197, gen: "ARL", image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04b-proposed/20241220-148/somerville-noble-oem-24.04b-proposed-20241220-148.iso }
           # Dell XPS 13 9350 Laptop, Lunar Lake, 24.04
-          - { queue: dell-xps-13-9350-c36962, image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04c/20250801-32/somerville-noble-oem-24.04c-20250801-32.iso }
+          - { queue: dell-xps-13-9350-c36962, gen: "LNL", image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04c/20250801-32/somerville-noble-oem-24.04c-20250801-32.iso }
       fail-fast: false
     steps:
       - name: Check out code
@@ -73,10 +74,136 @@ jobs:
           ${GITHUB_WORKSPACE}/.github/testflinger/job-def.yaml > \
           ${GITHUB_WORKSPACE}/job.yaml
       - name: Submit testflinger job
+        id: submit
+        continue-on-error: true
         uses: canonical/testflinger/.github/actions/submit@main
         with:
           poll: true
           job-path: ${{ github.workspace }}/job.yaml
+      - name: Download checkbox artifacts
+        id: artifacts
+        run: |
+          # Download the job artifacts with retry logic
+          for attempt in {1..10}; do
+            echo "Attempt $attempt: Downloading artifacts..."
+            if testflinger artifacts ${{ steps.submit.outputs.id }}; then
+              echo "Successfully downloaded artifacts"
+              break
+            else
+              if [ $attempt -eq 10 ]; then
+                echo "Failed to download artifacts after 10 attempts"
+                exit 1
+              fi
+              echo "Failed to download artifacts, retrying in 60 seconds..."
+              sleep 60
+            fi
+          done
+          tar -xzf artifacts.tgz
+
+          # Check if any .tar.xz files exist
+          if ! ls artifacts/*.tar.xz 1> /dev/null 2>&1; then
+            echo "Error: No .tar.xz files found in artifacts/"
+            ls -la artifacts/
+            exit 1
+          fi
+
+          # Extract submission.json from each tarball.
+          #
+          # This is necessary because the intel-npu test plan is run twice:
+          # - Once on the original OEM image
+          # - Once after upgrading all apt packages and rebooting
+          #
+          # The test observer uploader action cannot account for multiple
+          # submissions in a single run, so we need to extract them here and
+          # upload them separately.
+          #
+          queue="${{ matrix.device.queue }}"
+          mkdir -p "extracted-artifacts/$queue"
+          i=0
+          for file in artifacts/*.tar.xz; do
+            if [ -f "$file" ]; then
+              echo "Extracting submission.json from: $file"
+              run_dir="extracted-artifacts/$queue/run-$i"
+              mkdir -p "$run_dir"
+
+              # Extract only submission.json
+              tar -xJf "$file" submission.json -O > "$run_dir/submission.json"
+
+              # Build environment key, for example: env0=MTL-24.04.3-6.17-generic
+              kernel_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Kernel")) | .value] | first' "$run_dir/submission.json")
+              os_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Distro")) | .value] | first | match("Ubuntu ([0-9.]+)") | .captures[0].string' "$run_dir/submission.json")
+              echo "env$i=${{ matrix.device.gen }}-${os_ver}-${kernel_ver}" >> $GITHUB_OUTPUT
+
+              # Save tarball path to output
+              echo "tarball$i=$file" >> $GITHUB_OUTPUT
+
+              i=$((i + 1))
+            fi
+          done
+      - name: Upload checkbox artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkbox-results-${{ matrix.device.queue }}
+          path: extracted-artifacts/
+      - name: Get numeric job ID
+        id: job-id
+        run: |
+          jobs=$(gh api /repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs)
+          # Matrix jobs include the matrix values in their name, e.g. "Testflinger Validation (dell-xps-13-9350-c36962, LNL, https://...)"
+          # We need to match based on the queue name which is unique per matrix instance
+          job_id=$(echo "$jobs" | jq -r '.jobs[] | select(.name | contains("${{ matrix.device.queue }}")) | .id')
+          echo "id=$job_id" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Checkout partner-eng-gh-actions repo
+        uses: actions/checkout@v5
+        with:
+          repository: canonical/partner-eng-gh-actions
+          ref: main
+          token: ${{ secrets.PE_BOT_PAT }}
+          path: .github/actions/partner-eng-gh-actions
+      - name: Generate TO start-payload
+        run: |
+          revision=$(snap info intel-npu-driver | grep latest/edge | cut -d "(" -f2 | cut -d ")" -f1)
+          version=$(snap info intel-npu-driver | grep latest/edge | awk '{print $2}')
+          cat <<EOF > start-payload-0.json
+          {
+            "name": "intel-npu-driver",
+            "version": "${version}",
+            "arch": "amd64",
+            "test_plan": "intel-npu",
+            "environment": "${{ steps.artifacts.outputs.env0 }}",
+            "initial_status": "IN_PROGRESS",
+            "needs_assignment": false,
+            "family": "snap",
+            "revision": "${revision}",
+            "track": "latest",
+            "store": "ubuntu",
+            "branch": "",
+            "execution_stage": "edge"
+          }
+          EOF
+          jq '.environment = "${{ steps.artifacts.outputs.env1 }}"' start-payload-0.json > start-payload-1.json
+      - name: Upload first test results to test observer
+        if: steps.artifacts.outputs.tarball0 != ''
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/test-observer-uploader
+        with:
+          results_type: checkbox
+          owner: kobuk
+          start_test_api_payload: start-payload-0.json
+          ci_link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ steps.job-id.outputs.id }}#pre-upgrade
+          results: ${{ steps.artifacts.outputs.tarball0 }}
+          test_observer_url: ${{ env.TEST_OBSERVER_URL }}
+      - name: Upload second test results to test observer
+        if: steps.artifacts.outputs.tarball1 != ''
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/test-observer-uploader
+        with:
+          results_type: checkbox
+          owner: kobuk
+          start_test_api_payload: start-payload-1.json
+          ci_link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ steps.job-id.outputs.id }}#post-upgrade
+          results: ${{ steps.artifacts.outputs.tarball1 }}
+          test_observer_url: ${{ env.TEST_OBSERVER_URL }}
   tag:
     name: Push tag for revision
     needs: testflinger-validation
