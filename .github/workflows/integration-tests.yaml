@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Find and parse snapcraft.yaml
         id: snapcraft-yaml
         uses: snapcrafters/ci/parse-snapcraft-yaml@main
@@ -62,7 +62,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Check out code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - uses: actions/download-artifact@v5
         with:
           name: ${{ env.SNAP_ARTIFACT_NAME }}
@@ -156,7 +156,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Checkout partner-eng-gh-actions repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: canonical/partner-eng-gh-actions
           ref: main
@@ -210,7 +210,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Create and push tag for revision
         shell: bash
         env:
