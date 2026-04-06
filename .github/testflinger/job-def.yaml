@@ -40,6 +40,8 @@ test_data:
     echo "[INFO]: Sleeping for 60 seconds to ensure the firmware search path is updated."
     sleep 60
 
+    # this is redundant since the checkbox provider already tests for the presence of the firmware,
+    # however it is helpful for debugging to see this error as early as possible
     _put attachments/test/check-npu-fw.sh :/home/ubuntu/check-npu-fw.sh
     _run bash check-npu-fw.sh
 
