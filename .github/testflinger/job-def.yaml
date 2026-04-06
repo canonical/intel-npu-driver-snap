@@ -49,6 +49,8 @@ test_data:
     _run sudo snap install checkbox24 --channel latest/beta
     # checkbox snap is also needed for checkbox.checkbox-cli
     _run sudo snap install checkbox --channel latest/stable --classic
+    # firmware test in NPU provider depends on strings command from binutils
+    _run install_packages --no-update -- binutils
 
     _put attachments/test/set-device-access.sh :/home/ubuntu/set-device-access.sh
     _put attachments/test/checkbox-launcher :/home/ubuntu/checkbox-launcher
