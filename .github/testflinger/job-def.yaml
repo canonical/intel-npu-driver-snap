@@ -10,6 +10,8 @@ test_data:
       agent: "check-npu-fw.sh"
     - local: ".github/testflinger/set-device-access.sh"
       agent: "set-device-access.sh"
+    - local: ".github/testflinger/machine-manifest.json"
+      agent: "machine-manifest.json"
   test_cmds: |
 
     set -x
@@ -51,9 +53,14 @@ test_data:
     _run sudo snap install checkbox --channel latest/stable --classic
     # firmware test in NPU provider depends on strings command from binutils
     _run install_packages --no-update -- binutils
+    # ensure checkbox directory exists as this is where the NPU manifest will be deployed
+    # this should be uneccessary once https://github.com/canonical/checkbox/issues/2451
+    # is resolved, and we should likewise no longer need to copy machine-manifest.json to the DUT
+    _run mkdir -p /var/tmp/checkbox-ng
 
     _put attachments/test/set-device-access.sh :/home/ubuntu/set-device-access.sh
     _put attachments/test/checkbox-launcher :/home/ubuntu/checkbox-launcher
+    _put attachments/test/machine-manifest.json :/var/tmp/checkbox-ng/machine-manifest.json
 
     # Run the validation twice:
     #

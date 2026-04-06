@@ -2,7 +2,7 @@
 
 [launcher]
 launcher_version = 1
-app_id = com.canonical.certification:npu-testing
+app_id = com.canonical.certification::npu-test
 stock_reports = text, submission_files
 
 [test plan]
@@ -14,3 +14,7 @@ com.canonical.certification::has_npu = true
 
 [test selection]
 forced = yes
+
+[ui]
+type = silent
+auto_retry = no
