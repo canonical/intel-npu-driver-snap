@@ -4,8 +4,8 @@ provision_data:
   url: REPLACE_IMAGE_URL
 test_data:
   attachments:
-    - local: REPLACE_ATTACHMENT
-      agent: "checkbox-npu.snap"
+    - local: ".github/testflinger/checkbox-launcher"
+      agent: "checkbox-launcher"
     - local: ".github/testflinger/check-npu-fw.sh"
       agent: "check-npu-fw.sh"
     - local: ".github/testflinger/set-device-access.sh"
@@ -43,11 +43,13 @@ test_data:
     _put attachments/test/check-npu-fw.sh :/home/ubuntu/check-npu-fw.sh
     _run bash check-npu-fw.sh
 
-    _run sudo snap install checkbox24
-    _put attachments/test/checkbox-npu.snap :/home/ubuntu/checkbox-npu.snap
-    _run sudo snap install --dangerous --classic /home/ubuntu/checkbox-npu.snap
+    # as of 6 April 2026 the NPU provider is only avaialble in the latest/beta channel
+    _run sudo snap install checkbox24 --channel latest/beta
+    # checkbox snap is also needed for checkbox.checkbox-cli
+    _run sudo snap install checkbox --channel latest/stable --classic
 
     _put attachments/test/set-device-access.sh :/home/ubuntu/set-device-access.sh
+    _put attachments/test/checkbox-launcher :/home/ubuntu/checkbox-launcher
 
     # Run the validation twice:
     #
@@ -55,7 +57,7 @@ test_data:
     # Run 2: upgraded debs and kernel, following a reboot
     #
     _run sudo bash set-device-access.sh
-    _run checkbox-npu.test-runner-automated
+    _run /home/ubuntu/checkbox-launcher
     mkdir -p artifacts
     _get '/home/ubuntu/.local/share/checkbox-ng/*.tar.xz' artifacts/
 
@@ -65,5 +67,5 @@ test_data:
     wait_for_ssh --allow-degraded
 
     _run sudo bash set-device-access.sh
-    _run checkbox-npu.test-runner-automated
+    _run /home/ubuntu/checkbox-launcher
     _get '/home/ubuntu/.local/share/checkbox-ng/*.tar.xz' artifacts/
