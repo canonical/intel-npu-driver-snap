@@ -78,7 +78,7 @@ jobs:
 
           # Extract submission.json from each tarball.
           #
-          # This is necessary because the intel-npu test plan is run twice:
+          # This is necessary because the test plan is run twice:
           # - Once on the original OEM image
           # - Once after upgrading all apt packages and rebooting
           #
@@ -133,6 +133,7 @@ jobs:
           path: .github/actions/partner-eng-gh-actions
       - name: Generate TO start-payload
         run: |
+          test_plan=$(grep "^unit = " ${GITHUB_WORKSPACE}/.github/testflinger/checkbox-launcher | cut -d '=' -f2 | xargs)
           revision=$(snap info intel-npu-driver | grep latest/edge | cut -d "(" -f2 | cut -d ")" -f1)
           version=$(snap info intel-npu-driver | grep latest/edge | awk '{print $2}')
           cat <<EOF > start-payload-0.json
@@ -140,7 +141,7 @@ jobs:
             "name": "intel-npu-driver",
             "version": "${version}",
             "arch": "amd64",
-            "test_plan": "intel-npu",
+            "test_plan": "${test_plan}",
             "environment": "${{ steps.artifacts.outputs.env0 }}",
             "initial_status": "IN_PROGRESS",
             "needs_assignment": false,
