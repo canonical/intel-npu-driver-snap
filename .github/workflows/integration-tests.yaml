@@ -35,7 +35,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Check out code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Build job file from template with oem_autoinstall provisioning
         run: |
           sed -e "s|REPLACE_QUEUE|${{ matrix.device.queue }}|" \
@@ -110,7 +110,7 @@ jobs:
             fi
           done
       - name: Upload checkbox artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: checkbox-results-${{ matrix.device.queue }}
           path: extracted-artifacts/
@@ -125,7 +125,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Checkout partner-eng-gh-actions repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: canonical/partner-eng-gh-actions
           ref: main
@@ -179,7 +179,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Create and push tag for revision
         shell: bash
         env:
