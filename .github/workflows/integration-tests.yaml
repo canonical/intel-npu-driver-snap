@@ -9,6 +9,7 @@ on:
       - '.github/testflinger/**'
     branches:
       - "main"
+      - "frenchwr/migrate-testing-to-checkbox-provider" # temporary, for testing
   workflow_dispatch:
 
 concurrency:
@@ -21,7 +22,7 @@ env:
 jobs:
   testflinger-validation:
     name: Testflinger Validation
-    runs-on: [self-hosted, self-hosted-linux-amd64-jammy-private-endpoint-medium]
+    runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
     strategy:
       matrix:
         device:
@@ -35,7 +36,7 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v5
-      - name: Build job file from template with oemscript provisioning
+      - name: Build job file from template with oem_autoinstall provisioning
         run: |
           sed -e "s|REPLACE_QUEUE|${{ matrix.device.queue }}|" \
           -e "s|REPLACE_IMAGE_URL|${{ matrix.device.image }}|" \
