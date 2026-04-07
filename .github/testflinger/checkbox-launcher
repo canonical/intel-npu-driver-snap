@@ -1,0 +1,20 @@
+#!/usr/bin/env checkbox.checkbox-cli
+
+[launcher]
+launcher_version = 1
+app_id = com.canonical.certification::npu-test
+stock_reports = text, submission_files
+
+[test plan]
+unit = com.canonical.certification::npu-with-known-failures
+forced = yes
+
+[manifest]
+com.canonical.certification::has_npu = true
+
+[test selection]
+forced = yes
+
+[ui]
+type = silent
+auto_retry = no

@@ -5,9 +5,6 @@ on:
     paths:
       - 'snap/**'
       - 'bin/**'
-      - 'checkbox/bin/**'
-      - 'checkbox/checkbox-provider-npu/**'
-      - 'checkbox/snap/**'
       - '.github/workflows/integration-tests.yaml'
       - '.github/testflinger/**'
     branches:
@@ -19,37 +16,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SNAP_ARTIFACT_NAME: checkbox-npu-snap
-  SNAP_FILE: checkbox-npu.snap
   TEST_OBSERVER_URL: https://test-observer-api.canonical.com
 
 jobs:
-  build-checkbox-provider:
-    name: Checkbox provider build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v5
-      - name: Find and parse snapcraft.yaml
-        id: snapcraft-yaml
-        uses: snapcrafters/ci/parse-snapcraft-yaml@main
-        with:
-          snapcraft-project-root: checkbox
-      - name: Build snap
-        uses: snapcore/action-build@v1
-        id: build
-        with:
-          path: ${{ steps.snapcraft-yaml.outputs.project-root }}
-          snapcraft-args: "-o ${{ env.SNAP_FILE }}"
-      - name: Upload snap artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.SNAP_ARTIFACT_NAME }}
-          path: ${{ steps.build.outputs.snap }}
   testflinger-validation:
     name: Testflinger Validation
-    needs: build-checkbox-provider
-    runs-on: [self-hosted, self-hosted-linux-amd64-jammy-private-endpoint-medium]
+    runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
     strategy:
       matrix:
         device:
@@ -62,15 +34,11 @@ jobs:
       fail-fast: false
     steps:
       - name: Check out code
-        uses: actions/checkout@v5
-      - uses: actions/download-artifact@v5
-        with:
-          name: ${{ env.SNAP_ARTIFACT_NAME }}
-      - name: Build job file from template with oemscript provisioning
+        uses: actions/checkout@v6
+      - name: Build job file from template with oem_autoinstall provisioning
         run: |
           sed -e "s|REPLACE_QUEUE|${{ matrix.device.queue }}|" \
           -e "s|REPLACE_IMAGE_URL|${{ matrix.device.image }}|" \
-          -e "s|REPLACE_ATTACHMENT|${{ env.SNAP_FILE }}|" \
           ${GITHUB_WORKSPACE}/.github/testflinger/job-def.yaml > \
           ${GITHUB_WORKSPACE}/job.yaml
       - name: Submit testflinger job
@@ -109,7 +77,7 @@ jobs:
 
           # Extract submission.json from each tarball.
           #
-          # This is necessary because the intel-npu test plan is run twice:
+          # This is necessary because the test plan is run twice:
           # - Once on the original OEM image
           # - Once after upgrading all apt packages and rebooting
           #
@@ -141,7 +109,7 @@ jobs:
             fi
           done
       - name: Upload checkbox artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: checkbox-results-${{ matrix.device.queue }}
           path: extracted-artifacts/
@@ -156,7 +124,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Checkout partner-eng-gh-actions repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: canonical/partner-eng-gh-actions
           ref: main
@@ -164,6 +132,7 @@ jobs:
           path: .github/actions/partner-eng-gh-actions
       - name: Generate TO start-payload
         run: |
+          test_plan=$(grep "^unit = " ${GITHUB_WORKSPACE}/.github/testflinger/checkbox-launcher | cut -d '=' -f2 | xargs)
           revision=$(snap info intel-npu-driver | grep latest/edge | cut -d "(" -f2 | cut -d ")" -f1)
           version=$(snap info intel-npu-driver | grep latest/edge | awk '{print $2}')
           cat <<EOF > start-payload-0.json
@@ -171,7 +140,7 @@ jobs:
             "name": "intel-npu-driver",
             "version": "${version}",
             "arch": "amd64",
-            "test_plan": "intel-npu",
+            "test_plan": "${test_plan}",
             "environment": "${{ steps.artifacts.outputs.env0 }}",
             "initial_status": "IN_PROGRESS",
             "needs_assignment": false,
@@ -210,7 +179,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Create and push tag for revision
         shell: bash
         env:
