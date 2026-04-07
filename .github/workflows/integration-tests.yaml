@@ -9,7 +9,6 @@ on:
       - '.github/testflinger/**'
     branches:
       - "main"
-      - "frenchwr/migrate-testing-to-checkbox-provider" # temporary, for testing
   workflow_dispatch:
 
 concurrency:
