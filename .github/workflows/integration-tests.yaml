@@ -1,12 +1,10 @@
 name: Integration tests
 
 on:
-  push:
-    paths:
-      - 'snap/**'
-      - 'bin/**'
-      - '.github/workflows/integration-tests.yaml'
-      - '.github/testflinger/**'
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
     branches:
       - "main"
   workflow_dispatch:
@@ -22,6 +20,8 @@ jobs:
   testflinger-validation:
     name: Testflinger Validation
     runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
+    # Only run if the release workflow completed successfully
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     strategy:
       matrix:
         device:

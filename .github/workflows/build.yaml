@@ -1,11 +1,11 @@
-name: Pull Request
+name: Build
 
 on:
   pull_request:
     paths:
       - 'snap/**'
       - 'bin/**'
-      - '.github/workflows/pull-request.yaml'
+      - '.github/workflows/build.yaml'
     branches: ["**"]
 
 concurrency:
@@ -14,9 +14,11 @@ concurrency:
 
 jobs:
   build:
-    name: Build snap, run smoke tests, release to edge
+    name: Build snap and run smoke tests
     runs-on: [self-hosted, linux, X64, xlarge, jammy]
-    if: ${{ github.actor != 'renovate[bot]' }}
+    # Only run on PRs from branches in the same repository (not forks)
+    # This ensures only trusted sources can trigger this workflow
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     steps:
       - name: Checkout the source
         uses: actions/checkout@v6
@@ -54,11 +56,9 @@ jobs:
         run: |
           echo "Checking for the user mode driver command in the snap..."
           command -V intel-npu-driver.npu-umd-test
-      - name: Release to latest/edge
-        id: publish
-        shell: bash
-        env:
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_STORE_PE_BOT }}
-          SNAP_FILE: ${{ steps.build.outputs.snap }}
-        run: |
-          snapcraft upload "$SNAP_FILE" --release=latest/edge
+      - name: Upload snap artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: intel-npu-driver-snap-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ steps.build.outputs.snap }}
+          retention-days: 30
