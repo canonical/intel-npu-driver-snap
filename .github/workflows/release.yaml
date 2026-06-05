@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    paths:
+      - 'snap/**'
+      - 'bin/**'
+      - '.github/workflows/build.yaml'
+      - '.github/workflows/release.yaml'
+    branches:
+      - "main"
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Release snap to store
+    runs-on: [self-hosted, linux, X64, xlarge, jammy]
+    steps:
+      - name: Checkout the source
+        uses: actions/checkout@v6
+
+      - name: Find and parse snapcraft.yaml
+        id: snapcraft-yaml
+        uses: snapcrafters/ci/parse-snapcraft-yaml@main
+
+      - name: Build snap
+        uses: snapcore/action-build@v1
+        id: build
+        with:
+          path: ${{ steps.snapcraft-yaml.outputs.project-root }}
+
+      - name: Release to snap store
+        shell: bash
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_STORE_PE_BOT }}
+          SNAP_FILE: ${{ steps.build.outputs.snap }}
+        run: |
+          snapcraft upload "$SNAP_FILE" --release=latest/edge
