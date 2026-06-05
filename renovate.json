@@ -2,5 +2,15 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": ["^snap/snapcraft\\.yaml$"],
+      "matchStrings": [
+        "source:\\s+https://github\\.com/(?<depName>[^/]+/[^/]+)\\.git\\s+source-tag:\\s+(?<currentValue>v?[0-9]+\\.[0-9]+\\.[0-9]+)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver"
+    }
   ]
 }
