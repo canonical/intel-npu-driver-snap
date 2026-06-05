@@ -10,49 +10,29 @@ on:
     branches:
       - "main"
   workflow_dispatch:
-    inputs:
-      snap_artifact:
-        description: 'Snap artifact name from build workflow (leave empty for latest)'
-        required: false
-        type: string
 
 jobs:
   release:
     name: Release snap to store
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, X64, xlarge, jammy]
     steps:
-      - name: Download snap artifact
-        uses: dawidd6/action-download-artifact@v6
+      - name: Checkout the source
+        uses: actions/checkout@v6
+
+      - name: Find and parse snapcraft.yaml
+        id: snapcraft-yaml
+        uses: snapcrafters/ci/parse-snapcraft-yaml@main
+
+      - name: Build snap
+        uses: snapcore/action-build@v1
+        id: build
         with:
-          workflow: build.yaml
-          workflow_conclusion: success
-          name: ${{ inputs.snap_artifact }}
-          name_is_regexp: ${{ inputs.snap_artifact == '' }}
-          search_artifacts: true
-          if_no_artifact_found: fail
-          # If no artifact name provided, get the most recent one
-          skip_unpack: false
-
-      - name: Find snap file
-        id: find-snap
-        shell: bash
-        run: |
-          SNAP_FILE=$(find . -name "*.snap" -type f | head -n 1)
-          if [ -z "$SNAP_FILE" ]; then
-            echo "Error: No snap file found in artifact"
-            exit 1
-          fi
-          echo "snap-file=$SNAP_FILE" >> $GITHUB_OUTPUT
-          echo "Found snap file: $SNAP_FILE"
-
-      - name: Install snapcraft
-        run: |
-          sudo snap install snapcraft --classic
+          path: ${{ steps.snapcraft-yaml.outputs.project-root }}
 
       - name: Release to snap store
         shell: bash
         env:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_STORE_PE_BOT }}
-          SNAP_FILE: ${{ steps.find-snap.outputs.snap-file }}
+          SNAP_FILE: ${{ steps.build.outputs.snap }}
         run: |
           snapcraft upload "$SNAP_FILE" --release=latest/edge
