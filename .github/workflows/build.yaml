@@ -30,6 +30,12 @@ jobs:
         id: build
         with:
           path: ${{ steps.snapcraft-yaml.outputs.project-root }}
+      - name: Upload snap artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: intel-npu-driver-snap-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ steps.build.outputs.snap }}
+          retention-days: 30
       - name: Review the built snap
         uses: diddlesnaps/snapcraft-review-action@v1
         with:
@@ -56,9 +62,3 @@ jobs:
         run: |
           echo "Checking for the user mode driver command in the snap..."
           command -V intel-npu-driver.npu-umd-test
-      - name: Upload snap artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: intel-npu-driver-snap-${{ github.event.pull_request.head.sha || github.sha }}
-          path: ${{ steps.build.outputs.snap }}
-          retention-days: 30
