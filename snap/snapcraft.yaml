@@ -108,7 +108,7 @@ parts:
     plugin: dump
     source: config/
     organize:
-      '*': usr/share/vpu/
+      '*': usr/share/vpu/validation/umd-test/configs/
 
 lint:
   ignore:
