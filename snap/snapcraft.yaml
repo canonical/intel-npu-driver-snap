@@ -86,6 +86,9 @@ parts:
       craftctl default
       git submodule update --init --recursive
       craftctl set version="$(git describe --tags | tr -d 'v')"
+    override-build: |
+      craftctl default
+      DESTDIR=$CRAFT_PART_INSTALL cmake --install . --component fw-npu
     build-packages:
       - build-essential
       - git-lfs
