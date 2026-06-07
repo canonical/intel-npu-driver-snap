@@ -177,6 +177,8 @@ jobs:
     name: Push tag for revision
     needs: testflinger-validation
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout the source
         uses: actions/checkout@v6
