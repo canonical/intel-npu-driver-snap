@@ -1,0 +1,10 @@
+#!/bin/bash
+# Check if user passed --config or -c
+for arg in "$@"; do
+    if [[ "$arg" == "--config" || "$arg" == "-c" ]]; then
+        exec npu-umd-test "$@"
+    fi
+done
+
+# No --config provided, use the snap's default
+exec npu-umd-test --config "$SNAP/usr/share/vpu/validation/umd-test/configs/basic.yaml" "$@"
