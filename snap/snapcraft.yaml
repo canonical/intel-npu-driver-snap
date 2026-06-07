@@ -56,7 +56,7 @@ layout:
 
 apps:
   npu-umd-test:
-    command: usr/bin/npu-umd-test
+    command: usr/bin/npu-umd-test-wrapper
     plugs: [intel-npu-plug]
 
   known-failures:
