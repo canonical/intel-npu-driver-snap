@@ -5,7 +5,7 @@ on:
     paths:
       - 'snap/**'
       - 'bin/**'
-      - '.github/workflows/build.yaml'
+      - 'config/**'
       - '.github/workflows/release.yaml'
     branches:
       - "main"
