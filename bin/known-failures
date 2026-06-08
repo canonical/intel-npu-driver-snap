@@ -16,6 +16,22 @@ kernel_older_than() {
   [ "${result}" != "${min_version}" ]
 }
 
+# Meteor Lake and Arrow Lake platforms are NPU37xx
+# Returns 0 (true) if on NPU37xx, 1 (false) otherwise
+is_npu37xx() {
+  # Run a representative test that would be skipped on NPU37xx
+  # The test output will contain [  SKIPPED ] if the test was skipped
+  local test_output
+  test_output=$(npu-umd-test --gtest_filter=StridesProperty.GetArgumentProperties/0 --config="${SNAP:-/snap/intel-npu-driver/current}/usr/share/vpu/validation/umd-test/configs/basic.yaml" 2>&1 || true)
+
+  # Check if the output contains "[  SKIPPED ]" indicating the test was skipped
+  if echo "$test_output" | grep -q "\[  SKIPPED \]"; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 # Test that fails due to lack of sysfs access for NPU activity monitoring (1 test)
 cat << 'EOF'
 Device.GetZesEngineGetActivity
@@ -33,6 +49,36 @@ ExternalMemoryDmaHeap.DmaHeapToNpu/2KB
 ExternalMemoryDmaHeap.DmaHeapToNpu/16MB
 ExternalMemoryDmaHeap.DmaHeapToNpu/255MB
 EOF
+
+# Tests skipped on NPU37xx due to lack of tensor strides support (24 tests)
+if is_npu37xx; then
+  cat << 'EOF'
+TensorStrides.SetTensorTogetherWithStrides/0
+TensorStrides.SetTensorTogetherWithStrides/1
+TensorStrides.SetTensorTogetherWithStrides/2
+TensorStrides.SetTensorTogetherWithStrides/3
+TensorStridesMutableCmdList.AddStridesThenUpdateStridesAndTensor/0
+TensorStridesMutableCmdList.AddStridesThenUpdateStridesAndTensor/1
+TensorStridesMutableCmdList.AddStridesThenUpdateStridesAndTensor/2
+TensorStridesMutableCmdList.AddStridesThenUpdateStridesAndTensor/3
+TensorStridesNegative.SetStridesOnArgumentWithStridesDisabled
+StridesProperty.GetArgumentProperties/0
+StridesProperty.GetArgumentProperties/1
+StridesProperty.GetArgumentProperties/2
+StridesProperty.GetArgumentProperties/3
+StridesProperty.GetArgumentProperties/4
+StridesProperty.GetArgumentProperties2/0
+StridesProperty.GetArgumentProperties2/1
+StridesProperty.GetArgumentProperties2/2
+StridesProperty.GetArgumentProperties2/3
+StridesProperty.GetArgumentProperties2/4
+StridesProperty.GetArgumentProperties3/0
+StridesProperty.GetArgumentProperties3/1
+StridesProperty.GetArgumentProperties3/2
+StridesProperty.GetArgumentProperties3/3
+StridesProperty.GetArgumentProperties3/4
+EOF
+fi
 
 # Kernel version specific failures
 
@@ -62,6 +108,9 @@ fi
 if kernel_older_than "6.17"; then
   cat << 'EOF'
 CommandQueuePriority.executeManyLowPriorityJobsExpectHighPriorityJobCompletesFirst
+Command.DestroyBusyCommandQueue
+CommandGraphLongThreaded.GraphExecInferenceAndDestroySomeCmdQueues/add_abc_4_Threads
+Driver.TestDriverNpuExtension
 EOF
 fi
 
@@ -69,28 +118,23 @@ fi
 if kernel_older_than "6.19"; then
   cat << 'EOF'
 ImportSystemMemory.MultipleImportSystemMemory
-ImportSystemMemory.AllocMemoryThenExecuteCopy/256B
-ImportSystemMemory.AllocMemoryThenExecuteCopy/3KB
+ImportSystemMemory.AllocMemoryThenExecuteCopy/4KB
 ImportSystemMemory.AllocMemoryThenExecuteCopy/64KB
 ImportSystemMemory.AllocMemoryThenExecuteCopy/4MB
 ImportSystemMemory.AllocMemoryThenExecuteCopy/32MB
-ImportSystemMemory.MmapAnonymousThenExecuteCopy/256B
-ImportSystemMemory.MmapAnonymousThenExecuteCopy/3KB
+ImportSystemMemory.MmapAnonymousThenExecuteCopy/4KB
 ImportSystemMemory.MmapAnonymousThenExecuteCopy/64KB
 ImportSystemMemory.MmapAnonymousThenExecuteCopy/4MB
 ImportSystemMemory.MmapAnonymousThenExecuteCopy/32MB
-ImportSystemMemory.OpenFileMmapSharedThenExecuteCopy/256B
-ImportSystemMemory.OpenFileMmapSharedThenExecuteCopy/3KB
+ImportSystemMemory.OpenFileMmapSharedThenExecuteCopy/4KB
 ImportSystemMemory.OpenFileMmapSharedThenExecuteCopy/64KB
 ImportSystemMemory.OpenFileMmapSharedThenExecuteCopy/4MB
 ImportSystemMemory.OpenFileMmapSharedThenExecuteCopy/32MB
-ImportSystemMemory.OpenFileMmapPrivateFileThenExecuteCopy/256B
-ImportSystemMemory.OpenFileMmapPrivateFileThenExecuteCopy/3KB
+ImportSystemMemory.OpenFileMmapPrivateFileThenExecuteCopy/4KB
 ImportSystemMemory.OpenFileMmapPrivateFileThenExecuteCopy/64KB
 ImportSystemMemory.OpenFileMmapPrivateFileThenExecuteCopy/4MB
 ImportSystemMemory.OpenFileMmapPrivateFileThenExecuteCopy/32MB
-ImportSystemMemory.OpenFileInReadOnlyThenExecuteCopy/256B
-ImportSystemMemory.OpenFileInReadOnlyThenExecuteCopy/3KB
+ImportSystemMemory.OpenFileInReadOnlyThenExecuteCopy/4KB
 ImportSystemMemory.OpenFileInReadOnlyThenExecuteCopy/64KB
 ImportSystemMemory.OpenFileInReadOnlyThenExecuteCopy/4MB
 ImportSystemMemory.OpenFileInReadOnlyThenExecuteCopy/32MB
