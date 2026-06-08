@@ -61,6 +61,7 @@ apps:
 
   known-failures:
     command: usr/bin/known-failures
+    plugs: [intel-npu-plug]
 
   load-npu-firmware:
     command: usr/bin/load-npu-firmware
