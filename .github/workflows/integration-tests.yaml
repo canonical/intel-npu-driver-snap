@@ -48,6 +48,8 @@ jobs:
         with:
           poll: true
           job-path: ${{ github.workspace }}/job.yaml
+          client-id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
+          secret-key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
       - name: Download checkbox artifacts
         id: artifacts
         run: |
