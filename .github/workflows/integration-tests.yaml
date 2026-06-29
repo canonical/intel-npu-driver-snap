@@ -163,6 +163,7 @@ jobs:
           ci_link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ steps.job-id.outputs.id }}#pre-upgrade
           results: ${{ steps.artifacts.outputs.tarball0 }}
           test_observer_url: ${{ env.TEST_OBSERVER_URL }}
+          api_key: ${{ secrets.TEST_OBSERVER_API_KEY_PRODUCTION }}
       - name: Upload second test results to test observer
         if: steps.artifacts.outputs.tarball1 != ''
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/test-observer-uploader
@@ -173,6 +174,7 @@ jobs:
           ci_link: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ steps.job-id.outputs.id }}#post-upgrade
           results: ${{ steps.artifacts.outputs.tarball1 }}
           test_observer_url: ${{ env.TEST_OBSERVER_URL }}
+          api_key: ${{ secrets.TEST_OBSERVER_API_KEY_PRODUCTION }}
   tag:
     name: Push tag for revision
     needs: testflinger-validation
