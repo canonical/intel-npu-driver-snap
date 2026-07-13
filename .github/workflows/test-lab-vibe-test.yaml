@@ -48,7 +48,7 @@ jobs:
           c3_client_secret: ${{ secrets.C3_CLIENT_SECRET }}
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
-          copilot_github_token: ${{ secrets.GITHUB_TOKEN }}
+          copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
       - name: Fail if no device matched
         if: ${{ steps.find-device.outputs.matched != 'true' }}
@@ -62,7 +62,7 @@ jobs:
         with:
           repository_path: .
           device_context: ${{ steps.find-device.outputs.details }}
-          copilot_github_token: ${{ secrets.GITHUB_TOKEN }}
+          copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
       - name: Run tests on device
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab-run-tests
@@ -72,4 +72,4 @@ jobs:
           test_plan: ${{ steps.select-tests.outputs.test_plan }}
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
-          copilot_github_token: ${{ secrets.GITHUB_TOKEN }}
+          copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
