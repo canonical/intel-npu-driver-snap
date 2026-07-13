@@ -45,7 +45,7 @@ jobs:
           c3_client_secret: ${{ secrets.C3_CLIENT_SECRET }}
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
-          copilot_github_token: ${{ secrets.GITHUB_TOKEN }}
+          copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
       - name: Fail if no device matched
         if: ${{ steps.find-device.outputs.matched != 'true' }}
@@ -62,4 +62,4 @@ jobs:
           reserve_minutes: 30
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
-          copilot_github_token: ${{ secrets.GITHUB_TOKEN }}
+          copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
