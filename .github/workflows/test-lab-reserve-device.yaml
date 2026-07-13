@@ -1,0 +1,31 @@
+name: Test lab-reserve-device-by-prompt
+
+# Test harness for the reusable lab-reserve-device-by-prompt workflow in
+# partner-eng-gh-actions. Triggers on pushes to the testing branch.
+on:
+  push:
+    branches:
+      - feature/vibe-coder
+  workflow_dispatch:
+
+# Avoid overlapping runs holding lab hardware.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  reserve:
+    # NOTE: the reusable workflow currently lives on the feature/vibe-tester
+    # branch of partner-eng-gh-actions. Update the ref to a release tag once
+    # merged (e.g. @v8).
+    uses: canonical/partner-eng-gh-actions/.github/workflows/lab-reserve-device-by-prompt.yml@feature/vibe-tester
+    with:
+      device_prompt: 'An Intel laptop with an NPU running Ubuntu 24.04'
+      launchpad_user: wfrench
+      reserve_minutes: 30
+    secrets:
+      C3_CLIENT_ID: ${{ secrets.C3_CLIENT_ID }}
+      C3_CLIENT_SECRET: ${{ secrets.C3_CLIENT_SECRET }}
+      TESTFLINGER_CLIENT_ID: ${{ secrets.TESTFLINGER_CLIENT_ID }}
+      TESTFLINGER_SECRET_KEY: ${{ secrets.TESTFLINGER_SECRET_KEY }}
+      COPILOT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
