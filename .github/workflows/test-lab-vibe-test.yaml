@@ -1,7 +1,11 @@
 name: Test lab-vibe-test
 
-# Test harness for the reusable lab-vibe-test workflow in partner-eng-gh-actions.
-# Triggers on pushes to the testing branch.
+# Test harness for the lab-vibe-test tooling in partner-eng-gh-actions.
+# partner-eng-gh-actions is private and this repo is public, so we cannot call
+# its reusable workflow directly (the default token can't check out the private
+# actions). Instead we check the actions out with the PE bot PAT and invoke them
+# by local path, mirroring integration-tests.yaml. Triggers on pushes to the
+# testing branch.
 on:
   push:
     branches:
@@ -13,18 +17,59 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   vibe-test:
-    # NOTE: the reusable workflow currently lives on the feature/vibe-tester
-    # branch of partner-eng-gh-actions. Update the ref to a release tag once
-    # merged (e.g. @v8).
-    uses: canonical/partner-eng-gh-actions/.github/workflows/lab-vibe-test.yml@feature/vibe-tester
-    with:
-      device_prompt: 'An Intel laptop with an NPU running Ubuntu 24.04'
-      repository: ${{ github.repository }}
-    secrets:
-      C3_CLIENT_ID: ${{ secrets.C3_CLIENT_ID }}
-      C3_CLIENT_SECRET: ${{ secrets.C3_CLIENT_SECRET }}
-      TESTFLINGER_CLIENT_ID: ${{ secrets.TESTFLINGER_CLIENT_ID }}
-      TESTFLINGER_SECRET_KEY: ${{ secrets.TESTFLINGER_SECRET_KEY }}
-      COPILOT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    name: Vibe test on lab device
+    runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
+    steps:
+      - name: Check out repository under test
+        uses: actions/checkout@v7
+
+      # partner-eng-gh-actions is private; check it out with the PE bot PAT and
+      # reference the lab-* actions by local path (same pattern as
+      # integration-tests.yaml).
+      - name: Check out partner-eng-gh-actions
+        uses: actions/checkout@v7
+        with:
+          repository: canonical/partner-eng-gh-actions
+          ref: feature/vibe-tester
+          token: ${{ secrets.PE_BOT_PAT }}
+          path: .github/actions/partner-eng-gh-actions
+
+      - name: Find lab device
+        id: find-device
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab-find-device
+        with:
+          device_prompt: 'An Intel laptop with an NPU running Ubuntu 24.04'
+          c3_client_id: ${{ secrets.C3_CLIENT_ID }}
+          c3_client_secret: ${{ secrets.C3_CLIENT_SECRET }}
+          testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
+          testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
+          copilot_github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fail if no device matched
+        if: ${{ steps.find-device.outputs.matched != 'true' }}
+        run: |
+          echo "::error::No lab device matched the description"
+          exit 1
+
+      - name: Select tests
+        id: select-tests
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab-select-tests
+        with:
+          repository_path: .
+          device_context: ${{ steps.find-device.outputs.details }}
+          copilot_github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run tests on device
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab-run-tests
+        with:
+          queue: ${{ steps.find-device.outputs.queue }}
+          device_context: ${{ steps.find-device.outputs.details }}
+          test_plan: ${{ steps.select-tests.outputs.test_plan }}
+          testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
+          testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
+          copilot_github_token: ${{ secrets.GITHUB_TOKEN }}
