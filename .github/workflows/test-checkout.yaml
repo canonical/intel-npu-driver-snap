@@ -24,6 +24,34 @@ jobs:
         env:
           PE_BOT_PAT: ${{ secrets.PE_BOT_PAT }}
 
+      - name: Test API access to repository
+        run: |
+          echo "Testing API access to canonical/partner-eng-gh-actions..."
+          response=$(curl -s -w "\n%{http_code}" -H "Authorization: token ${{ secrets.PE_BOT_PAT }}" \
+            https://api.github.com/repos/canonical/partner-eng-gh-actions)
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "HTTP Status Code: $http_code"
+          
+          if [ "$http_code" = "200" ]; then
+            echo "✓ Token has access to the repository"
+            echo "$body" | jq -r '{name, private, visibility}'
+          elif [ "$http_code" = "404" ]; then
+            echo "✗ Repository not found or token lacks access (404)"
+            echo "This could mean:"
+            echo "  - Repository doesn't exist"
+            echo "  - Token doesn't have permission"
+            echo "  - SSO authorization required but not granted"
+          elif [ "$http_code" = "401" ]; then
+            echo "✗ Authentication failed (401)"
+            echo "Token might be invalid or expired"
+          else
+            echo "✗ Unexpected response: $http_code"
+            echo "$body"
+          fi
+
       - name: Test checkout with PAT
         uses: actions/checkout@v7
         with:
