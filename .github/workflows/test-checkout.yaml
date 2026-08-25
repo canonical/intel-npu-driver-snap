@@ -1,0 +1,59 @@
+name: Test Checkout
+
+on:
+  push:
+    branches:
+      - 'bugfix/checkout-partner-eng-gh-actions'
+    paths:
+      - '.github/workflows/test-checkout.yaml'
+  workflow_dispatch:
+
+jobs:
+  test-checkout:
+    name: Test partner-eng-gh-actions checkout
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug token availability
+        run: |
+          if [ -n "${{ secrets.PE_BOT_PAT }}" ]; then
+            echo "PE_BOT_PAT is set (length: ${#PE_BOT_PAT})"
+          else
+            echo "ERROR: PE_BOT_PAT is not set"
+            exit 1
+          fi
+        env:
+          PE_BOT_PAT: ${{ secrets.PE_BOT_PAT }}
+
+      - name: Test checkout with PAT
+        uses: actions/checkout@v7
+        with:
+          repository: canonical/partner-eng-gh-actions
+          ref: main
+          token: ${{ secrets.PE_BOT_PAT }}
+          path: test-repo
+
+      - name: Verify checkout succeeded
+        run: |
+          echo "Checkout successful!"
+          ls -la test-repo/
+          echo ""
+          echo "Repository contents:"
+          find test-repo -maxdepth 2 -type f
+
+      - name: Test with GITHUB_TOKEN (should fail for private repo)
+        continue-on-error: true
+        uses: actions/checkout@v7
+        with:
+          repository: canonical/partner-eng-gh-actions
+          ref: main
+          token: ${{ github.token }}
+          path: test-repo-2
+        id: test-default-token
+
+      - name: Report default token result
+        run: |
+          if [ "${{ steps.test-default-token.outcome }}" == "failure" ]; then
+            echo "As expected, GITHUB_TOKEN cannot access private cross-org repo"
+          else
+            echo "Surprisingly, GITHUB_TOKEN worked"
+          fi

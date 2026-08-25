@@ -1,0 +1,44 @@
+name: Test Checkout on Self-Hosted
+
+on:
+  push:
+    branches:
+      - 'bugfix/checkout-partner-eng-gh-actions'
+    paths:
+      - '.github/workflows/test-checkout-selfhosted.yaml'
+  workflow_dispatch:
+
+jobs:
+  test-checkout-selfhosted:
+    name: Test checkout on self-hosted runner
+    runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
+    steps:
+      - name: Clean workspace
+        run: |
+          echo "Cleaning any previous checkout attempts..."
+          rm -rf .github/actions/partner-eng-gh-actions || true
+          
+      - name: Check git configuration
+        run: |
+          echo "Git version:"
+          git --version
+          echo ""
+          echo "Git config:"
+          git config --list || true
+          echo ""
+          echo "HOME: $HOME"
+          echo "Current directory: $(pwd)"
+
+      - name: Test checkout with explicit cleanup
+        uses: actions/checkout@v7
+        with:
+          repository: canonical/partner-eng-gh-actions
+          ref: main
+          token: ${{ secrets.PE_BOT_PAT }}
+          path: .github/actions/partner-eng-gh-actions
+          clean: true
+
+      - name: Verify checkout
+        run: |
+          echo "Checkout successful!"
+          ls -la .github/actions/partner-eng-gh-actions/
