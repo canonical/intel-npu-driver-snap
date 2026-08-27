@@ -11,6 +11,11 @@ on:
     branches:
       - feature/vibe-coder
   workflow_dispatch:
+    inputs:
+      prefer_new:
+        description: 'Prefer devices not yet successfully run on (spread coverage)'
+        type: boolean
+        default: false
 
 # Avoid overlapping runs holding lab hardware.
 concurrency:
@@ -18,7 +23,8 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   vibe-test:
@@ -50,6 +56,8 @@ jobs:
           testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
           copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           hwcert_jobs_token: ${{ secrets.PE_BOT_PAT }}
+          history_path: ${{ github.workspace }}/.github/lab-history
+          prefer_new: ${{ inputs.prefer_new || false }}
 
       - name: Fail if no device matched
         if: ${{ steps.find-device.outputs.matched != 'true' }}
@@ -66,6 +74,7 @@ jobs:
           copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
       - name: Run tests on device
+        id: run-tests
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab-run-tests
         with:
           queue: ${{ steps.find-device.outputs.queue }}
@@ -74,3 +83,15 @@ jobs:
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
           copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+      - name: Record device history
+        if: ${{ always() && steps.find-device.outputs.matched == 'true' }}
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab-update-history
+        with:
+          device: ${{ steps.find-device.outputs.device }}
+          queue: ${{ steps.find-device.outputs.queue }}
+          device_context: ${{ steps.find-device.outputs.details }}
+          job_path: ${{ steps.run-tests.outputs.job_path }}
+          outcome: ${{ steps.run-tests.outputs.passed == 'true' && 'passed' || steps.run-tests.outputs.passed == 'false' && 'failed' || 'unknown' }}
+          provision_outcome: ${{ steps.run-tests.outputs.provisioned == 'true' && 'passed' || steps.run-tests.outputs.provisioned == 'false' && 'failed' || 'unknown' }}
+          job_id: ${{ steps.run-tests.outputs.job_id }}
