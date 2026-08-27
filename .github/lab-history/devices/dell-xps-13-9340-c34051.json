@@ -1,0 +1,33 @@
+{
+  "capabilities": [
+    "Intel Core Ultra 7 155H (Meteor Lake)",
+    "Intel NPU",
+    "laptop"
+  ],
+  "device": "dell-xps-13-9340-c34051",
+  "history": [
+    {
+      "at": "2026-08-27T23:01:58Z",
+      "commit": "42ba29bc5a0120bc3d4b667d5fd0406a3d4febaa",
+      "job_id": "0c5f02f3-2a56-4ae7-a48e-62390d9e5d3a",
+      "outcome": "passed",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33121909118"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/dell-xps-13-9340-c34051.yaml",
+  "last_outcome": "passed",
+  "last_provision_outcome": "passed",
+  "last_run": {
+    "at": "2026-08-27T23:01:58Z",
+    "commit": "42ba29bc5a0120bc3d4b667d5fd0406a3d4febaa",
+    "job_id": "0c5f02f3-2a56-4ae7-a48e-62390d9e5d3a",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33121909118"
+  },
+  "os_release": "Ubuntu 24.04 (noble)",
+  "provision_data": {
+    "url": "https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04a/20240729-53/somerville-noble-oem-24.04a-20240729-53.iso"
+  },
+  "provision_type": "oem_autoinstall",
+  "queue": "dell-xps-13-9340-c34051"
+}
