@@ -49,6 +49,7 @@ jobs:
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
           copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          hwcert_jobs_token: ${{ secrets.PE_BOT_PAT }}
 
       - name: Fail if no device matched
         if: ${{ steps.find-device.outputs.matched != 'true' }}
