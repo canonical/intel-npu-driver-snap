@@ -1,0 +1,32 @@
+{
+  "capabilities": [
+    "Intel NPU (AI Boost)",
+    "laptop"
+  ],
+  "device": "Dell Pro Essential 14 PV14260 (canonical_id 202512-38237, platform codename \"Sentry MLK2\", Meteor Lake generation)",
+  "history": [
+    {
+      "at": "2026-08-28T15:07:58Z",
+      "commit": "730d550ce00bf9a1ab4510cd644a4fcfb8d55add",
+      "job_id": "f624bebc-ac8e-47a4-b27a-ac4694f73bd6",
+      "outcome": "passed",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33179851184"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/Dell_Pro_Essential_14_PV14260__canonical_id_202512-38237__platform_codename__Sentry_MLK2___Meteor_Lake_generation_.yaml",
+  "last_outcome": "passed",
+  "last_provision_outcome": "passed",
+  "last_run": {
+    "at": "2026-08-28T15:07:58Z",
+    "commit": "730d550ce00bf9a1ab4510cd644a4fcfb8d55add",
+    "job_id": "f624bebc-ac8e-47a4-b27a-ac4694f73bd6",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33179851184"
+  },
+  "os_release": "Ubuntu 24.04 (noble)",
+  "provision_data": {
+    "url": "https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04d-proposed/20260212-86/somerville-noble-oem-24.04d-proposed-20260212-86.iso"
+  },
+  "provision_type": "oem_autoinstall",
+  "queue": "dell-pro-essential-14-pv14260-c38237"
+}
