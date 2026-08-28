@@ -1,0 +1,8 @@
+job_queue: 202106-29206
+global_timeout: 3600
+provision_data:
+  distro: desktop-26-04-uefi
+reserve_data:
+  ssh_keys:
+  - lp:wfrench
+  timeout: 1800

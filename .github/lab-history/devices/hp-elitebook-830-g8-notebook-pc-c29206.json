@@ -1,0 +1,31 @@
+{
+  "capabilities": [
+    "Intel integrated GPU (Iris Xe, Tiger Lake)"
+  ],
+  "device": "hp-elitebook-830-g8-notebook-pc-c29206",
+  "history": [
+    {
+      "at": "2026-08-28T14:47:05Z",
+      "commit": "730d550ce00bf9a1ab4510cd644a4fcfb8d55add",
+      "job_id": "1ddb188a-c244-493a-83ac-3b7566d1f853",
+      "outcome": "skipped",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33179851283"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/hp-elitebook-830-g8-notebook-pc-c29206.yaml",
+  "last_outcome": "skipped",
+  "last_provision_outcome": "passed",
+  "last_run": {
+    "at": "2026-08-28T14:47:05Z",
+    "commit": "730d550ce00bf9a1ab4510cd644a4fcfb8d55add",
+    "job_id": "1ddb188a-c244-493a-83ac-3b7566d1f853",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33179851283"
+  },
+  "os_release": "26.04 (resolute)",
+  "provision_data": {
+    "distro": "desktop-26-04-uefi"
+  },
+  "provision_type": "maas2",
+  "queue": "202106-29206"
+}
