@@ -47,7 +47,7 @@ jobs:
 
       - name: Find lab device
         id: find-device
-        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab-find-device
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/find-device
         with:
           device_prompt: 'An Intel laptop with an NPU running Ubuntu 24.04'
           c3_client_id: ${{ secrets.C3_CLIENT_ID }}
@@ -67,7 +67,7 @@ jobs:
 
       - name: Select tests
         id: select-tests
-        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab-select-tests
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/select-tests
         with:
           repository_path: .
           device_context: ${{ steps.find-device.outputs.details }}
@@ -75,7 +75,7 @@ jobs:
 
       - name: Run tests on device
         id: run-tests
-        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab-run-tests
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/run-tests
         with:
           queue: ${{ steps.find-device.outputs.queue }}
           device_context: ${{ steps.find-device.outputs.details }}
@@ -86,7 +86,7 @@ jobs:
 
       - name: Record device history
         if: ${{ always() && steps.find-device.outputs.matched == 'true' }}
-        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab-update-history
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/update-history
         with:
           device: ${{ steps.find-device.outputs.device }}
           queue: ${{ steps.find-device.outputs.queue }}
