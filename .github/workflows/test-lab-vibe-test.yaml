@@ -10,6 +10,9 @@ on:
   push:
     branches:
       - feature/vibe-coder
+    # Only run when this harness (or the tooling it exercises) actually changes.
+    paths:
+      - .github/workflows/test-lab-vibe-test.yaml
   workflow_dispatch:
     inputs:
       prefer_new:

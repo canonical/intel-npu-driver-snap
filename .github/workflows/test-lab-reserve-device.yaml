@@ -49,7 +49,7 @@ jobs:
         id: find-device
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/find-device
         with:
-          device_prompt: 'An Intel laptop with a Lunar Lake NPU running Ubuntu 24.04'
+          device_prompt: 'Any lab device with an Intel GPU (an integrated GPU is fine) running Ubuntu 26.04'
           c3_client_id: ${{ secrets.C3_CLIENT_ID }}
           c3_client_secret: ${{ secrets.C3_CLIENT_SECRET }}
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
