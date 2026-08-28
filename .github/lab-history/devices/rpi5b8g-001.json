@@ -1,0 +1,33 @@
+{
+  "capabilities": [
+    "arm64 CPU",
+    "Raspberry Pi 5 Model B"
+  ],
+  "device": "rpi5b8g-001",
+  "history": [
+    {
+      "at": "2026-08-28T21:28:53Z",
+      "commit": "2c3499f067ff2423257b6cd6aea60ff197582287",
+      "job_id": "1a5d7db2-f869-4cc7-83d2-494984252a22",
+      "outcome": "skipped",
+      "provision": "failed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33212364420"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/rpi5b8g-001.yaml",
+  "last_outcome": "skipped",
+  "last_provision_outcome": "failed",
+  "last_run": {
+    "at": "2026-08-28T21:28:53Z",
+    "commit": "2c3499f067ff2423257b6cd6aea60ff197582287",
+    "job_id": "1a5d7db2-f869-4cc7-83d2-494984252a22",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33212364420"
+  },
+  "os_release": "Ubuntu 26.04 (resolute)",
+  "provision_data": {
+    "preset": "RPiClassic",
+    "url": "https://tel-image-cache.canonical.com/cdimage/ubuntu/releases/resolute/release/ubuntu-26.04-preinstalled-server-arm64+raspi.img.xz"
+  },
+  "provision_type": "control_host_iot",
+  "queue": "rpi5b8g"
+}
