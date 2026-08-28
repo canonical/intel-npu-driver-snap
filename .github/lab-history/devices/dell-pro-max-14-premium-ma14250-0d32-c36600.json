@@ -1,0 +1,33 @@
+{
+  "capabilities": [
+    "NVIDIA discrete GPU",
+    "Intel Core Ultra Arrow Lake CPU",
+    "oem_autoinstall provisioning"
+  ],
+  "device": "dell-pro-max-14-premium-ma14250-0d32-c36600",
+  "history": [
+    {
+      "at": "2026-08-28T19:50:37Z",
+      "commit": "cb719dc3ded5fe8729d5f43ef2b2505eb1ade8ba",
+      "job_id": "3580a0fa-b41a-4f4f-a196-627c1a442091",
+      "outcome": "skipped",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33203860851"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/dell-pro-max-14-premium-ma14250-0d32-c36600.yaml",
+  "last_outcome": "skipped",
+  "last_provision_outcome": "passed",
+  "last_run": {
+    "at": "2026-08-28T19:50:37Z",
+    "commit": "cb719dc3ded5fe8729d5f43ef2b2505eb1ade8ba",
+    "job_id": "3580a0fa-b41a-4f4f-a196-627c1a442091",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33203860851"
+  },
+  "os_release": "Ubuntu 24.04 (Noble) OEM",
+  "provision_data": {
+    "url": "https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04b-proposed/20250521-513/somerville-noble-oem-24.04b-proposed-20250521-513.iso"
+  },
+  "provision_type": "oem_autoinstall",
+  "queue": "202504-36600"
+}
