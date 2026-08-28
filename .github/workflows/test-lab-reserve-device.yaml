@@ -31,6 +31,30 @@ jobs:
     name: Reserve lab device
     runs-on: ubuntu-latest
     steps:
+      # Security: the lab agents run `copilot --allow-all-tools` with lab
+      # credentials in env while ingesting untrusted content, so a prompt-injection
+      # payload could try to exfiltrate secrets. harden-runner monitors egress; run
+      # in `audit` to capture the endpoint set, then switch egress-policy to `block`
+      # (allowed-endpoints take effect only in block mode; refine from the audit).
+      - name: Harden runner (egress audit)
+        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+        with:
+          egress-policy: audit
+          disable-sudo: false
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            codeload.github.com:443
+            objects.githubusercontent.com:443
+            api.githubcopilot.com:443
+            api.individual.githubcopilot.com:443
+            proxy.individual.githubcopilot.com:443
+            copilot-proxy.githubusercontent.com:443
+            registry.npmjs.org:443
+            api.snapcraft.io:443
+            testflinger.canonical.com:443
+            certification.canonical.com:443
+
       - name: Check out repository under test
         uses: actions/checkout@v7
 
@@ -49,7 +73,7 @@ jobs:
         id: find-device
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/find-device
         with:
-          device_prompt: 'A device with a recent NVIDIA GPU running Ubuntu 24.04'
+          device_prompt: 'A device with an AMD GPU running Ubuntu 24.04'
           c3_client_id: ${{ secrets.C3_CLIENT_ID }}
           c3_client_secret: ${{ secrets.C3_CLIENT_SECRET }}
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
