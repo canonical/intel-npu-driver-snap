@@ -32,7 +32,7 @@ permissions:
 jobs:
   vibe-test:
     name: Vibe test on lab device
-    runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
+    runs-on: ubuntu-latest
     steps:
       - name: Check out repository under test
         uses: actions/checkout@v7
