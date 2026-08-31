@@ -83,7 +83,7 @@ jobs:
         timeout-minutes: 20
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/find-device
         with:
-          device_prompt: ${{ inputs.device_prompt || 'A device with an Intel Panther Lake CPU running Ubuntu 24.04' }}
+          device_prompt: ${{ inputs.device_prompt || 'A device with an Intel Panther Lake CPU running Ubuntu 26.04 (preferred) or 24.04' }}
           c3_client_id: ${{ secrets.C3_CLIENT_ID }}
           c3_client_secret: ${{ secrets.C3_CLIENT_SECRET }}
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
