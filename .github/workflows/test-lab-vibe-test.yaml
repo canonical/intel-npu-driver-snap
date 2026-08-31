@@ -1,10 +1,9 @@
 name: Test lab-vibe-test
 
 # Test harness for the lab-vibe-test tooling in partner-eng-gh-actions.
-# partner-eng-gh-actions is private, so we call its reusable workflow and pass
-# PE_BOT_ORG_READ_ACCESS_PAT (mapped from PE_BOT_PAT) so the workflow can check
-# out the private composite actions and hwcert job-data. Triggers on pushes to
-# the testing branch.
+# partner-eng-gh-actions is private and this repo is public; a public repo cannot
+# call a private repo's reusable workflow, so we check the actions out with the PE
+# bot PAT and invoke them by local path, mirroring the reusable workflow's steps.
 on:
   push:
     branches:
@@ -39,19 +38,98 @@ permissions:
 jobs:
   vibe-test:
     name: Vibe test on lab device
-    uses: canonical/partner-eng-gh-actions/.github/workflows/lab-vibe-test.yml@feature/vibe-tester
-    with:
-      device_prompt: ${{ inputs.device_prompt || 'A device with an Intel Panther Lake CPU running Ubuntu 24.04' }}
-      # On push there are no inputs, so default record_history/prefer_new to true;
-      # a workflow_dispatch run can still override either to false.
-      prefer_new: ${{ github.event_name != 'workflow_dispatch' || inputs.prefer_new }}
-      record_history: ${{ github.event_name != 'workflow_dispatch' || inputs.record_history }}
-    secrets:
-      C3_CLIENT_ID: ${{ secrets.C3_CLIENT_ID }}
-      C3_CLIENT_SECRET: ${{ secrets.C3_CLIENT_SECRET }}
-      TESTFLINGER_CLIENT_ID: ${{ secrets.TESTFLINGER_CLIENT_ID }}
-      TESTFLINGER_SECRET_KEY: ${{ secrets.TESTFLINGER_SECRET_KEY }}
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-      # Maps the intel repo's existing PE bot PAT to the reusable workflow's
-      # org-read secret so it can check out the private actions + hwcert job-data.
-      PE_BOT_ORG_READ_ACCESS_PAT: ${{ secrets.PE_BOT_PAT }}
+    runs-on: ubuntu-latest
+    # Backstop so a stuck agent can't hold the runner for the 6h default.
+    timeout-minutes: 360
+    steps:
+      # Mirrors the harden-runner step in the partner-eng reusable workflow (block
+      # mode, same allowlist); the snap-CDN POPs may rotate and need re-adding.
+      - name: Harden runner (egress block)
+        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+        with:
+          egress-policy: block
+          disable-sudo: false
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+            codeload.github.com:443
+            objects.githubusercontent.com:443
+            api.githubcopilot.com:443
+            api.business.githubcopilot.com:443
+            telemetry.business.githubcopilot.com:443
+            registry.npmjs.org:443
+            pypi.org:443
+            api.snapcraft.io:443
+            canonical-bos01.cdn.snapcraftcontent.com:443
+            canonical-lgw01.cdn.snapcraftcontent.com:443
+            testflinger.canonical.com:443
+            certification.canonical.com:443
+
+      - name: Check out repository under test
+        uses: actions/checkout@v7
+
+      # A public repo cannot call a private repo's reusable workflow, so check the
+      # actions out with the PE bot PAT and invoke them by local path instead.
+      - name: Check out partner-eng-gh-actions
+        uses: actions/checkout@v7
+        with:
+          repository: canonical/partner-eng-gh-actions
+          ref: feature/vibe-tester
+          token: ${{ secrets.PE_BOT_PAT }}
+          path: .github/actions/partner-eng-gh-actions
+
+      - name: Find lab device
+        id: find-device
+        timeout-minutes: 20
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/find-device
+        with:
+          device_prompt: ${{ inputs.device_prompt || 'A device with an Intel Panther Lake CPU running Ubuntu 24.04' }}
+          c3_client_id: ${{ secrets.C3_CLIENT_ID }}
+          c3_client_secret: ${{ secrets.C3_CLIENT_SECRET }}
+          testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
+          testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
+          copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          hwcert_jobs_token: ${{ secrets.PE_BOT_PAT }}
+          history_path: ${{ github.workspace }}/.github/lab-history
+          # On push there are no inputs, so default prefer_new to true; a
+          # workflow_dispatch run can still override it to false.
+          prefer_new: ${{ github.event_name != 'workflow_dispatch' || inputs.prefer_new }}
+
+      - name: Fail if no device matched
+        if: ${{ steps.find-device.outputs.matched != 'true' }}
+        run: |
+          echo "::error::No lab device matched the description"
+          exit 1
+
+      - name: Select tests
+        id: select-tests
+        timeout-minutes: 20
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/select-tests
+        with:
+          repository_path: .
+          device_context: ${{ steps.find-device.outputs.details }}
+          copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+      - name: Run tests on device
+        id: run-tests
+        timeout-minutes: 300
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/run-tests
+        with:
+          queue: ${{ steps.find-device.outputs.queue }}
+          device_context: ${{ steps.find-device.outputs.details }}
+          test_plan: ${{ steps.select-tests.outputs.test_plan }}
+          testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
+          testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
+          copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+      - name: Record device history
+        if: ${{ always() && steps.find-device.outputs.matched == 'true' && (github.event_name != 'workflow_dispatch' || inputs.record_history) }}
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/update-history
+        with:
+          device: ${{ steps.find-device.outputs.device }}
+          queue: ${{ steps.find-device.outputs.queue }}
+          device_context: ${{ steps.find-device.outputs.details }}
+          job_path: ${{ steps.run-tests.outputs.job_path }}
+          outcome: ${{ steps.run-tests.outputs.passed == 'true' && 'passed' || steps.run-tests.outputs.passed == 'false' && 'failed' || 'unknown' }}
+          provision_outcome: ${{ steps.run-tests.outputs.provisioned == 'true' && 'passed' || steps.run-tests.outputs.provisioned == 'false' && 'failed' || 'unknown' }}
+          job_id: ${{ steps.run-tests.outputs.job_id }}
