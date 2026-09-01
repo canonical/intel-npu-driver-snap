@@ -38,7 +38,8 @@ permissions:
 jobs:
   reserve:
     name: Reserve lab device
-    runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
+    #runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
+    runs-on: ubuntu-latest
     # Backstop so a stuck agent can't hold the runner (provisioning can take a while).
     timeout-minutes: 150
     steps:
