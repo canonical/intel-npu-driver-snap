@@ -1,0 +1,32 @@
+{
+  "capabilities": [
+    "Intel NPU (AI Boost)",
+    "Arrow Lake (ARL)"
+  ],
+  "device": "dell-pro-14-pc14250-0d63-c36320",
+  "history": [
+    {
+      "at": "2026-09-01T15:38:52Z",
+      "commit": "d7a97b211cb3bbf993e69485c3c3a1ddd5242f4c",
+      "job_id": "a68c3cd6-5b01-4894-9860-ce2b574a7ce5",
+      "outcome": "skipped",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33524363947"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/dell-pro-14-pc14250-0d63-c36320.yaml",
+  "last_outcome": "skipped",
+  "last_provision_outcome": "passed",
+  "last_run": {
+    "at": "2026-09-01T15:38:52Z",
+    "commit": "d7a97b211cb3bbf993e69485c3c3a1ddd5242f4c",
+    "job_id": "a68c3cd6-5b01-4894-9860-ce2b574a7ce5",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33524363947"
+  },
+  "os_release": "24.04",
+  "provision_data": {
+    "url": "https://tel-image-cache.canonical.com/oem-share//somerville/releases/noble/oem-24.04b-proposed/20250122-168/somerville-noble-oem-24.04b-proposed-20250122-168.iso"
+  },
+  "provision_type": "oem_autoinstall",
+  "queue": "202502-36320"
+}

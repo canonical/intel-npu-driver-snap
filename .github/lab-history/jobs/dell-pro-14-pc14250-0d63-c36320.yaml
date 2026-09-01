@@ -1,0 +1,8 @@
+job_queue: 202502-36320
+provision_data:
+  url: https://tel-image-cache.canonical.com/oem-share//somerville/releases/noble/oem-24.04b-proposed/20250122-168/somerville-noble-oem-24.04b-proposed-20250122-168.iso
+reserve_data:
+  ssh_keys:
+    - lp:wfrench
+  timeout: 1800
+global_timeout: 2400
