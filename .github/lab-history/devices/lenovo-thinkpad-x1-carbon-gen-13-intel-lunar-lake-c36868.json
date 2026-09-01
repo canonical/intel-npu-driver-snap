@@ -1,0 +1,33 @@
+{
+  "capabilities": [
+    "Intel NPU (AI Boost)",
+    "Lunar Lake",
+    "Copilot+ laptop"
+  ],
+  "device": "lenovo-thinkpad-x1-carbon-gen-13-intel-lunar-lake-c36868",
+  "history": [
+    {
+      "at": "2026-08-28T01:46:34Z",
+      "commit": "62e003895dcd8fe5e8134f53b74e1fe80e6465fa",
+      "job_id": "7596caa7-01b8-4854-8188-91533c07d53e",
+      "outcome": "skipped",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33132804864"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/lenovo-thinkpad-x1-carbon-gen-13-intel-lunar-lake-c36868.yaml",
+  "last_outcome": "skipped",
+  "last_provision_outcome": "passed",
+  "last_run": {
+    "at": "2026-08-28T01:46:34Z",
+    "commit": "62e003895dcd8fe5e8134f53b74e1fe80e6465fa",
+    "job_id": "7596caa7-01b8-4854-8188-91533c07d53e",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33132804864"
+  },
+  "os_release": "noble (Ubuntu 24.04)",
+  "provision_data": {
+    "url": "https://tel-image-cache.canonical.com/oem-share/sutton/releases/noble/oem-24.04c/20250904-61/sutton-noble-oem-24.04c-20250904-61.iso"
+  },
+  "provision_type": "oem_autoinstall",
+  "queue": "202506-36868"
+}
