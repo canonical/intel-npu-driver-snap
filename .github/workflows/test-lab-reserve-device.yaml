@@ -38,34 +38,32 @@ permissions:
 jobs:
   reserve:
     name: Reserve lab device
-    #runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
     runs-on: ubuntu-latest
     # Backstop so a stuck agent can't hold the runner (provisioning can take a while).
     timeout-minutes: 150
     steps:
-      # Egress monitoring (audit). On self-hosted runners harden-runner's free tier
-      # is audit-only and may no-op, so this is best-effort; the allowlist is kept
-      # for supported environments. snap-CDN POPs may rotate and need re-adding.
-      - name: Harden runner (egress audit)
-        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+      # Egress control. Must be the first step so bullfrog can see all outbound
+      # traffic; anything not on the allowlist is blocked. snap-CDN POPs may
+      # rotate and need re-adding.
+      - name: Control egress (bullfrog)
+        uses: bullfrogsec/bullfrog@7dee337d4575320b6d8cbe9a56d48d2fb765963a # v0.11.1
         with:
-          egress-policy: audit
-          disable-sudo: false
-          allowed-endpoints: >
-            github.com:443
-            api.github.com:443
-            codeload.github.com:443
-            objects.githubusercontent.com:443
-            api.githubcopilot.com:443
-            api.business.githubcopilot.com:443
-            telemetry.business.githubcopilot.com:443
-            registry.npmjs.org:443
-            pypi.org:443
-            api.snapcraft.io:443
-            canonical-bos01.cdn.snapcraftcontent.com:443
-            canonical-lgw01.cdn.snapcraftcontent.com:443
-            testflinger.canonical.com:443
-            certification.canonical.com:443
+          egress-policy: block
+          allowed-domains: |
+            github.com
+            api.github.com
+            codeload.github.com
+            objects.githubusercontent.com
+            api.githubcopilot.com
+            api.business.githubcopilot.com
+            telemetry.business.githubcopilot.com
+            registry.npmjs.org
+            pypi.org
+            api.snapcraft.io
+            canonical-bos01.cdn.snapcraftcontent.com
+            canonical-lgw01.cdn.snapcraftcontent.com
+            testflinger.canonical.com
+            certification.canonical.com
 
       - name: Check out repository under test
         uses: actions/checkout@v7
