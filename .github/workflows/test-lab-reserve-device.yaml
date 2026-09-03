@@ -1,9 +1,5 @@
 name: Test lab-reserve-device-by-prompt
 
-# Test harness for the lab-reserve-device tooling in partner-eng-gh-actions.
-# partner-eng-gh-actions is private and this repo is public; a public repo cannot
-# call a private repo's reusable workflow, so we check the actions out with the PE
-# bot PAT and invoke them by local path, mirroring the reusable workflow's steps.
 on:
   push:
     branches:
