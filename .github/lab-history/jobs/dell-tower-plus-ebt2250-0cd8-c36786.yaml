@@ -1,0 +1,8 @@
+job_queue: 202505-36786
+global_timeout: 2400
+provision_data:
+  url: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04c/20250811-37/somerville-noble-oem-24.04c-20250811-37.iso
+reserve_data:
+  ssh_keys:
+    - lp:wfrench
+  timeout: 1800
