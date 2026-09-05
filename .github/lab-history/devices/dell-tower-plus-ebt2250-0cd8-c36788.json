@@ -1,0 +1,32 @@
+{
+  "capabilities": [
+    "Intel NPU (AI Boost)",
+    "Arrow Lake (ARL)"
+  ],
+  "device": "dell-tower-plus-ebt2250-0cd8-c36788",
+  "history": [
+    {
+      "at": "2026-09-01T02:31:07Z",
+      "commit": "66b862c478d8a9a4aa30369dd6a9273839cf1b35",
+      "job_id": "41b26087-58ae-4507-9490-b7c83cbc9a8e",
+      "outcome": "failed",
+      "provision": "failed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33434599189"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/dell-tower-plus-ebt2250-0cd8-c36788.yaml",
+  "last_outcome": "failed",
+  "last_provision_outcome": "failed",
+  "last_run": {
+    "at": "2026-09-01T02:31:07Z",
+    "commit": "66b862c478d8a9a4aa30369dd6a9273839cf1b35",
+    "job_id": "41b26087-58ae-4507-9490-b7c83cbc9a8e",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33434599189"
+  },
+  "os_release": "24.04 (noble)",
+  "provision_data": {
+    "url": "https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04c/20250811-37/somerville-noble-oem-24.04c-20250811-37.iso"
+  },
+  "provision_type": "oem_autoinstall",
+  "queue": "202505-36788"
+}
