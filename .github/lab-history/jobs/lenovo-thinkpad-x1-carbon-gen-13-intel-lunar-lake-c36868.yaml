@@ -1,0 +1,8 @@
+job_queue: 202506-36868
+global_timeout: 5400
+provision_data:
+  url: https://tel-image-cache.canonical.com/oem-share/sutton/releases/noble/oem-24.04c/20250904-61/sutton-noble-oem-24.04c-20250904-61.iso
+reserve_data:
+  ssh_keys:
+  - lp:wfrench
+  timeout: 1800
