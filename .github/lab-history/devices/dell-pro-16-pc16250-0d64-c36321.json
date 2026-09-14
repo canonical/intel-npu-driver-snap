@@ -1,0 +1,32 @@
+{
+  "capabilities": [
+    "Intel NPU (AI Boost)",
+    "Arrow Lake"
+  ],
+  "device": "dell-pro-16-pc16250-0d64-c36321",
+  "history": [
+    {
+      "at": "2026-08-28T16:43:54Z",
+      "commit": "71dd7c2948fdf86f910e825102b076fea1b155c1",
+      "job_id": "38058caf-6fc1-473a-afdd-88ea5a202997",
+      "outcome": "skipped",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33189214687"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/dell-pro-16-pc16250-0d64-c36321.yaml",
+  "last_outcome": "skipped",
+  "last_provision_outcome": "passed",
+  "last_run": {
+    "at": "2026-08-28T16:43:54Z",
+    "commit": "71dd7c2948fdf86f910e825102b076fea1b155c1",
+    "job_id": "38058caf-6fc1-473a-afdd-88ea5a202997",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33189214687"
+  },
+  "os_release": "noble (24.04) OEM — Ubuntu 26.04 not yet available for this device in the job-data repo",
+  "provision_data": {
+    "url": "https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04b-proposed/20250122-168/somerville-noble-oem-24.04b-proposed-20250122-168.iso"
+  },
+  "provision_type": "oem_autoinstall",
+  "queue": "202502-36321"
+}
