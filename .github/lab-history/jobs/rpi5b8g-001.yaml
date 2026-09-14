@@ -1,0 +1,9 @@
+job_queue: rpi5b8g
+provision_data:
+  url: https://tel-image-cache.canonical.com/cdimage/ubuntu/releases/resolute/release/ubuntu-26.04-preinstalled-server-arm64+raspi.img.xz
+  preset: RPiClassic
+reserve_data:
+  ssh_keys:
+    - lp:wfrench
+  timeout: 1800
+global_timeout: 2400
