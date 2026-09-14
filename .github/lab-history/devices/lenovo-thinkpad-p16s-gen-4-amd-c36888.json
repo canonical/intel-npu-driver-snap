@@ -1,0 +1,32 @@
+{
+  "capabilities": [
+    "AMD GPU",
+    "AMD Ryzen AI 300 (Kraken Point) integrated Radeon graphics"
+  ],
+  "device": "lenovo-thinkpad-p16s-gen-4-amd-c36888",
+  "history": [
+    {
+      "at": "2026-08-28T21:14:51Z",
+      "commit": "b770cd9e1307905e420798b415a5220f7ef7ca8a",
+      "job_id": "4378c259-d4a5-4787-8b2b-061b7d8dc427",
+      "outcome": "skipped",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33210084440"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/lenovo-thinkpad-p16s-gen-4-amd-c36888.yaml",
+  "last_outcome": "skipped",
+  "last_provision_outcome": "passed",
+  "last_run": {
+    "at": "2026-08-28T21:14:51Z",
+    "commit": "b770cd9e1307905e420798b415a5220f7ef7ca8a",
+    "job_id": "4378c259-d4a5-4787-8b2b-061b7d8dc427",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33210084440"
+  },
+  "os_release": "Ubuntu 24.04 (noble)",
+  "provision_data": {
+    "url": "https://tel-image-cache.canonical.com/oem-share/sutton/releases/noble/oem-24.04b-proposed/20250620-519/sutton-noble-oem-24.04b-proposed-20250620-519.iso"
+  },
+  "provision_type": "oem_autoinstall",
+  "queue": "202506-36888"
+}
