@@ -1,0 +1,32 @@
+{
+  "capabilities": [
+    "Intel Core Ultra (Arrow Lake) laptop",
+    "Intel AI Boost NPU"
+  ],
+  "device": "Dell Pro 16 PC16250 (0D64) - Jade 16 ARL, canonical_id 202502-36321",
+  "history": [
+    {
+      "at": "2026-08-28T02:25:27Z",
+      "commit": "62e003895dcd8fe5e8134f53b74e1fe80e6465fa",
+      "job_id": "081d081e-3c2e-4025-a262-67d9b29536db",
+      "outcome": "passed",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33132804816"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/Dell_Pro_16_PC16250__0D64__-_Jade_16_ARL__canonical_id_202502-36321.yaml",
+  "last_outcome": "passed",
+  "last_provision_outcome": "passed",
+  "last_run": {
+    "at": "2026-08-28T02:25:27Z",
+    "commit": "62e003895dcd8fe5e8134f53b74e1fe80e6465fa",
+    "job_id": "081d081e-3c2e-4025-a262-67d9b29536db",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33132804816"
+  },
+  "os_release": "Ubuntu 24.04 (noble OEM)",
+  "provision_data": {
+    "url": "https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04b-proposed/20250122-168/somerville-noble-oem-24.04b-proposed-20250122-168.iso"
+  },
+  "provision_type": "oem_autoinstall",
+  "queue": "dell-pro-16-pc16250-0d64-c36321"
+}
