@@ -1,0 +1,72 @@
+job_queue: dell-pro-essential-14-pv14260-c38237
+global_timeout: 10800
+output_timeout: 7200
+provision_data:
+  url: "https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04d-proposed/20260212-86/somerville-noble-oem-24.04d-proposed-20260212-86.iso"
+test_data:
+  attachments:
+    - local: ".github/testflinger/checkbox-launcher"
+      agent: "checkbox-launcher"
+    - local: ".github/testflinger/check-npu-fw.sh"
+      agent: "check-npu-fw.sh"
+    - local: ".github/testflinger/set-device-access.sh"
+      agent: "set-device-access.sh"
+    - local: ".github/testflinger/machine-manifest.json"
+      agent: "machine-manifest.json"
+  test_cmds: |
+
+    set -x
+
+    # retrieve the tools installer
+    curl -Ls -o install_tools.sh https://raw.githubusercontent.com/canonical/hwcert-jenkins-tools/main/install_tools.sh
+    # install the scriptlets and other tools on the agent and the device, as necessary
+    export TOOLS_PATH=tools
+    source install_tools.sh $TOOLS_PATH
+
+    # ensure device is available before continuing
+    wait_for_ssh --allow-degraded
+
+    echo
+    echo "====== TARGET DEVICE CONNECTION INFO ======"
+    echo
+    echo DEVICE_IP: ubuntu@$DEVICE_IP
+    echo
+    echo "==========================================="
+    echo
+
+    # Avoid GPG errors on old unsupported versions of Chrome, which we don't test anyway
+    _run sudo rm /etc/apt/sources.list.d/google-chrome.list
+
+    _run sudo snap refresh
+    _run sudo snap install intel-npu-driver --channel latest/edge
+
+    echo "[INFO]: Sleeping for 60 seconds to ensure the firmware search path is updated."
+    sleep 60
+
+    # npu-firmware-search-path-check: confirm the intel-npu-driver snap install hook
+    # updated the kernel firmware_class search path and a .bin firmware blob is present.
+    _put attachments/test/check-npu-fw.sh :/home/ubuntu/check-npu-fw.sh
+    _run bash check-npu-fw.sh
+
+    # as of 6 April 2026 the NPU provider is only available in the latest/beta channel
+    _run sudo snap install checkbox24 --channel latest/beta
+    # checkbox snap is also needed for checkbox.checkbox-cli
+    _run sudo snap install checkbox --channel latest/stable --classic
+    # firmware test in NPU provider depends on strings command from binutils
+    _run install_packages --no-update -- binutils
+    # ensure checkbox directory exists as this is where the NPU manifest will be deployed
+    _run mkdir -p /var/tmp/checkbox-ng
+
+    _put attachments/test/set-device-access.sh :/home/ubuntu/set-device-access.sh
+    _put attachments/test/checkbox-launcher :/home/ubuntu/checkbox-launcher
+    _put attachments/test/machine-manifest.json :/var/tmp/checkbox-ng/machine-manifest.json
+
+    # npu-device-access-setup: add the user to the render group and fix
+    # /dev/accel/accel0 permissions so the NPU device node is usable.
+    _run sudo bash set-device-access.sh
+
+    # checkbox-npu-with-known-failures: run the curated Checkbox launcher targeting
+    # the com.canonical.certification::npu-with-known-failures test plan.
+    _run checkbox.checkbox-cli launcher checkbox-launcher
+    mkdir -p artifacts
+    _get '/home/ubuntu/.local/share/checkbox-ng/*.tar.xz' artifacts/
