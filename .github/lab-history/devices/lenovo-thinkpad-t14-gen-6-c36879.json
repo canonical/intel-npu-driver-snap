@@ -1,0 +1,33 @@
+{
+  "capabilities": [
+    "Intel NPU",
+    "Intel Core Ultra (Lunar Lake)",
+    "laptop"
+  ],
+  "device": "lenovo-thinkpad-t14-gen-6-c36879",
+  "history": [
+    {
+      "at": "2026-08-28T17:53:27Z",
+      "commit": "71dd7c2948fdf86f910e825102b076fea1b155c1",
+      "job_id": "9037ed0c-d846-4bd7-b069-e1fa9fac01ad",
+      "outcome": "failed",
+      "provision": "failed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33189214699"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/lenovo-thinkpad-t14-gen-6-c36879.yaml",
+  "last_outcome": "failed",
+  "last_provision_outcome": "failed",
+  "last_run": {
+    "at": "2026-08-28T17:53:27Z",
+    "commit": "71dd7c2948fdf86f910e825102b076fea1b155c1",
+    "job_id": "9037ed0c-d846-4bd7-b069-e1fa9fac01ad",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/33189214699"
+  },
+  "os_release": "24.04 (noble, oem-24.04b)",
+  "provision_data": {
+    "url": "https://tel-image-cache.canonical.com/oem-share/sutton/releases/noble/oem-24.04b/20250530-516/sutton-noble-oem-24.04b-20250530-516.iso"
+  },
+  "provision_type": "oem_autoinstall",
+  "queue": "lenovo-thinkpad-t14-gen-6-c36879"
+}
