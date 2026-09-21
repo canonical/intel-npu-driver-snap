@@ -43,6 +43,12 @@ jobs:
   reserve:
     name: Reserve lab device
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Fan out across generations in parallel on push only; schedule/workflow_dispatch
+        # use their own single free-form prompt, so 'auto' just runs the job once.
+        gen: ${{ github.event_name == 'push' && fromJSON('["MTL","LNL","ARL"]') || fromJSON('["auto"]') }}
+      fail-fast: false
     # Backstop so a stuck agent can't hold the runner (provisioning can take a while).
     timeout-minutes: 150
     steps:
@@ -72,6 +78,26 @@ jobs:
       - name: Check out repository under test
         uses: actions/checkout@v7
 
+      # update-history opens a rolling PR per run instead of committing straight to
+      # main, so main's history can lag behind very recent (unmerged) reservations.
+      # Overlay any still-open lab-history PRs so prefer_new sees them too.
+      - name: Overlay pending lab-history PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          devices_dir=.github/lab-history/devices
+          for branch in $(gh pr list --label lab-history --state open --json headRefName --jq '.[].headRefName'); do
+            git fetch --depth 1 origin "${branch}:refs/remotes/origin/${branch}" 2>/dev/null || continue
+            for path in $(git ls-tree -r --name-only "origin/${branch}" -- "${devices_dir}" 2>/dev/null); do
+              candidate="$(git show "origin/${branch}:${path}")"
+              if [[ ! -f "${path}" || "$(jq -r '.last_run.at' <<< "${candidate}")" > "$(jq -r '.last_run.at' "${path}")" ]]; then
+                mkdir -p "$(dirname "${path}")"
+                echo "${candidate}" > "${path}"
+              fi
+            done
+          done
+
       # A public repo cannot call a private repo's reusable workflow, so check the
       # actions out with the PE bot PAT and invoke them by local path instead.
       - name: Check out partner-eng-gh-actions
@@ -87,9 +113,10 @@ jobs:
         timeout-minutes: 20
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/find-device
         with:
-          # push (harness self-test) falls back to a plain prompt; schedule (daily
-          # coverage-building run) falls back to one that spreads hardware diversity.
-          device_prompt: ${{ inputs.device_prompt || (github.event_name == 'schedule' && 'A device containing an Intel NPU running Ubuntu 26.04 or 24.04. Consult job history from .github/lab-history (on main branch only) and try to test different generations of NPU (e.g. MTL, LNL, ARL, PTL), vendors (e.g. Dell, Lenovo), and form factors (laptop, desktop) that are not yet well covered.') || 'A device with an Intel MTL NPU running Ubuntu 24.04' }}
+          # push fans out one prompt per matrix.gen (parallel, harness self-test);
+          # schedule (daily coverage-building run) falls back to one that spreads
+          # hardware diversity itself.
+          device_prompt: ${{ inputs.device_prompt || (github.event_name == 'push' && format('A device with an Intel {0} NPU running Ubuntu 24.04', matrix.gen)) || (github.event_name == 'schedule' && 'A device containing an Intel NPU running Ubuntu 26.04 or 24.04. Consult job history from .github/lab-history (on main branch only) and try to test different generations of NPU (e.g. MTL, LNL, ARL, PTL), vendors (e.g. Dell, Lenovo), and form factors (laptop, desktop) that are not yet well covered.') || 'A device with an Intel MTL NPU running Ubuntu 24.04' }}
           c3_client_id: ${{ secrets.C3_CLIENT_ID }}
           c3_client_secret: ${{ secrets.C3_CLIENT_SECRET }}
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
