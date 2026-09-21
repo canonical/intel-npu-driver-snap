@@ -51,7 +51,7 @@ jobs:
       fail-fast: false
     # Backstop so a stuck agent can't hold the runner; must exceed the reserve
     # step's own timeout below plus room for checkout/find-device/history steps.
-    timeout-minutes: 140
+    timeout-minutes: 190
     steps:
       # Egress control. Must be the first step so bullfrog can see all outbound
       # traffic; anything not on the allowlist is blocked. snap-CDN POPs may
@@ -143,11 +143,13 @@ jobs:
 
       - name: Reserve device
         id: reserve
-        # Must exceed reserve-device's own (fixed, ~1h) output_timeout, or GitHub
-        # kills this step mid-poll before its internal results check can classify
-        # a slow provisioning failure, leaving provision_outcome stuck at
-        # "unknown" instead of "failed".
-        timeout-minutes: 100
+        # testflinger's own per-connector timeouts (SSH-poll, SNMP/redfish power
+        # control, etc.) aren't reliably bounded by output_timeout in practice --
+        # observed failures have taken up to ~95 minutes. Pad well past that, or
+        # GitHub kills this step mid-poll before its internal results check can
+        # classify a slow provisioning failure, leaving provision_outcome stuck
+        # at "unknown" instead of "failed".
+        timeout-minutes: 150
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/reserve-device
         with:
           queue: ${{ steps.find-device.outputs.queue }}
