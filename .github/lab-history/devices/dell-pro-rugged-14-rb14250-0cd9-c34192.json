@@ -1,0 +1,34 @@
+{
+  "capabilities": [
+    "Intel NPU (AI Boost)",
+    "Meteor Lake"
+  ],
+  "cpu_codename": "MTL",
+  "device": "dell-pro-rugged-14-rb14250-0cd9-c34192",
+  "ever_provisioned_successfully": false,
+  "history": [
+    {
+      "at": "2026-09-21T21:35:23Z",
+      "commit": "777b28be4bb44797d9770e79fa5486bcd1869c9f",
+      "job_id": "e4c8139f-3b03-434a-8648-1546a446080e",
+      "outcome": "skipped",
+      "provision": "unknown",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35648130657"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/dell-pro-rugged-14-rb14250-0cd9-c34192.yaml",
+  "last_outcome": "skipped",
+  "last_provision_outcome": "unknown",
+  "last_run": {
+    "at": "2026-09-21T21:35:23Z",
+    "commit": "777b28be4bb44797d9770e79fa5486bcd1869c9f",
+    "job_id": "e4c8139f-3b03-434a-8648-1546a446080e",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35648130657"
+  },
+  "os_release": "noble (24.04)",
+  "provision_data": {
+    "url": "https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04a/20241006-108/somerville-noble-oem-24.04a-20241006-108.iso"
+  },
+  "provision_type": "oem_autoinstall",
+  "queue": "dell-pro-rugged-14-rb14250-0cd9-c34192"
+}
