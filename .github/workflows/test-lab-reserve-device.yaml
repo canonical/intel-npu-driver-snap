@@ -49,8 +49,9 @@ jobs:
         # use their own single free-form prompt, so 'auto' just runs the job once.
         gen: ${{ github.event_name == 'push' && fromJSON('["MTL","LNL","ARL"]') || fromJSON('["auto"]') }}
       fail-fast: false
-    # Backstop so a stuck agent can't hold the runner (provisioning can take a while).
-    timeout-minutes: 150
+    # Backstop so a stuck agent can't hold the runner; must exceed the reserve
+    # step's own timeout below plus room for checkout/find-device/history steps.
+    timeout-minutes: 140
     steps:
       # Egress control. Must be the first step so bullfrog can see all outbound
       # traffic; anything not on the allowlist is blocked. snap-CDN POPs may
@@ -142,7 +143,11 @@ jobs:
 
       - name: Reserve device
         id: reserve
-        timeout-minutes: 90
+        # Must exceed reserve-device's own (fixed, ~1h) output_timeout, or GitHub
+        # kills this step mid-poll before its internal results check can classify
+        # a slow provisioning failure, leaving provision_outcome stuck at
+        # "unknown" instead of "failed".
+        timeout-minutes: 100
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/reserve-device
         with:
           queue: ${{ steps.find-device.outputs.queue }}
