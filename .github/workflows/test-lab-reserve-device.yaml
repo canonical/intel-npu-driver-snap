@@ -7,6 +7,10 @@ on:
     # Only run when this harness (or the tooling it exercises) actually changes.
     paths:
       - .github/workflows/test-lab-reserve-device.yaml
+  schedule:
+    # Daily device reservation to build up cross-generation lab-history coverage;
+    # schedule always runs against the default branch (main).
+    - cron: '17 4 * * *'
   workflow_dispatch:
     inputs:
       device_prompt:
@@ -21,6 +25,10 @@ on:
         description: 'Prefer devices not yet provisioned successfully (spread coverage)'
         type: boolean
         default: true
+      reserve_minutes:
+        description: 'Minutes to reserve the matched device for'
+        type: string
+        default: '1'
 
 # Avoid overlapping runs holding lab hardware.
 concurrency:
@@ -70,7 +78,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: canonical/partner-eng-gh-actions
-          ref: main
+          ref: lab/various-improvements
           token: ${{ secrets.PE_BOT_PAT }}
           path: .github/actions/partner-eng-gh-actions
 
@@ -79,7 +87,9 @@ jobs:
         timeout-minutes: 20
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/find-device
         with:
-          device_prompt: ${{ inputs.device_prompt || 'A device with an Intel NPU running Ubuntu 24.04' }}
+          # push (harness self-test) falls back to a plain prompt; schedule (daily
+          # coverage-building run) falls back to one that spreads hardware diversity.
+          device_prompt: ${{ inputs.device_prompt || (github.event_name == 'schedule' && 'A device containing an Intel NPU running Ubuntu 26.04 or 24.04. Consult job history from .github/lab-history (on main branch only) and try to test different generations of NPU (e.g. MTL, LNL, ARL, PTL), vendors (e.g. Dell, Lenovo), and form factors (laptop, desktop) that are not yet well covered.') || 'A device with an Intel MTL NPU running Ubuntu 24.04' }}
           c3_client_id: ${{ secrets.C3_CLIENT_ID }}
           c3_client_secret: ${{ secrets.C3_CLIENT_SECRET }}
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
@@ -105,7 +115,7 @@ jobs:
           queue: ${{ steps.find-device.outputs.queue }}
           device_context: ${{ steps.find-device.outputs.details }}
           launchpad_user: wfrench
-          reserve_minutes: 30
+          reserve_minutes: ${{ inputs.reserve_minutes || 1 }}
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
           copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}

@@ -24,21 +24,44 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     strategy:
       matrix:
-        device:
-          # Dell XPS 13 9340 Laptop, Meteor Lake, 24.04
-          - { queue: dell-xps-13-9340-c34051, gen: "MTL", image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04a/20240729-53/somerville-noble-oem-24.04a-20240729-53.iso }
-          # Dell Pro Max Tower T2 Desktop, Arrow Lake, 24.04
-          - { queue: dell-pro-max-tower-f0t2250-0ce1-c36197, gen: "ARL", image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04b-proposed/20241220-148/somerville-noble-oem-24.04b-proposed-20241220-148.iso }
-          # Dell XPS 13 9350 Laptop, Lunar Lake, 24.04
-          - { queue: dell-xps-13-9350-c36962, gen: "LNL", image: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04c/20250801-32/somerville-noble-oem-24.04c-20250801-32.iso }
+        # Generations to validate; each is resolved to a queue/image via the
+        # most recent successful lab-history entry (see .github/lab-history,
+        # populated by test-lab-reserve-device.yaml).
+        gen: ["MTL", "LNL", "ARL"]
       fail-fast: false
     steps:
       - name: Check out code
         uses: actions/checkout@v7
+      - name: Resolve device from lab history
+        id: device
+        run: |
+          set -euo pipefail
+          gen="${{ matrix.gen }}"
+          history_dir="${GITHUB_WORKSPACE}/.github/lab-history/devices"
+          if [ ! -d "${history_dir}" ] || [ -z "$(ls -A "${history_dir}" 2>/dev/null)" ]; then
+            echo "::error::No lab-history devices found at ${history_dir}"
+            exit 1
+          fi
+          # Most recently successful match for this generation, verbatim from history.
+          match=$(jq -s --arg gen "${gen}" \
+            '[.[] | select(.cpu_codename == $gen and .ever_provisioned_successfully == true)] | sort_by(.last_run.at) | last // empty' \
+            "${history_dir}"/*.json)
+          if [ -z "${match}" ] || [ "${match}" = "null" ]; then
+            echo "::error::No successful lab-history entry found for generation ${gen}"
+            exit 1
+          fi
+          queue=$(jq -r '.queue' <<< "${match}")
+          image=$(jq -r '.provision_data.url // empty' <<< "${match}")
+          if [ -z "${queue}" ] || [ -z "${image}" ]; then
+            echo "::error::lab-history entry for ${gen} is missing queue or provision_data.url"
+            exit 1
+          fi
+          echo "queue=${queue}" >> "${GITHUB_OUTPUT}"
+          echo "image=${image}" >> "${GITHUB_OUTPUT}"
       - name: Build job file from template with oem_autoinstall provisioning
         run: |
-          sed -e "s|REPLACE_QUEUE|${{ matrix.device.queue }}|" \
-          -e "s|REPLACE_IMAGE_URL|${{ matrix.device.image }}|" \
+          sed -e "s|REPLACE_QUEUE|${{ steps.device.outputs.queue }}|" \
+          -e "s|REPLACE_IMAGE_URL|${{ steps.device.outputs.image }}|" \
           ${GITHUB_WORKSPACE}/.github/testflinger/job-def.yaml > \
           ${GITHUB_WORKSPACE}/job.yaml
       - name: Submit testflinger job
@@ -87,7 +110,7 @@ jobs:
           # submissions in a single run, so we need to extract them here and
           # upload them separately.
           #
-          queue="${{ matrix.device.queue }}"
+          queue="${{ steps.device.outputs.queue }}"
           mkdir -p "extracted-artifacts/$queue"
           i=0
           for file in artifacts/*.tar.xz; do
@@ -102,7 +125,7 @@ jobs:
               # Build environment key, for example: env0=MTL-24.04.3-6.17-generic
               kernel_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Kernel")) | .value] | first' "$run_dir/submission.json")
               os_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Distro")) | .value] | first | match("Ubuntu ([0-9.]+)") | .captures[0].string' "$run_dir/submission.json")
-              echo "env$i=${{ matrix.device.gen }}-${os_ver}-${kernel_ver}" >> $GITHUB_OUTPUT
+              echo "env$i=${{ matrix.gen }}-${os_ver}-${kernel_ver}" >> $GITHUB_OUTPUT
 
               # Save tarball path to output
               echo "tarball$i=$file" >> $GITHUB_OUTPUT
@@ -113,15 +136,14 @@ jobs:
       - name: Upload checkbox artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: checkbox-results-${{ matrix.device.queue }}
+          name: checkbox-results-${{ steps.device.outputs.queue }}
           path: extracted-artifacts/
       - name: Get numeric job ID
         id: job-id
         run: |
           jobs=$(gh api /repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs)
-          # Matrix jobs include the matrix values in their name, e.g. "Testflinger Validation (dell-xps-13-9350-c36962, LNL, https://...)"
-          # We need to match based on the queue name which is unique per matrix instance
-          job_id=$(echo "$jobs" | jq -r '.jobs[] | select(.name | contains("${{ matrix.device.queue }}")) | .id')
+          # Matrix jobs include the matrix value in their name, e.g. "Testflinger Validation (MTL)"
+          job_id=$(echo "$jobs" | jq -r '.jobs[] | select(.name | contains("${{ matrix.gen }}")) | .id')
           echo "id=$job_id" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ github.token }}
