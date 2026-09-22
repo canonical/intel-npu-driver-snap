@@ -5,4 +5,4 @@ reserve_data:
   ssh_keys:
     - lp:wfrench
   timeout: 60
-output_timeout: 3600
+output_timeout: 7260
