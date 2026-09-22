@@ -143,12 +143,6 @@ jobs:
 
       - name: Reserve device
         id: reserve
-        # testflinger's own per-connector timeouts (SSH-poll, SNMP/redfish power
-        # control, etc.) aren't reliably bounded by output_timeout in practice --
-        # observed failures have taken up to ~95 minutes. Pad well past that, or
-        # GitHub kills this step mid-poll before its internal results check can
-        # classify a slow provisioning failure, leaving provision_outcome stuck
-        # at "unknown" instead of "failed".
         timeout-minutes: 150
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/reserve-device
         with:
