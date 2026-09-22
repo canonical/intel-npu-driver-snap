@@ -49,8 +49,7 @@ jobs:
         # use their own single free-form prompt, so 'auto' just runs the job once.
         gen: ${{ github.event_name == 'push' && fromJSON('["MTL","LNL","ARL"]') || fromJSON('["auto"]') }}
       fail-fast: false
-    # Backstop so a stuck agent can't hold the runner; must exceed the reserve
-    # step's own timeout below plus room for checkout/find-device/history steps.
+    # Backstop so a stuck agent can't hold the runner
     timeout-minutes: 190
     steps:
       # Egress control. Must be the first step so bullfrog can see all outbound
