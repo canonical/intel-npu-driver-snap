@@ -181,8 +181,12 @@ jobs:
               fi
 
               # Build environment key, for example: env0=MTL-24.04.3-6.17-generic
-              kernel_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Kernel")) | .value] | first' "$run_dir/submission.json")
-              os_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Distro")) | .value] | first | match("Ubuntu ([0-9.]+)") | .captures[0].string' "$run_dir/submission.json")
+              #
+              # jq is read via stdin (not as a file argument): on some runners
+              # it resolves to the confined jq snap, which can't open arbitrary
+              # file paths but can always read stdin.
+              kernel_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Kernel")) | .value] | first' < "$run_dir/submission.json")
+              os_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Distro")) | .value] | first | match("Ubuntu ([0-9.]+)") | .captures[0].string' < "$run_dir/submission.json")
               echo "env$i=${{ matrix.gen }}-${os_ver}-${kernel_ver}" >> $GITHUB_OUTPUT
 
               # Save tarball path to output
@@ -227,7 +231,7 @@ jobs:
             "execution_stage": "edge"
           }
           EOF
-          jq '.environment = "${{ steps.artifacts.outputs.env1 }}"' start-payload-0.json > start-payload-1.json
+          jq '.environment = "${{ steps.artifacts.outputs.env1 }}"' < start-payload-0.json > start-payload-1.json
       - name: Upload first test results to test observer
         if: steps.artifacts.outputs.tarball0 != ''
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/test-observer-uploader
