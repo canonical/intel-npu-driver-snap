@@ -1,0 +1,34 @@
+{
+  "capabilities": [
+    "Intel NPU (AI Boost)",
+    "Lunar Lake"
+  ],
+  "cpu_codename": "LNL",
+  "device": "lenovo-thinkpad-x1-carbon-gen-13-c36861",
+  "ever_provisioned_successfully": true,
+  "history": [
+    {
+      "at": "2026-09-22T02:01:49Z",
+      "commit": "7e9a161377eba89e56c0f69faa0aadb9a8d19a92",
+      "job_id": "196a8266-5cf5-46da-ba7f-41c9b19da182",
+      "outcome": "skipped",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35676485318"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/lenovo-thinkpad-x1-carbon-gen-13-c36861.yaml",
+  "last_outcome": "skipped",
+  "last_provision_outcome": "passed",
+  "last_run": {
+    "at": "2026-09-22T02:01:49Z",
+    "commit": "7e9a161377eba89e56c0f69faa0aadb9a8d19a92",
+    "job_id": "196a8266-5cf5-46da-ba7f-41c9b19da182",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35676485318"
+  },
+  "os_release": "noble (24.04)",
+  "provision_data": {
+    "url": "https://tel-image-cache.canonical.com/oem-share/sutton/releases/noble/oem-24.04c/20250904-61/sutton-noble-oem-24.04c-20250904-61.iso"
+  },
+  "provision_type": "oem_autoinstall",
+  "queue": "202506-36861"
+}

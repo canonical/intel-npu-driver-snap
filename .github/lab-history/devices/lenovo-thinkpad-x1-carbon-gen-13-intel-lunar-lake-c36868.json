@@ -14,6 +14,22 @@
       "outcome": "skipped",
       "provision": "passed",
       "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35678676571"
+    },
+    {
+      "at": "2026-09-21T20:21:53Z",
+      "commit": "777b28be4bb44797d9770e79fa5486bcd1869c9f",
+      "job_id": "e6c8d48a-ff49-4907-93b2-415a0cba5ff2",
+      "outcome": "skipped",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35648130657"
+    },
+    {
+      "at": "2026-09-21T18:56:33Z",
+      "commit": "526840d2575fe1a0a48c15011bab35dcb036a4ea",
+      "job_id": "980ea23c-34ba-4c01-91f8-561055a7eccd",
+      "outcome": "skipped",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35639103962"
     }
   ],
   "job_file": ".github/lab-history/jobs/lenovo-thinkpad-x1-carbon-gen-13-intel-lunar-lake-c36868.yaml",
