@@ -19,7 +19,7 @@ env:
 jobs:
   testflinger-validation:
     name: Testflinger Validation
-    runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
+    runs-on: ubuntu-latest
     # Only run if the release workflow completed successfully
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     permissions:
