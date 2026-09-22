@@ -22,6 +22,9 @@ jobs:
     runs-on: self-hosted-linux-amd64-noble-private-endpoint-small
     # Only run if the release workflow completed successfully
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      contents: write
+      pull-requests: write
     strategy:
       matrix:
         # Generations to validate; each is resolved to a queue/image via the
@@ -32,36 +35,34 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v7
+
+      # A public repo cannot call a private repo's reusable workflow, so check the
+      # actions out with the PE bot PAT and invoke them by local path instead.
+      - name: Check out partner-eng-gh-actions
+        uses: actions/checkout@v7
+        with:
+          repository: canonical/partner-eng-gh-actions
+          ref: main
+          token: ${{ secrets.PE_BOT_PAT }}
+          path: .github/actions/partner-eng-gh-actions
+
       - name: Resolve device from lab history
         id: device
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/device-from-repo-history
+        with:
+          history_path: ${{ github.workspace }}/.github/lab-history
+          cpu_codename: ${{ matrix.gen }}
+
+      - name: Fail if no recorded device matched
+        if: ${{ steps.device.outputs.matched != 'true' }}
         run: |
-          set -euo pipefail
-          gen="${{ matrix.gen }}"
-          history_dir="${GITHUB_WORKSPACE}/.github/lab-history/devices"
-          if [ ! -d "${history_dir}" ] || [ -z "$(ls -A "${history_dir}" 2>/dev/null)" ]; then
-            echo "::error::No lab-history devices found at ${history_dir}"
-            exit 1
-          fi
-          # Most recently successful match for this generation, verbatim from history.
-          match=$(jq -s --arg gen "${gen}" \
-            '[.[] | select(.cpu_codename == $gen and .ever_provisioned_successfully == true)] | sort_by(.last_run.at) | last // empty' \
-            "${history_dir}"/*.json)
-          if [ -z "${match}" ] || [ "${match}" = "null" ]; then
-            echo "::error::No successful lab-history entry found for generation ${gen}"
-            exit 1
-          fi
-          queue=$(jq -r '.queue' <<< "${match}")
-          image=$(jq -r '.provision_data.url // empty' <<< "${match}")
-          if [ -z "${queue}" ] || [ -z "${image}" ]; then
-            echo "::error::lab-history entry for ${gen} is missing queue or provision_data.url"
-            exit 1
-          fi
-          echo "queue=${queue}" >> "${GITHUB_OUTPUT}"
-          echo "image=${image}" >> "${GITHUB_OUTPUT}"
+          echo "::error::No successful lab-history entry found for generation ${{ matrix.gen }}"
+          exit 1
+
       - name: Build job file from template with oem_autoinstall provisioning
         run: |
           sed -e "s|REPLACE_QUEUE|${{ steps.device.outputs.queue }}|" \
-          -e "s|REPLACE_IMAGE_URL|${{ steps.device.outputs.image }}|" \
+          -e "s|REPLACE_IMAGE_URL|$(jq -r '.image' <<< '${{ steps.device.outputs.details }}')|" \
           ${GITHUB_WORKSPACE}/.github/testflinger/job-def.yaml > \
           ${GITHUB_WORKSPACE}/job.yaml
       - name: Submit testflinger job
@@ -73,6 +74,21 @@ jobs:
           job-path: ${{ github.workspace }}/job.yaml
           client-id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           secret-key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
+
+      # Record the outcome so a failed provisioning attempt isn't re-picked by
+      # device-from-repo-history on a re-run (its own PR merges independently).
+      - name: Record device history
+        if: always()
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/update-history
+        with:
+          device: ${{ steps.device.outputs.device }}
+          queue: ${{ steps.device.outputs.queue }}
+          device_context: ${{ steps.device.outputs.details }}
+          job_path: ${{ github.workspace }}/job.yaml
+          outcome: skipped
+          provision_outcome: ${{ steps.submit.outcome == 'success' && 'passed' || steps.submit.outcome == 'failure' && 'failed' || 'unknown' }}
+          job_id: ${{ steps.submit.outputs.id }}
+
       - name: Download checkbox artifacts
         id: artifacts
         run: |
@@ -147,13 +163,6 @@ jobs:
           echo "id=$job_id" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ github.token }}
-      - name: Checkout partner-eng-gh-actions repo
-        uses: actions/checkout@v7
-        with:
-          repository: canonical/partner-eng-gh-actions
-          ref: main
-          token: ${{ secrets.PE_BOT_PAT }}
-          path: .github/actions/partner-eng-gh-actions
       - name: Generate TO start-payload
         run: |
           test_plan=$(grep "^unit = " ${GITHUB_WORKSPACE}/.github/testflinger/checkbox-launcher | cut -d '=' -f2 | xargs)

@@ -1,12 +1,6 @@
-name: Test lab-vibe-test
+name: Vibe test on a device from the lab
 
 on:
-  push:
-    branches:
-      - feature/vibe-coder
-    # Only run when this harness (or the tooling it exercises) actually changes.
-    paths:
-      - .github/workflows/test-lab-vibe-test.yaml
   workflow_dispatch:
     inputs:
       device_prompt:
