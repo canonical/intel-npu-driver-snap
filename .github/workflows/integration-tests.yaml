@@ -52,6 +52,8 @@ jobs:
         with:
           history_path: ${{ github.workspace }}/.github/lab-history
           cpu_codename: ${{ matrix.gen }}
+          testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
+          testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
 
       - name: Fail if no recorded device matched
         if: ${{ steps.device.outputs.matched != 'true' }}
@@ -75,6 +77,34 @@ jobs:
           client-id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           secret-key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
 
+      # submit.outcome is a single pass/fail for the whole job (provision + test
+      # phases combined), so it can't be used as a provisioning signal on its own
+      # -- a real test failure (this workflow's whole purpose) would otherwise
+      # also get wrongly recorded as a provisioning failure. Check the provision
+      # phase's own result directly instead.
+      - name: Check provisioning status
+        id: provision-status
+        if: always()
+        env:
+          TESTFLINGER_CLIENT_ID: ${{ secrets.TESTFLINGER_CLIENT_ID }}
+          TESTFLINGER_SECRET_KEY: ${{ secrets.TESTFLINGER_SECRET_KEY }}
+        run: |
+          job_id="${{ steps.submit.outputs.id }}"
+          status=""
+          if [ -n "$job_id" ]; then
+            status="$(testflinger results "$job_id" 2>/dev/null | jq -r '.provision_status // empty')"
+          fi
+          if [ "$status" = "0" ]; then
+            echo "provisioned=true" >> "$GITHUB_OUTPUT"
+          elif [ -n "$status" ]; then
+            echo "provisioned=false" >> "$GITHUB_OUTPUT"
+          else
+            # provision_status wasn't populated; we can't tell whether that's
+            # because provisioning itself failed or only the test phase did, so
+            # report unknown rather than guessing.
+            echo "provisioned=unknown" >> "$GITHUB_OUTPUT"
+          fi
+
       # Record the outcome so a failed provisioning attempt isn't re-picked by
       # device-from-repo-history on a re-run (its own PR merges independently).
       - name: Record device history
@@ -86,12 +116,18 @@ jobs:
           device_context: ${{ steps.device.outputs.details }}
           job_path: ${{ github.workspace }}/job.yaml
           outcome: skipped
-          provision_outcome: ${{ steps.submit.outcome == 'success' && 'passed' || steps.submit.outcome == 'failure' && 'failed' || 'unknown' }}
+          provision_outcome: ${{ steps.provision-status.outputs.provisioned == 'true' && 'passed' || steps.provision-status.outputs.provisioned == 'false' && 'failed' || 'unknown' }}
           job_id: ${{ steps.submit.outputs.id }}
 
       - name: Download checkbox artifacts
         id: artifacts
+        env:
+          TESTFLINGER_CLIENT_ID: ${{ secrets.TESTFLINGER_CLIENT_ID }}
+          TESTFLINGER_SECRET_KEY: ${{ secrets.TESTFLINGER_SECRET_KEY }}
         run: |
+          # Guard against an inherited umask leaving extracted files unreadable.
+          umask 022
+
           # Download the job artifacts with retry logic
           for attempt in {1..10}; do
             echo "Attempt $attempt: Downloading artifacts..."
@@ -137,6 +173,12 @@ jobs:
 
               # Extract only submission.json
               tar -xJf "$file" submission.json -O > "$run_dir/submission.json"
+              chmod 644 "$run_dir/submission.json"
+              if [ ! -s "$run_dir/submission.json" ]; then
+                echo "Error: $run_dir/submission.json is empty or missing after extraction"
+                ls -la "$run_dir"
+                exit 1
+              fi
 
               # Build environment key, for example: env0=MTL-24.04.3-6.17-generic
               kernel_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Kernel")) | .value] | first' "$run_dir/submission.json")
