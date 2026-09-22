@@ -8,6 +8,14 @@
   "ever_provisioned_successfully": true,
   "history": [
     {
+      "at": "2026-09-22T02:37:49Z",
+      "commit": "b1d066bcb1ea54f92967301469433bc1dddcf872",
+      "job_id": "3afc01cb-17d8-4746-a81b-521a9195cd0f",
+      "outcome": "skipped",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35678676571"
+    },
+    {
       "at": "2026-09-21T20:21:53Z",
       "commit": "777b28be4bb44797d9770e79fa5486bcd1869c9f",
       "job_id": "e6c8d48a-ff49-4907-93b2-415a0cba5ff2",
@@ -28,10 +36,10 @@
   "last_outcome": "skipped",
   "last_provision_outcome": "passed",
   "last_run": {
-    "at": "2026-09-21T20:21:53Z",
-    "commit": "777b28be4bb44797d9770e79fa5486bcd1869c9f",
-    "job_id": "e6c8d48a-ff49-4907-93b2-415a0cba5ff2",
-    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35648130657"
+    "at": "2026-09-22T02:37:49Z",
+    "commit": "b1d066bcb1ea54f92967301469433bc1dddcf872",
+    "job_id": "3afc01cb-17d8-4746-a81b-521a9195cd0f",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35678676571"
   },
   "os_release": "noble (24.04)",
   "provision_data": {
