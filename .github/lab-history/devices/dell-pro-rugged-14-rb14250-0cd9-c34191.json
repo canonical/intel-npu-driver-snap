@@ -8,22 +8,22 @@
   "ever_provisioned_successfully": true,
   "history": [
     {
-      "at": "2026-09-22T21:47:51Z",
-      "commit": "5346c48320a233766ab9e81917797cecb1a6628c",
-      "job_id": "b4c1b946-326a-4416-bb93-2ba54182e4c3",
+      "at": "2026-09-22T23:02:10Z",
+      "commit": "b211362ba9619db2d0326161726bd232f781472b",
+      "job_id": "65a12dce-7ffa-4b5f-8374-ae5a75eb438c",
       "outcome": "skipped",
       "provision": "passed",
-      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35779768675"
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35790044655"
     }
   ],
   "job_file": ".github/lab-history/jobs/dell-pro-rugged-14-rb14250-0cd9-c34191.yaml",
   "last_outcome": "skipped",
   "last_provision_outcome": "passed",
   "last_run": {
-    "at": "2026-09-22T21:47:51Z",
-    "commit": "5346c48320a233766ab9e81917797cecb1a6628c",
-    "job_id": "b4c1b946-326a-4416-bb93-2ba54182e4c3",
-    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35779768675"
+    "at": "2026-09-22T23:02:10Z",
+    "commit": "b211362ba9619db2d0326161726bd232f781472b",
+    "job_id": "65a12dce-7ffa-4b5f-8374-ae5a75eb438c",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35790044655"
   },
   "os_release": "noble (24.04)",
   "provision_data": {
