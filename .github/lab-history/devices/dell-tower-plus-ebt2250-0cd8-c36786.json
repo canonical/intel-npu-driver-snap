@@ -8,6 +8,14 @@
   "ever_provisioned_successfully": true,
   "history": [
     {
+      "at": "2026-09-22T02:03:38Z",
+      "commit": "7e9a161377eba89e56c0f69faa0aadb9a8d19a92",
+      "job_id": "74b84ef3-01cd-47f6-a507-1d0a99ec244f",
+      "outcome": "skipped",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35676485318"
+    },
+    {
       "at": "2026-09-22T02:33:45Z",
       "commit": "b1d066bcb1ea54f92967301469433bc1dddcf872",
       "job_id": "7f371e10-b4e2-4795-be1d-bf0bac3b152b",

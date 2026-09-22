@@ -1,0 +1,8 @@
+job_queue: dell-pro-rugged-14-rb14250-0cd9-c34192
+provision_data:
+  url: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04a/20241006-108/somerville-noble-oem-24.04a-20241006-108.iso
+reserve_data:
+  ssh_keys:
+    - lp:wfrench
+  timeout: 60
+output_timeout: 3600

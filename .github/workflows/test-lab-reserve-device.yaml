@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - feature/vibe-coder
-    # Only run when this harness (or the tooling it exercises) actually changes.
     paths:
       - .github/workflows/test-lab-reserve-device.yaml
   schedule:
