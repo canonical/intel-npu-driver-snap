@@ -36,6 +36,14 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v7
 
+      # The jq snap is confined and can't open arbitrary file paths, so remove
+      # it and rely on the apt package instead.
+      - name: Install jq (apt)
+        run: |
+          sudo snap remove jq || true
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+
       # A public repo cannot call a private repo's reusable workflow, so check the
       # actions out with the PE bot PAT and invoke them by local path instead.
       - name: Check out partner-eng-gh-actions
@@ -125,9 +133,6 @@ jobs:
           TESTFLINGER_CLIENT_ID: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           TESTFLINGER_SECRET_KEY: ${{ secrets.TESTFLINGER_SECRET_KEY }}
         run: |
-          # Guard against an inherited umask leaving extracted files unreadable.
-          umask 022
-
           # Download the job artifacts with retry logic
           for attempt in {1..10}; do
             echo "Attempt $attempt: Downloading artifacts..."
@@ -181,12 +186,8 @@ jobs:
               fi
 
               # Build environment key, for example: env0=MTL-24.04.3-6.17-generic
-              #
-              # jq is read via stdin (not as a file argument): on some runners
-              # it resolves to the confined jq snap, which can't open arbitrary
-              # file paths but can always read stdin.
-              kernel_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Kernel")) | .value] | first' < "$run_dir/submission.json")
-              os_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Distro")) | .value] | first | match("Ubuntu ([0-9.]+)") | .captures[0].string' < "$run_dir/submission.json")
+              kernel_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Kernel")) | .value] | first' "$run_dir/submission.json")
+              os_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Distro")) | .value] | first | match("Ubuntu ([0-9.]+)") | .captures[0].string' "$run_dir/submission.json")
               echo "env$i=${{ matrix.gen }}-${os_ver}-${kernel_ver}" >> $GITHUB_OUTPUT
 
               # Save tarball path to output
@@ -231,7 +232,7 @@ jobs:
             "execution_stage": "edge"
           }
           EOF
-          jq '.environment = "${{ steps.artifacts.outputs.env1 }}"' < start-payload-0.json > start-payload-1.json
+          jq '.environment = "${{ steps.artifacts.outputs.env1 }}"' start-payload-0.json > start-payload-1.json
       - name: Upload first test results to test observer
         if: steps.artifacts.outputs.tarball0 != ''
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/test-observer-uploader
