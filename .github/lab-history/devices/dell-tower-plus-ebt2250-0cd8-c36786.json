@@ -8,22 +8,22 @@
   "ever_provisioned_successfully": true,
   "history": [
     {
-      "at": "2026-09-22T21:07:03Z",
-      "commit": "5346c48320a233766ab9e81917797cecb1a6628c",
-      "job_id": "5a9b880f-4528-424d-b372-d3dd06fd519e",
+      "at": "2026-09-23T03:07:16Z",
+      "commit": "b9444d03e48558763fb746c8a6c3a02d83588ad2",
+      "job_id": "cbb45128-0ca2-4e57-a87f-fc8fe591d677",
       "outcome": "skipped",
       "provision": "passed",
-      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35779768675"
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35809502182"
     }
   ],
   "job_file": ".github/lab-history/jobs/dell-tower-plus-ebt2250-0cd8-c36786.yaml",
   "last_outcome": "skipped",
   "last_provision_outcome": "passed",
   "last_run": {
-    "at": "2026-09-22T21:07:03Z",
-    "commit": "5346c48320a233766ab9e81917797cecb1a6628c",
-    "job_id": "5a9b880f-4528-424d-b372-d3dd06fd519e",
-    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35779768675"
+    "at": "2026-09-23T03:07:16Z",
+    "commit": "b9444d03e48558763fb746c8a6c3a02d83588ad2",
+    "job_id": "cbb45128-0ca2-4e57-a87f-fc8fe591d677",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35809502182"
   },
   "os_release": "noble (24.04)",
   "provision_data": {
