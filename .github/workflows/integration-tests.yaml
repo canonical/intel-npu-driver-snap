@@ -36,14 +36,6 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v7
 
-      # The jq snap is confined and can't open arbitrary file paths, so remove
-      # it and rely on the apt package instead.
-      - name: Install jq (apt)
-        run: |
-          sudo snap remove jq || true
-          sudo apt-get update -y
-          sudo apt-get install -y jq
-
       # A public repo cannot call a private repo's reusable workflow, so check the
       # actions out with the PE bot PAT and invoke them by local path instead.
       - name: Check out partner-eng-gh-actions
@@ -156,6 +148,11 @@ jobs:
             ls -la artifacts/
             exit 1
           fi
+
+          # Prefer jq from apt (pre-installed) because the snap
+          # is very old and throws permission denied unless you
+          # read from stdin
+          sudo snap remove jq
 
           # Extract submission.json from each tarball.
           #
