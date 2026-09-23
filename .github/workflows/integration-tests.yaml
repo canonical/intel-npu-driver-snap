@@ -17,8 +17,38 @@ env:
   TEST_OBSERVER_URL: https://test-observer-api.canonical.com
 
 jobs:
+  resolve-snap-info:
+    name: Resolve snap version and revision
+    runs-on: ubuntu-latest
+    # Only run if the release workflow completed successfully
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      version: ${{ steps.snap-info.outputs.version }}
+      revision: ${{ steps.snap-info.outputs.revision }}
+    steps:
+      - name: Query latest/edge version and revision
+        id: snap-info
+        run: |
+          # Query once (not once per field) and retry, since the store can
+          # transiently return no latest/edge line.
+          for attempt in {1..5}; do
+            edge_line=$(snap info intel-npu-driver | grep latest/edge || true)
+            [ -n "$edge_line" ] && break
+            echo "snap info returned no latest/edge line (attempt $attempt), retrying..."
+            sleep 60
+          done
+          revision=$(echo "$edge_line" | cut -d "(" -f2 | cut -d ")" -f1)
+          version=$(echo "$edge_line" | awk '{print $2}')
+          if [ -z "$revision" ] || [ -z "$version" ]; then
+            echo "::error::Failed to parse revision/version from snap info latest/edge line: '$edge_line'"
+            exit 1
+          fi
+          echo "revision=$revision" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
   testflinger-validation:
     name: Testflinger Validation
+    needs: resolve-snap-info
     runs-on: ubuntu-latest
     # Only run if the release workflow completed successfully
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
@@ -208,21 +238,22 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Generate TO start-payload
+        env:
+          SNAP_VERSION: ${{ needs.resolve-snap-info.outputs.version }}
+          SNAP_REVISION: ${{ needs.resolve-snap-info.outputs.revision }}
         run: |
           test_plan=$(grep "^unit = " ${GITHUB_WORKSPACE}/.github/testflinger/checkbox-launcher | cut -d '=' -f2 | xargs)
-          revision=$(snap info intel-npu-driver | grep latest/edge | cut -d "(" -f2 | cut -d ")" -f1)
-          version=$(snap info intel-npu-driver | grep latest/edge | awk '{print $2}')
           cat <<EOF > start-payload-0.json
           {
             "name": "intel-npu-driver",
-            "version": "${version}",
+            "version": "${SNAP_VERSION}",
             "arch": "amd64",
             "test_plan": "${test_plan}",
             "environment": "${{ steps.artifacts.outputs.env0 }}",
             "initial_status": "IN_PROGRESS",
             "needs_assignment": false,
             "family": "snap",
-            "revision": "${revision}",
+            "revision": "${SNAP_REVISION}",
             "track": "latest",
             "store": "ubuntu",
             "branch": "",
@@ -254,7 +285,7 @@ jobs:
           api_key: ${{ secrets.TEST_OBSERVER_API_KEY_PRODUCTION }}
   tag:
     name: Push tag for revision
-    needs: testflinger-validation
+    needs: [resolve-snap-info, testflinger-validation]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -265,15 +296,16 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SNAP_VERSION: ${{ needs.resolve-snap-info.outputs.version }}
+          SNAP_REVISION: ${{ needs.resolve-snap-info.outputs.revision }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          revision=$(snap info intel-npu-driver | grep latest/edge | cut -d "(" -f2 | cut -d ")" -f1)
-          version=$(snap info intel-npu-driver | grep latest/edge | awk '{print $2}')
-          tag_name="${version}-rev${revision}"
+
+          tag_name="${SNAP_VERSION}-rev${SNAP_REVISION}"
           if git ls-remote --tags origin | grep -q "refs/tags/${tag_name}"; then
             echo "Tag ${tag_name} already exists in remote repo. Doing nothing."
           else
-            git tag -a "${tag_name}" -m "Revision ${revision}"
+            git tag -a "${tag_name}" -m "Revision ${SNAP_REVISION}"
             git push origin "${tag_name}"
           fi
