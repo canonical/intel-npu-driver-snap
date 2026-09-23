@@ -100,7 +100,7 @@ jobs:
       - name: Submit testflinger job
         id: submit
         continue-on-error: true
-        uses: canonical/testflinger/.github/actions/submit@main
+        uses: canonical/testflinger/.github/actions/submit@submit/v1.5.1
         with:
           poll: true
           job-path: ${{ github.workspace }}/job.yaml
@@ -178,11 +178,6 @@ jobs:
             ls -la artifacts/
             exit 1
           fi
-
-          # Prefer jq from apt (pre-installed) because the snap
-          # is very old and throws permission denied unless you
-          # read from stdin
-          sudo snap remove jq
 
           # Extract submission.json from each tarball.
           #
