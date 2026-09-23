@@ -8,22 +8,22 @@
   "ever_provisioned_successfully": true,
   "history": [
     {
-      "at": "2026-09-22T21:13:16Z",
-      "commit": "5346c48320a233766ab9e81917797cecb1a6628c",
-      "job_id": "871f9efa-b266-4416-8e24-6f542c9e04bd",
+      "at": "2026-09-23T00:29:05Z",
+      "commit": "72f5fea5eb6035ee4d4af22595c4ec3a5024477b",
+      "job_id": "bab342b1-64a3-4bb6-b16b-2ea04a423be9",
       "outcome": "skipped",
       "provision": "passed",
-      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35779768675"
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35798207420"
     }
   ],
   "job_file": ".github/lab-history/jobs/lenovo-thinkpad-x9-14-gen-1-c36638.yaml",
   "last_outcome": "skipped",
   "last_provision_outcome": "passed",
   "last_run": {
-    "at": "2026-09-22T21:13:16Z",
-    "commit": "5346c48320a233766ab9e81917797cecb1a6628c",
-    "job_id": "871f9efa-b266-4416-8e24-6f542c9e04bd",
-    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35779768675"
+    "at": "2026-09-23T00:29:05Z",
+    "commit": "72f5fea5eb6035ee4d4af22595c4ec3a5024477b",
+    "job_id": "bab342b1-64a3-4bb6-b16b-2ea04a423be9",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/35798207420"
   },
   "os_release": "noble (24.04)",
   "provision_data": {
