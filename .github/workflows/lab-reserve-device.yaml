@@ -89,7 +89,7 @@ jobs:
         with:
           # schedule fans out one prompt per matrix.gen (parallel, daily coverage-building
           # run); workflow_dispatch uses inputs.device_prompt directly.
-          device_prompt: ${{ inputs.device_prompt || (github.event_name == 'schedule' && format('A device containing an Intel {0} NPU running Ubuntu 26.04 or 24.04. Consult job history from .github/lab-history (on main branch only) and try to test different vendors (e.g. Dell, Lenovo) and form factors (laptop, desktop) not yet well covered for {0}.', matrix.gen)) || 'A device with an Intel MTL NPU running Ubuntu 24.04' }}
+          device_prompt: ${{ inputs.device_prompt || (github.event_name == 'schedule' && format('A device containing an Intel {0} NPU running Ubuntu 26.04 or 24.04. Try to test different vendors (e.g. Dell, Lenovo) and form factors (laptop, desktop) not yet well covered for {0}.', matrix.gen)) || 'A device with an Intel MTL NPU running Ubuntu 24.04' }}
           c3_client_id: ${{ secrets.C3_CLIENT_ID }}
           c3_client_secret: ${{ secrets.C3_CLIENT_SECRET }}
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
