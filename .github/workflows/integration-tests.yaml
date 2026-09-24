@@ -57,9 +57,7 @@ jobs:
       pull-requests: write
     strategy:
       matrix:
-        # Generations to validate; each is resolved to a queue/image via the
-        # most recent successful lab-history entry (see .github/lab-history,
-        # populated by test-lab-reserve-device.yaml).
+        # Generations to validate
         gen: ["MTL", "LNL", "ARL", "PTL"]
       fail-fast: false
     steps:
@@ -136,7 +134,7 @@ jobs:
           fi
 
       # Record the outcome so a failed provisioning attempt isn't re-picked by
-      # device-from-repo-history on a re-run (its own PR merges independently).
+      # device-from-repo-history on a re-run.
       - name: Record device history
         if: always()
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/update-history
@@ -200,12 +198,6 @@ jobs:
 
               # Extract only submission.json
               tar -xJf "$file" submission.json -O > "$run_dir/submission.json"
-              chmod 644 "$run_dir/submission.json"
-              if [ ! -s "$run_dir/submission.json" ]; then
-                echo "Error: $run_dir/submission.json is empty or missing after extraction"
-                ls -la "$run_dir"
-                exit 1
-              fi
 
               # Build environment key, for example: env0=MTL-24.04.3-6.17-generic
               kernel_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Kernel")) | .value] | first' "$run_dir/submission.json")
