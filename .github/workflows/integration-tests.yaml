@@ -60,7 +60,7 @@ jobs:
         # Generations to validate; each is resolved to a queue/image via the
         # most recent successful lab-history entry (see .github/lab-history,
         # populated by test-lab-reserve-device.yaml).
-        gen: ["MTL", "LNL", "ARL"]
+        gen: ["MTL", "LNL", "ARL", "PTL"]
       fail-fast: false
     steps:
       - name: Check out code

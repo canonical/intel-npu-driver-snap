@@ -41,7 +41,7 @@ jobs:
       matrix:
         # Fan out across generations in parallel on the daily cron; workflow_dispatch
         # uses its own single free-form prompt, so 'auto' just runs the job once.
-        gen: ${{ github.event_name == 'schedule' && fromJSON('["MTL","LNL","ARL"]') || fromJSON('["auto"]') }}
+        gen: ${{ github.event_name == 'schedule' && fromJSON('["MTL","LNL","ARL","PTL"]') || fromJSON('["auto"]') }}
       fail-fast: false
     # Backstop so a stuck agent can't hold the runner
     timeout-minutes: 190
