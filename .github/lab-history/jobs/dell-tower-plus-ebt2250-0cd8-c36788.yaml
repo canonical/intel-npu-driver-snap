@@ -3,6 +3,6 @@ provision_data:
   url: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04c/20250811-37/somerville-noble-oem-24.04c-20250811-37.iso
 reserve_data:
   ssh_keys:
-    - lp:wfrench
+    - lp:pe-bot
   timeout: 60
 output_timeout: 3600

@@ -3,6 +3,6 @@ provision_data:
   url: https://tel-image-cache.canonical.com/oem-share/sutton/releases/noble/oem-24.04c/20250904-61/sutton-noble-oem-24.04c-20250904-61.iso
 reserve_data:
   ssh_keys:
-    - lp:wfrench
+    - lp:pe-bot
   timeout: 60
 output_timeout: 7260

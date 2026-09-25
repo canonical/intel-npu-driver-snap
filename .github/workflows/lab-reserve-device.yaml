@@ -113,7 +113,7 @@ jobs:
         with:
           queue: ${{ steps.find-device.outputs.queue }}
           device_context: ${{ steps.find-device.outputs.details }}
-          launchpad_user: wfrench
+          launchpad_user: pe-bot
           reserve_minutes: ${{ inputs.reserve_minutes || 1 }}
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
