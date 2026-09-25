@@ -1,0 +1,132 @@
+name: Reserve lab device with a prompt
+
+on:
+  # Run weekly on Sunday at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      device_prompt:
+        description: 'Free-form description of the lab device'
+        type: string
+        default: 'A device containing a Intel NPU running Ubuntu 24.04'
+      record_history:
+        description: 'Record the reservation outcome into .github/lab-history and open a rolling PR'
+        type: boolean
+        default: true
+      prefer_new:
+        description: 'Prefer devices not yet provisioned successfully (spread coverage)'
+        type: boolean
+        default: true
+      reserve_minutes:
+        description: 'Minutes to reserve the matched device for'
+        type: string
+        default: '1'
+
+# Avoid overlapping runs holding lab hardware.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  reserve:
+    name: Reserve lab device
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Fan out across generations in parallel on the daily cron; workflow_dispatch
+        # uses its own single free-form prompt, so 'auto' just runs the job once.
+        gen: ${{ github.event_name == 'schedule' && fromJSON('["MTL","LNL","ARL","PTL"]') || fromJSON('["auto"]') }}
+      fail-fast: false
+    # Backstop so a stuck agent can't hold the runner
+    timeout-minutes: 190
+    steps:
+      # Egress control. Must be the first step so bullfrog can see all outbound
+      # traffic; anything not on the allowlist is blocked. snap-CDN POPs may
+      # rotate and need re-adding.
+      - name: Control egress (bullfrog)
+        uses: bullfrogsec/bullfrog@7dee337d4575320b6d8cbe9a56d48d2fb765963a # v0.11.1
+        with:
+          egress-policy: block
+          allowed-domains: |
+            github.com
+            api.github.com
+            codeload.github.com
+            objects.githubusercontent.com
+            api.githubcopilot.com
+            api.business.githubcopilot.com
+            telemetry.business.githubcopilot.com
+            registry.npmjs.org
+            pypi.org
+            api.snapcraft.io
+            canonical-bos01.cdn.snapcraftcontent.com
+            canonical-lgw01.cdn.snapcraftcontent.com
+            testflinger.canonical.com
+            certification.canonical.com
+
+      - name: Check out repository under test
+        uses: actions/checkout@v7
+
+      # A public repo cannot call a private repo's reusable workflow, so check the
+      # actions out with the PE bot PAT and invoke them by local path instead.
+      - name: Check out partner-eng-gh-actions
+        uses: actions/checkout@v7
+        with:
+          repository: canonical/partner-eng-gh-actions
+          ref: lab/various-improvements
+          token: ${{ secrets.PE_BOT_PAT }}
+          path: .github/actions/partner-eng-gh-actions
+
+      - name: Find lab device
+        id: find-device
+        timeout-minutes: 20
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/find-device
+        with:
+          # schedule fans out one prompt per matrix.gen (parallel, daily coverage-building
+          # run); workflow_dispatch uses inputs.device_prompt directly.
+          device_prompt: ${{ inputs.device_prompt || (github.event_name == 'schedule' && format('A device containing an Intel {0} NPU running Ubuntu 26.04 or 24.04. Try to test different vendors (e.g. Dell, Lenovo) and form factors (laptop, desktop) not yet well covered for {0}.', matrix.gen)) || 'A device with an Intel MTL NPU running Ubuntu 24.04' }}
+          c3_client_id: ${{ secrets.C3_CLIENT_ID }}
+          c3_client_secret: ${{ secrets.C3_CLIENT_SECRET }}
+          testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
+          testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
+          copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          hwcert_jobs_token: ${{ secrets.PE_BOT_PAT }}
+          history_path: ${{ github.workspace }}/.github/lab-history
+          # On schedule there are no inputs, so default prefer_new to true; a
+          # workflow_dispatch run can still override it to false.
+          prefer_new: ${{ github.event_name != 'workflow_dispatch' || inputs.prefer_new }}
+
+      - name: Fail if no device matched
+        if: ${{ steps.find-device.outputs.matched != 'true' }}
+        run: |
+          echo "::error::No lab device matched the description"
+          exit 1
+
+      - name: Reserve device
+        id: reserve
+        timeout-minutes: 150
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/reserve-device
+        with:
+          queue: ${{ steps.find-device.outputs.queue }}
+          device_context: ${{ steps.find-device.outputs.details }}
+          launchpad_user: pe-bot
+          reserve_minutes: ${{ inputs.reserve_minutes || 1 }}
+          testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
+          testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
+          copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+      - name: Record device history
+        if: ${{ always() && steps.find-device.outputs.matched == 'true' && (github.event_name != 'workflow_dispatch' || inputs.record_history) }}
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/update-history
+        with:
+          device: ${{ steps.find-device.outputs.device }}
+          queue: ${{ steps.find-device.outputs.queue }}
+          device_context: ${{ steps.find-device.outputs.details }}
+          job_path: ${{ steps.reserve.outputs.job_path }}
+          outcome: skipped
+          provision_outcome: ${{ steps.reserve.outputs.provisioned == 'true' && 'passed' || steps.reserve.outputs.provisioned == 'false' && 'failed' || 'unknown' }}
+          job_id: ${{ steps.reserve.outputs.job_id }}

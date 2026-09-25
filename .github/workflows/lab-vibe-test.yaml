@@ -1,0 +1,125 @@
+name: Vibe test on a device from the lab
+
+on:
+  workflow_dispatch:
+    inputs:
+      device_prompt:
+        description: 'Free-form description of the lab device'
+        type: string
+        default: 'A device containing a Intel NPU running Ubuntu 24.04'
+      record_history:
+        description: 'Record the run outcome into .github/lab-history and open a rolling PR'
+        type: boolean
+        default: true
+      prefer_new:
+        description: 'Prefer devices not yet successfully run on (spread coverage)'
+        type: boolean
+        default: true
+
+# Avoid overlapping runs holding lab hardware.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  vibe-test:
+    name: Vibe test on lab device
+    runs-on: ubuntu-latest
+    # Backstop so a stuck agent can't hold the runner for the 6h default.
+    timeout-minutes: 360
+    steps:
+      # Egress control. Must be the first step so bullfrog can see all outbound
+      # traffic; anything not on the allowlist is blocked. snap-CDN POPs may
+      # rotate and need re-adding.
+      - name: Control egress (bullfrog)
+        uses: bullfrogsec/bullfrog@7dee337d4575320b6d8cbe9a56d48d2fb765963a # v0.11.1
+        with:
+          egress-policy: block
+          allowed-domains: |
+            github.com
+            api.github.com
+            codeload.github.com
+            objects.githubusercontent.com
+            api.githubcopilot.com
+            api.business.githubcopilot.com
+            telemetry.business.githubcopilot.com
+            registry.npmjs.org
+            pypi.org
+            api.snapcraft.io
+            canonical-bos01.cdn.snapcraftcontent.com
+            canonical-lgw01.cdn.snapcraftcontent.com
+            testflinger.canonical.com
+            certification.canonical.com
+
+      - name: Check out repository under test
+        uses: actions/checkout@v7
+
+      # A public repo cannot call a private repo's reusable workflow, so check the
+      # actions out with the PE bot PAT and invoke them by local path instead.
+      - name: Check out partner-eng-gh-actions
+        uses: actions/checkout@v7
+        with:
+          repository: canonical/partner-eng-gh-actions
+          ref: lab/various-improvements
+          token: ${{ secrets.PE_BOT_PAT }}
+          path: .github/actions/partner-eng-gh-actions
+
+      - name: Find lab device
+        id: find-device
+        timeout-minutes: 20
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/find-device
+        with:
+          device_prompt: ${{ inputs.device_prompt || 'A device with an Intel NPU running Ubuntu 26.04 (preferred) or 24.04' }}
+          c3_client_id: ${{ secrets.C3_CLIENT_ID }}
+          c3_client_secret: ${{ secrets.C3_CLIENT_SECRET }}
+          testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
+          testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
+          copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          hwcert_jobs_token: ${{ secrets.PE_BOT_PAT }}
+          history_path: ${{ github.workspace }}/.github/lab-history
+          # On push there are no inputs, so default prefer_new to true; a
+          # workflow_dispatch run can still override it to false.
+          prefer_new: ${{ github.event_name != 'workflow_dispatch' || inputs.prefer_new }}
+
+      - name: Fail if no device matched
+        if: ${{ steps.find-device.outputs.matched != 'true' }}
+        run: |
+          echo "::error::No lab device matched the description"
+          exit 1
+
+      - name: Select tests
+        id: select-tests
+        timeout-minutes: 20
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/select-tests
+        with:
+          repository_path: .
+          device_context: ${{ steps.find-device.outputs.details }}
+          copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+      - name: Run tests on device
+        id: run-tests
+        timeout-minutes: 300
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/run-tests
+        with:
+          queue: ${{ steps.find-device.outputs.queue }}
+          device_context: ${{ steps.find-device.outputs.details }}
+          test_plan: ${{ steps.select-tests.outputs.test_plan }}
+          testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
+          testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
+          copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+      - name: Record device history
+        if: ${{ always() && steps.find-device.outputs.matched == 'true' && (github.event_name != 'workflow_dispatch' || inputs.record_history) }}
+        uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/update-history
+        with:
+          device: ${{ steps.find-device.outputs.device }}
+          queue: ${{ steps.find-device.outputs.queue }}
+          device_context: ${{ steps.find-device.outputs.details }}
+          job_path: ${{ steps.run-tests.outputs.job_path }}
+          outcome: ${{ steps.run-tests.outputs.passed == 'true' && 'passed' || steps.run-tests.outputs.passed == 'false' && 'failed' || 'unknown' }}
+          provision_outcome: ${{ steps.run-tests.outputs.provisioned == 'true' && 'passed' || steps.run-tests.outputs.provisioned == 'false' && 'failed' || 'unknown' }}
+          job_id: ${{ steps.run-tests.outputs.job_id }}
