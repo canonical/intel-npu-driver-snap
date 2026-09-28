@@ -1,0 +1,34 @@
+{
+  "capabilities": [
+    "Intel NPU (AI Boost)",
+    "Panther Lake"
+  ],
+  "cpu_codename": "PTL",
+  "device": "dell-pro-5-micro-p5m1260-c38271",
+  "ever_provisioned_successfully": true,
+  "history": [
+    {
+      "at": "2026-09-28T21:25:13Z",
+      "commit": "19430743a7d8436b83fc5f7922872c05267c0875",
+      "job_id": "d6273004-7e97-4b73-8dcb-b8c973eebe2a",
+      "outcome": "skipped",
+      "provision": "passed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/36482764912"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/dell-pro-5-micro-p5m1260-c38271.yaml",
+  "last_outcome": "skipped",
+  "last_provision_outcome": "passed",
+  "last_run": {
+    "at": "2026-09-28T21:25:13Z",
+    "commit": "19430743a7d8436b83fc5f7922872c05267c0875",
+    "job_id": "d6273004-7e97-4b73-8dcb-b8c973eebe2a",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/36482764912"
+  },
+  "os_release": "noble (Ubuntu 24.04)",
+  "provision_data": {
+    "url": "https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04d-proposed/20260116-73/somerville-noble-oem-24.04d-proposed-20260116-73.iso"
+  },
+  "provision_type": "oem_autoinstall",
+  "queue": "dell-pro-5-micro-p5m1260-c38271"
+}
