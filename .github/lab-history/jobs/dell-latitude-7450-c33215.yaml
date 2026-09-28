@@ -1,0 +1,8 @@
+job_queue: dell-latitude-7450-c33215
+provision_data:
+  url: https://tel-image-cache.canonical.com/oem-share/somerville/Platforms/jellyfish-oddish/FVR_X117/dell-bto-jammy-jellyfish-oddish-X117-20240108-6.iso
+reserve_data:
+  ssh_keys:
+    - lp:pe-bot
+  timeout: 60
+output_timeout: 3600
