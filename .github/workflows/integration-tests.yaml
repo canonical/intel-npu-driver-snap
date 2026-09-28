@@ -273,6 +273,7 @@ jobs:
   tag:
     name: Push tag for revision
     needs: [resolve-snap-info, testflinger-validation]
+    if: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
