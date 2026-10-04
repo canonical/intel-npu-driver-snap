@@ -1,0 +1,8 @@
+job_queue: dell-pro-16-plus-pb16250-c38358
+provision_data:
+  url: https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04b-proposed/20250114-163/somerville-noble-oem-24.04b-proposed-20250114-163.iso
+output_timeout: 3600
+reserve_data:
+  ssh_keys:
+    - lp:pe-bot
+  timeout: 60
