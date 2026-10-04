@@ -1,0 +1,35 @@
+{
+  "capabilities": [
+    "Intel NPU (AI Boost)",
+    "Intel Meteor Lake Core Ultra",
+    "rugged laptop form factor"
+  ],
+  "cpu_codename": "MTL",
+  "device": "dell-pro-rugged-13-ra13250-0cda-c34190",
+  "ever_provisioned_successfully": false,
+  "history": [
+    {
+      "at": "2026-10-04T04:29:23Z",
+      "commit": "7d4db47969200154e5f1500c5c23909af7b61572",
+      "job_id": "6d0925f4-7761-4678-9623-86a844ed97bd",
+      "outcome": "skipped",
+      "provision": "failed",
+      "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/37172360296"
+    }
+  ],
+  "job_file": ".github/lab-history/jobs/dell-pro-rugged-13-ra13250-0cda-c34190.yaml",
+  "last_outcome": "skipped",
+  "last_provision_outcome": "failed",
+  "last_run": {
+    "at": "2026-10-04T04:29:23Z",
+    "commit": "7d4db47969200154e5f1500c5c23909af7b61572",
+    "job_id": "6d0925f4-7761-4678-9623-86a844ed97bd",
+    "url": "https://github.com/canonical/intel-npu-driver-snap/actions/runs/37172360296"
+  },
+  "os_release": "noble (24.04)",
+  "provision_data": {
+    "url": "https://tel-image-cache.canonical.com/oem-share/somerville/releases/noble/oem-24.04a/20241006-108/somerville-noble-oem-24.04a-20241006-108.iso"
+  },
+  "provision_type": "oem_autoinstall",
+  "queue": "dell-pro-rugged-13-ra13250-0cda-c34190"
+}
