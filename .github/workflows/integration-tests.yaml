@@ -74,12 +74,19 @@ jobs:
           token: ${{ secrets.PE_BOT_PAT }}
           path: .github/actions/partner-eng-gh-actions
 
+      - name: Build device tag
+        id: device-tag
+        env:
+          GEN: ${{ matrix.gen }}
+        run: |
+          echo "tags=[\"intel-core-ultra-$(printf '%s' "$GEN" | tr '[:upper:]' '[:lower:]')\"]" >> "$GITHUB_OUTPUT"
+
       - name: Resolve device from lab history
         id: device
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/device-from-repo-history
         with:
           github_token: ${{ secrets.PE_BOT_PAT }}
-          cpu_codename: ${{ matrix.gen }}
+          tags: ${{ steps.device-tag.outputs.tags }}
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
 
