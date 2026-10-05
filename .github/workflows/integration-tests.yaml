@@ -78,7 +78,7 @@ jobs:
         id: device
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/device-from-repo-history
         with:
-          history_path: ${{ github.workspace }}/.github/lab-history
+          github_token: ${{ secrets.PE_BOT_PAT }}
           cpu_codename: ${{ matrix.gen }}
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
@@ -146,6 +146,11 @@ jobs:
           outcome: skipped
           provision_outcome: ${{ steps.provision-status.outputs.provisioned == 'true' && 'passed' || steps.provision-status.outputs.provisioned == 'false' && 'failed' || 'unknown' }}
           job_id: ${{ steps.submit.outputs.id }}
+          github_token: ${{ secrets.PE_BOT_LAB_DEVICES_READ_AND_WRITE }}
+          author: 'partner-eng-bot <pe-bot@canonical.com>'
+          committer: 'partner-eng-bot <pe-bot@canonical.com>'
+          auto_merge: true
+          merge_method: squash
 
       - name: Download checkbox artifacts
         id: artifacts
