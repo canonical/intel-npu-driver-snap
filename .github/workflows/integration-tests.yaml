@@ -57,8 +57,8 @@ jobs:
       pull-requests: write
     strategy:
       matrix:
-        # Generations to validate
-        gen: ["MTL", "LNL", "ARL", "PTL"]
+        # Device tags to validate
+        tag: ["intel-core-ultra-mtl", "intel-core-ultra-lnl", "intel-core-ultra-arl", "intel-core-ultra-ptl"]
       fail-fast: false
     steps:
       - name: Check out code
@@ -74,26 +74,19 @@ jobs:
           token: ${{ secrets.PE_BOT_PAT }}
           path: .github/actions/partner-eng-gh-actions
 
-      - name: Build device tag
-        id: device-tag
-        env:
-          GEN: ${{ matrix.gen }}
-        run: |
-          echo "tags=[\"intel-core-ultra-$(printf '%s' "$GEN" | tr '[:upper:]' '[:lower:]')\"]" >> "$GITHUB_OUTPUT"
-
       - name: Resolve device from lab history
         id: device
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/device-from-repo-history
         with:
           github_token: ${{ secrets.PE_BOT_PAT }}
-          tags: ${{ steps.device-tag.outputs.tags }}
+          tags: '["${{ matrix.tag }}"]'
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
 
       - name: Fail if no recorded device matched
         if: ${{ steps.device.outputs.matched != 'true' }}
         run: |
-          echo "::error::No successful lab-history entry found for generation ${{ matrix.gen }}"
+          echo "::error::No successful lab-history entry found for tag ${{ matrix.tag }}"
           exit 1
 
       - name: Build job file from template with oem_autoinstall provisioning
@@ -211,10 +204,10 @@ jobs:
               # Extract only submission.json
               tar -xJf "$file" submission.json -O > "$run_dir/submission.json"
 
-              # Build environment key, for example: env0=MTL-24.04.3-6.17-generic
+              # Build environment key, for example: env0=intel-core-ultra-mtl-24.04.3-6.17-generic
               kernel_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Kernel")) | .value] | first' "$run_dir/submission.json")
               os_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Distro")) | .value] | first | match("Ubuntu ([0-9.]+)") | .captures[0].string' "$run_dir/submission.json")
-              echo "env$i=${{ matrix.gen }}-${os_ver}-${kernel_ver}" >> $GITHUB_OUTPUT
+              echo "env$i=${{ matrix.tag }}-${os_ver}-${kernel_ver}" >> $GITHUB_OUTPUT
 
               # Save tarball path to output
               echo "tarball$i=$file" >> $GITHUB_OUTPUT
@@ -231,8 +224,8 @@ jobs:
         id: job-id
         run: |
           jobs=$(gh api /repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs)
-          # Matrix jobs include the matrix value in their name, e.g. "Testflinger Validation (MTL)"
-          job_id=$(echo "$jobs" | jq -r '.jobs[] | select(.name | contains("${{ matrix.gen }}")) | .id')
+          # Matrix jobs include the tag in their name, e.g. "Testflinger Validation (intel-core-ultra-mtl)"
+          job_id=$(echo "$jobs" | jq -r '.jobs[] | select(.name | contains("${{ matrix.tag }}")) | .id')
           echo "id=$job_id" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ github.token }}
