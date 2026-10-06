@@ -8,7 +8,7 @@ on:
         type: string
         default: 'A device containing a Intel NPU running Ubuntu 24.04'
       record_history:
-        description: 'Record the run outcome into .github/lab-history and open a rolling PR'
+        description: 'Record the run outcome in the shared history repository and open a rolling PR'
         type: boolean
         default: true
       prefer_new:
@@ -80,7 +80,7 @@ jobs:
           testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
           copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           hwcert_jobs_token: ${{ secrets.PE_BOT_PAT }}
-          history_path: ${{ github.workspace }}/.github/lab-history
+          github_token: ${{ secrets.PE_BOT_PAT }}
           # On push there are no inputs, so default prefer_new to true; a
           # workflow_dispatch run can still override it to false.
           prefer_new: ${{ github.event_name != 'workflow_dispatch' || inputs.prefer_new }}
@@ -123,3 +123,8 @@ jobs:
           outcome: ${{ steps.run-tests.outputs.passed == 'true' && 'passed' || steps.run-tests.outputs.passed == 'false' && 'failed' || 'unknown' }}
           provision_outcome: ${{ steps.run-tests.outputs.provisioned == 'true' && 'passed' || steps.run-tests.outputs.provisioned == 'false' && 'failed' || 'unknown' }}
           job_id: ${{ steps.run-tests.outputs.job_id }}
+          github_token: ${{ secrets.PE_BOT_LAB_DEVICES_READ_AND_WRITE }}
+          author: 'partner-eng-bot <pe-bot@canonical.com>'
+          committer: 'partner-eng-bot <pe-bot@canonical.com>'
+          auto_merge: true
+          merge_method: squash
