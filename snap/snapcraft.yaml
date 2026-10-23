@@ -36,9 +36,6 @@ slots:
       - $SNAP/usr/lib/x86_64-linux-gnu
 
 plugs:
-  intel-npu-plug: # append -plug as plug name cannot match slot name in same snap
-    interface: custom-device
-    custom-device: intel-npu-device
   intel-npu-kmod:
     interface: kernel-module-control
   intel-npu-fw:
@@ -57,11 +54,15 @@ layout:
 apps:
   npu-umd-test:
     command: usr/bin/npu-umd-test-wrapper
-    plugs: [intel-npu-plug]
+    plugs: [accel]
+
+  intel-npu-smi:
+    command: usr/bin/intel-npu-smi-wrapper
+    plugs: [accel]
 
   known-failures:
     command: usr/bin/known-failures
-    plugs: [intel-npu-plug]
+    plugs: [accel]
 
   load-npu-firmware:
     command: usr/bin/load-npu-firmware
@@ -82,6 +83,7 @@ parts:
     plugin: cmake
     cmake-parameters:
       - -DENABLE_NPU_COMPILER_BUILD=ON
+      - -DENABLE_TOOLS_BUILD=ON
       - -DCMAKE_INSTALL_PREFIX=/usr
     override-pull: |
       craftctl default
