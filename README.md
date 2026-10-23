@@ -2,7 +2,7 @@
 
 [![Get it from the Snap Store](https://snapcraft.io/en/light/install.svg)](https://snapcraft.io/intel-npu-driver)
 
-Snap recipe for the [Intel NPU user mode driver](https://github.com/intel/linux-npu-driver/). This snap is designed to be a content producer snap providing NPU (neural processing unit) firmware, char device node access, and user-space libraries (including the user mode driver and NPU compiler) for consumption by application snaps. It exposes slots for content consumer snaps to connect with, provides firmware binary blobs for the NPU device, and distributes an app for validating the user space driver (`npu-umd-test`).
+Snap recipe for the [Intel NPU user mode driver](https://github.com/intel/linux-npu-driver/). This snap is designed to be a content producer snap providing NPU (neural processing unit) firmware, char device node access, and user-space libraries (including the user mode driver and NPU compiler) for consumption by application snaps. It exposes slots for content consumer snaps to connect with, provides firmware binary blobs for the NPU device, and distributes apps for validating the user space driver (`npu-umd-test`) and monitoring the NPU (`intel-npu-smi`).
 
 ## Host OS Support
 
@@ -161,3 +161,13 @@ intel-npu-driver.known-failures
 ```
 
 This command accounts for tests that fail due to missing features in older kernel versions, so the output depends on the kernel version running on your host.
+
+### Monitoring the NPU
+
+The upstream `intel-npu-smi` tool is available as `intel-npu-driver.intel-npu-smi`:
+
+```
+intel-npu-driver.intel-npu-smi --help
+```
+
+The app plugs the snapd `accel` interface. Currently that interface does not grant the sysfs access needed for NPU telemetry, so monitoring under strict confinement will not work until snapd adds that access.
