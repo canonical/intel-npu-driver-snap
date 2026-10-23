@@ -40,6 +40,7 @@ is_mtl_npu() {
 }
 
 # Test that fails due to lack of sysfs access for NPU activity monitoring (1 test)
+# TODO: drop skipping this once accel snapd interface includes telemetry paths
 cat << 'EOF'
 Device.GetZesEngineGetActivity
 EOF
