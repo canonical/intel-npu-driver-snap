@@ -167,9 +167,8 @@ This command accounts for tests that fail due to missing features in older kerne
 The upstream `intel-npu-smi` tool is available as `intel-npu-driver.intel-npu-smi`:
 
 ```
-sudo snap connect intel-npu-driver:system-observe :system-observe
 intel-npu-driver.intel-npu-smi --help
 sudo intel-npu-driver.intel-npu-smi
 ```
 
-The `system-observe` interface must be connected manually to inspect process data. Run the tool with `sudo` for the most detailed readings available. The app also plugs `accel`, but that interface does not yet grant the sysfs access needed for NPU telemetry; `sudo` cannot bypass snap confinement, so full monitoring under strict confinement will require a future snapd update.
+Running without `sudo` warns that some NPU data may be limited. The snap uses the `accel` interface, but strict confinement still limits per-process readings even with `sudo`. The wrapper hides warnings about inaccessible `/proc/PID/fd` directories; it does not restore access to that data.
