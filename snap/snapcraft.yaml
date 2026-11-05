@@ -58,7 +58,7 @@ apps:
 
   intel-npu-smi:
     command: usr/bin/intel-npu-smi-wrapper
-    plugs: [accel]
+    plugs: [accel, hardware-observe]
 
   known-failures:
     command: usr/bin/known-failures

@@ -172,3 +172,9 @@ sudo intel-npu-driver.intel-npu-smi
 ```
 
 Running without `sudo` warns that some NPU data may be limited. The snap uses the `accel` interface, but strict confinement still limits per-process readings even with `sudo`. The wrapper hides warnings about inaccessible `/proc/PID/fd` directories; it does not restore access to that data.
+
+Without `hardware-observe`, the tool can still report NPU utilization, memory usage, firmware version, and kernel module version. To read additional host telemetry exposed through sysfs, such as NPU temperature, power usage, and memory bandwidth, manually connect the interface:
+
+```
+sudo snap connect intel-npu-driver:hardware-observe :hardware-observe
+```
