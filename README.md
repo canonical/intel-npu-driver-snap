@@ -164,6 +164,12 @@ This command accounts for tests that fail due to missing features in older kerne
 
 ### Monitoring the NPU
 
+The `hardware-observe` interface must be connected before running `intel-npu-smi`. Without access to the host's sysfs telemetry, the tool cannot initialize its PMT telemetry interface. Connect it manually:
+
+```
+sudo snap connect intel-npu-driver:hardware-observe :hardware-observe
+```
+
 The upstream `intel-npu-smi` tool is available as `intel-npu-driver.intel-npu-smi`:
 
 ```
@@ -172,9 +178,3 @@ sudo intel-npu-driver.intel-npu-smi
 ```
 
 Running without `sudo` warns that some NPU data may be limited. The snap uses the `accel` interface, but strict confinement still limits per-process readings even with `sudo`. The wrapper hides warnings about inaccessible `/proc/PID/fd` directories; it does not restore access to that data.
-
-Without `hardware-observe`, the tool can still report NPU utilization, memory usage, firmware version, and kernel module version. To read additional host telemetry exposed through sysfs, such as NPU temperature, power usage, and memory bandwidth, manually connect the interface:
-
-```
-sudo snap connect intel-npu-driver:hardware-observe :hardware-observe
-```
