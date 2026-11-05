@@ -51,7 +51,8 @@ jobs:
       - name: Check autoconnecting snap interfaces
         shell: bash
         run: |
-          snap connections intel-npu-driver | grep -w custom-device
+          snap connections intel-npu-driver | awk '$1 == "accel" && $2 == "intel-npu-driver:accel" && $3 == ":accel" { connected = 1 } END { exit !connected }'
+          snap connections intel-npu-driver | awk '$1 == "custom-device" && $3 == "intel-npu-driver:intel-npu" { found = 1 } END { exit !found }'
           snap connections intel-npu-driver | grep -w kernel-firmware-control
           snap connections intel-npu-driver | grep -w kernel-module-control
       - name: Verify that the load-npu-firmware service is enabled
@@ -61,5 +62,12 @@ jobs:
       - name: Verify that the user mode driver validation tool is deployed in the snap
         shell: bash
         run: |
-          echo "Checking for the user mode driver command in the snap..."
+          test -x /snap/intel-npu-driver/current/usr/bin/npu-umd-test-wrapper
+          test -x /snap/intel-npu-driver/current/usr/bin/npu-umd-test
           command -V intel-npu-driver.npu-umd-test
+      - name: Verify that intel-npu-smi is deployed in the snap
+        shell: bash
+        run: |
+          test -x /snap/intel-npu-driver/current/usr/bin/intel-npu-smi-wrapper
+          test -x /snap/intel-npu-driver/current/usr/bin/intel-npu-smi
+          command -V intel-npu-driver.intel-npu-smi
