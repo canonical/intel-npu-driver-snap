@@ -1,4 +1,14 @@
 #!/bin/bash
+# npu-umd-test creates scratch files in the current directory
+# (import_system_memory_test_file, test_native_graph.blob). Under strict
+# confinement the caller's directory is usually not visible to the snap and
+# snapd maps it to the read-only /var/lib/snapd/void, so those tests fail
+# with "Failed to open". Run from the snap's writable per-user data
+# directory instead.
+if [ ! -w . ]; then
+    cd "$SNAP_USER_DATA" || exit 1
+fi
+
 # Check if user passed --config or -c
 for arg in "$@"; do
     if [[ "$arg" == "--config" || "$arg" == "-c" ]]; then
