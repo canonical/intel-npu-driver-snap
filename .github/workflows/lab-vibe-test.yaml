@@ -6,7 +6,7 @@ on:
       device_prompt:
         description: 'Free-form description of the lab device'
         type: string
-        default: 'A device containing a Intel NPU running Ubuntu 24.04'
+        default: 'A device containing a Intel NPU running Ubuntu 26.04'
       record_history:
         description: 'Record the run outcome in the shared history repository and open a rolling PR'
         type: boolean
@@ -44,6 +44,7 @@ jobs:
             api.github.com
             codeload.github.com
             objects.githubusercontent.com
+            release-assets.githubusercontent.com
             api.githubcopilot.com
             api.business.githubcopilot.com
             telemetry.business.githubcopilot.com
@@ -64,7 +65,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: canonical/partner-eng-gh-actions
-          ref: lab/various-improvements
+          ref: lab/add-resolute-oem-images
           token: ${{ secrets.PE_BOT_PAT }}
           path: .github/actions/partner-eng-gh-actions
 
@@ -73,7 +74,7 @@ jobs:
         timeout-minutes: 20
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/find-device
         with:
-          device_prompt: ${{ inputs.device_prompt || 'A device with an Intel NPU running Ubuntu 26.04 (preferred) or 24.04' }}
+          device_prompt: ${{ inputs.device_prompt || 'A device with an Intel NPU running Ubuntu 26.04' }}
           c3_client_id: ${{ secrets.C3_CLIENT_ID }}
           c3_client_secret: ${{ secrets.C3_CLIENT_SECRET }}
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
@@ -81,6 +82,8 @@ jobs:
           copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           hwcert_jobs_token: ${{ secrets.PE_BOT_PAT }}
           github_token: ${{ secrets.PE_BOT_PAT }}
+          # Without history_path, prefer_new and the per-release failure cooldown do nothing.
+          history_path: lab-history
           # On push there are no inputs, so default prefer_new to true; a
           # workflow_dispatch run can still override it to false.
           prefer_new: ${{ github.event_name != 'workflow_dispatch' || inputs.prefer_new }}
@@ -113,7 +116,7 @@ jobs:
           copilot_github_token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
       - name: Record device history
-        if: ${{ always() && steps.find-device.outputs.matched == 'true' && (github.event_name != 'workflow_dispatch' || inputs.record_history) }}
+        if: ${{ always() && steps.find-device.outputs.matched == 'true' && steps.run-tests.outputs.job_id != '' && (github.event_name != 'workflow_dispatch' || inputs.record_history) }}
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/update-history
         with:
           device: ${{ steps.find-device.outputs.device }}
