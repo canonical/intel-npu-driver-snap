@@ -15,6 +15,9 @@ jobs:
   release:
     name: Release snap to store
     runs-on: [self-hosted, linux, X64, xlarge, jammy]
+    outputs:
+      version: ${{ steps.upload.outputs.version }}
+      revision: ${{ steps.upload.outputs.revision }}
     steps:
       - name: Checkout the source
         uses: actions/checkout@v7
@@ -30,9 +33,58 @@ jobs:
           path: ${{ steps.snapcraft-yaml.outputs.project-root }}
 
       - name: Release to snap store
+        id: upload
         shell: bash
         env:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAP_STORE_PE_BOT }}
           SNAP_FILE: ${{ steps.build.outputs.snap }}
         run: |
-          snapcraft upload "$SNAP_FILE" --release=latest/edge
+          set -o pipefail
+          snapcraft upload "$SNAP_FILE" --release=latest/edge 2>&1 | tee upload.log
+          # Snap files are named <name>_<version>_<arch>.snap.
+          version="$(basename "$SNAP_FILE" .snap | cut -d_ -f2)"
+          revision="$(grep -oiE 'revision [0-9]+' upload.log | head -1 | grep -oE '[0-9]+' || true)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "revision=$revision" >> "$GITHUB_OUTPUT"
+
+  tag:
+    name: Push tag for revision
+    needs: release
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout the source
+        uses: actions/checkout@v7
+
+      - name: Resolve snap version and revision
+        id: snap-info
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+          REVISION: ${{ needs.release.outputs.revision }}
+        run: |
+          if [ -z "$VERSION" ] || [ -z "$REVISION" ]; then
+            echo "::error::Could not read the uploaded snap's version ('$VERSION') or revision ('$REVISION') from the release job"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "revision=$REVISION" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push tag for revision
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SNAP_VERSION: ${{ steps.snap-info.outputs.version }}
+          SNAP_REVISION: ${{ steps.snap-info.outputs.revision }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          tag_name="${SNAP_VERSION}-rev${SNAP_REVISION}"
+          if git ls-remote --tags origin | grep -q "refs/tags/${tag_name}"; then
+            echo "Tag ${tag_name} already exists in remote repo. Doing nothing."
+          else
+            git tag -a "${tag_name}" -m "Revision ${SNAP_REVISION}"
+            git push origin "${tag_name}"
+          fi

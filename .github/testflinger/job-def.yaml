@@ -34,7 +34,7 @@ test_data:
     echo
 
     # Avoid GPG errors on old unsupported versions of Chrome, which we don't test anyway
-    _run sudo rm /etc/apt/sources.list.d/google-chrome.list
+    _run sudo rm -f /etc/apt/sources.list.d/google-chrome.list
 
     _run sudo snap refresh
     _run sudo snap install intel-npu-driver --channel latest/edge

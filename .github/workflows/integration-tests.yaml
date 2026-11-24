@@ -15,6 +15,8 @@ concurrency:
 
 env:
   TEST_OBSERVER_URL: https://test-observer-api.canonical.com
+  # Lab history release to select devices from and record results under.
+  LAB_UBUNTU_RELEASE: ubuntu-26.04
 
 jobs:
   resolve-snap-info:
@@ -70,7 +72,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: canonical/partner-eng-gh-actions
-          ref: lab/various-improvements
+          ref: lab/add-resolute-oem-images
           token: ${{ secrets.PE_BOT_PAT }}
           path: .github/actions/partner-eng-gh-actions
 
@@ -79,20 +81,25 @@ jobs:
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/device-from-repo-history
         with:
           github_token: ${{ secrets.PE_BOT_PAT }}
-          tags: '["${{ matrix.tag }}"]'
+          tags: '["${{ matrix.tag }}", "${{ env.LAB_UBUNTU_RELEASE }}"]'
           testflinger_client_id: ${{ secrets.TESTFLINGER_CLIENT_ID }}
           testflinger_secret_key: ${{ secrets.TESTFLINGER_SECRET_KEY }}
 
       - name: Fail if no recorded device matched
         if: ${{ steps.device.outputs.matched != 'true' }}
+        env:
+          TAG: ${{ matrix.tag }}
         run: |
-          echo "::error::No successful lab-history entry found for tag ${{ matrix.tag }}"
+          echo "::error::No successful ${LAB_UBUNTU_RELEASE} lab-history entry found for tag ${TAG}"
           exit 1
 
       - name: Build job file from template with oem_autoinstall provisioning
+        env:
+          QUEUE: ${{ steps.device.outputs.queue }}
+          DETAILS: ${{ steps.device.outputs.details }}
         run: |
-          sed -e "s|REPLACE_QUEUE|${{ steps.device.outputs.queue }}|" \
-          -e "s|REPLACE_IMAGE_URL|$(jq -r '.image' <<< '${{ steps.device.outputs.details }}')|" \
+          sed -e "s|REPLACE_QUEUE|${QUEUE}|" \
+          -e "s|REPLACE_IMAGE_URL|$(jq -r '.image' <<< "${DETAILS}")|" \
           ${GITHUB_WORKSPACE}/.github/testflinger/job-def.yaml > \
           ${GITHUB_WORKSPACE}/job.yaml
       - name: Submit testflinger job
@@ -136,11 +143,12 @@ jobs:
       # Record the outcome so a failed provisioning attempt isn't re-picked by
       # device-from-repo-history on a re-run.
       - name: Record device history
-        if: always()
+        if: ${{ always() && steps.submit.outputs.id != '' }}
         uses: ./.github/actions/partner-eng-gh-actions/.github/actions/lab/update-history
         with:
           device: ${{ steps.device.outputs.device }}
           queue: ${{ steps.device.outputs.queue }}
+          release: ${{ env.LAB_UBUNTU_RELEASE }}
           device_context: ${{ steps.device.outputs.details }}
           job_path: ${{ github.workspace }}/job.yaml
           outcome: skipped
@@ -275,30 +283,3 @@ jobs:
           results: ${{ steps.artifacts.outputs.tarball1 }}
           test_observer_url: ${{ env.TEST_OBSERVER_URL }}
           api_key: ${{ secrets.TEST_OBSERVER_API_KEY_PRODUCTION }}
-  tag:
-    name: Push tag for revision
-    needs: [resolve-snap-info, testflinger-validation]
-    if: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main') }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout the source
-        uses: actions/checkout@v7
-      - name: Create and push tag for revision
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SNAP_VERSION: ${{ needs.resolve-snap-info.outputs.version }}
-          SNAP_REVISION: ${{ needs.resolve-snap-info.outputs.revision }}
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-
-          tag_name="${SNAP_VERSION}-rev${SNAP_REVISION}"
-          if git ls-remote --tags origin | grep -q "refs/tags/${tag_name}"; then
-            echo "Tag ${tag_name} already exists in remote repo. Doing nothing."
-          else
-            git tag -a "${tag_name}" -m "Revision ${SNAP_REVISION}"
-            git push origin "${tag_name}"
-          fi
