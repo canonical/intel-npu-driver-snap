@@ -213,8 +213,9 @@ jobs:
               tar -xJf "$file" submission.json -O > "$run_dir/submission.json"
 
               # Build environment key, for example: env0=intel-core-ultra-mtl-24.04.3-6.17-generic
-              kernel_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Kernel")) | .value] | first' "$run_dir/submission.json")
-              os_ver=$(jq -r '[.system_information | .. | objects | to_entries[] | select(.key | endswith("#Distro")) | .value] | first | match("Ubuntu ([0-9.]+)") | .captures[0].string' "$run_dir/submission.json")
+              # Fall back to the distribution/uname collectors when inxi fails (it does on 26.04).
+              kernel_ver=$(jq -r '([.system_information | .. | objects | to_entries[] | select(.key | endswith("#Kernel")) | .value] | first) // .system_information.uname.outputs.payload.kernel // "unknown"' "$run_dir/submission.json")
+              os_ver=$(jq -r '(([.system_information | .. | objects | to_entries[] | select(.key | endswith("#Distro")) | .value] | first) // .system_information.distribution.outputs.payload.description // "") | (match("Ubuntu ([0-9.]+)").captures[0].string? // "unknown")' "$run_dir/submission.json")
               echo "env$i=${{ matrix.tag }}-${os_ver}-${kernel_ver}" >> $GITHUB_OUTPUT
 
               # Save tarball path to output

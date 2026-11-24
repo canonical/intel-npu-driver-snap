@@ -23,7 +23,7 @@ test_data:
     source install_tools.sh $TOOLS_PATH
 
     # ensure device is available before continuing
-    wait_for_ssh --allow-degraded
+    wait-for-ssh --allow-degraded
 
     echo
     echo "====== TARGET DEVICE CONNECTION INFO ======"
@@ -75,7 +75,8 @@ test_data:
     _run sudo apt update
     _run sudo apt -y upgrade
     _run sudo reboot
-    wait_for_ssh --allow-degraded
+    # The first boot after a kernel upgrade can take longer than the default ~3 minutes.
+    wait-for-ssh --allow-degraded --times 60
 
     _run sudo bash set-device-access.sh
     _run /home/ubuntu/checkbox-launcher
