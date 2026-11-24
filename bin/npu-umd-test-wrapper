@@ -3,10 +3,14 @@
 # (import_system_memory_test_file, test_native_graph.blob). Under strict
 # confinement the caller's directory is usually not visible to the snap and
 # snapd maps it to the read-only /var/lib/snapd/void, so those tests fail
-# with "Failed to open". Run from the snap's writable per-user data
-# directory instead.
-if [ ! -w . ]; then
+# with "Failed to open". Other directories (e.g. checkbox's
+# /var/tmp/cwd-* job directories) pass the [ -w . ] permission check but are
+# still denied by AppArmor, so probe by actually creating a file. If that
+# fails, run from the snap's writable per-user data directory instead.
+if ! probe=$(mktemp -p . .npu-umd-test-probe-XXXXXX 2>/dev/null); then
     cd "$SNAP_USER_DATA" || exit 1
+else
+    rm -f "$probe"
 fi
 
 # Check if user passed --config or -c
