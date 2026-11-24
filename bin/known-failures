@@ -32,13 +32,6 @@ is_npu37xx() {
   fi
 }
 
-# Meteor Lake processors have Intel CPU model 170 (0xaa).
-# /proc/cpuinfo is available inside the snap, unlike host sysfs.
-# Returns 0 (true) if running on Meteor Lake, 1 (false) otherwise.
-is_mtl_npu() {
-  grep -q '^model[[:space:]]*: 170$' /proc/cpuinfo
-}
-
 # Test that fails due to lack of sysfs access for NPU activity monitoring (1 test)
 cat << 'EOF'
 Device.GetZesEngineGetActivity
@@ -55,11 +48,6 @@ cat << 'EOF'
 ExternalMemoryDmaHeap.DmaHeapToNpu/2KB
 ExternalMemoryDmaHeap.DmaHeapToNpu/16MB
 ExternalMemoryDmaHeap.DmaHeapToNpu/255MB
-EOF
-
-# Test failing across all NPU generations and kernels
-cat << 'EOF'
-ImportSystemMemory.WriteFromDeviceToReadOnlyImportedMemoryFails
 EOF
 
 # Tests skipped on NPU37xx due to lack of tensor strides support (24 tests)
@@ -93,6 +81,11 @@ StridesProperty.GetArgumentProperties3/1
 StridesProperty.GetArgumentProperties3/2
 StridesProperty.GetArgumentProperties3/3
 StridesProperty.GetArgumentProperties3/4
+StridesProperty.GetArgumentProperties4/0
+StridesProperty.GetArgumentProperties4/1
+StridesProperty.GetArgumentProperties4/2
+StridesProperty.GetArgumentProperties4/3
+StridesProperty.GetArgumentProperties4/4
 MutableCmdList.GetNextInferenceId
 EOF
 fi
@@ -131,10 +124,12 @@ Driver.TestDriverNpuExtension
 EOF
 fi
 
-# System-memory import requires kernel >= 6.19 and is unsupported on Meteor Lake.
+# System-memory import requires kernel >= 6.19 and is unsupported on NPU37xx
+# (Meteor Lake and Arrow Lake): "Standard allocation import is not supported".
 # https://github.com/intel/linux-npu-driver/issues/122
-if kernel_older_than "6.19" || is_mtl_npu; then
+if kernel_older_than "6.19" || is_npu37xx; then
   cat << 'EOF'
+ImportSystemMemory.WriteFromDeviceToReadOnlyImportedMemoryFails
 ImportSystemMemory.MultipleImportSystemMemory
 ImportSystemMemory.AllocMemoryThenExecuteCopy/4KB
 ImportSystemMemory.AllocMemoryThenExecuteCopy/64KB
@@ -158,5 +153,10 @@ ImportSystemMemory.OpenFileInReadOnlyThenExecuteCopy/4MB
 ImportSystemMemory.OpenFileInReadOnlyThenExecuteCopy/32MB
 CommandGraphImportSystemMemory.GetNativeBinaryThenImportItAndRunInference/add_abc
 CommandGraphImportSystemMemory.WriteNativeBinaryToFileThenImportItAndRunInference/add_abc
+CommandGraphImportSystemMemory.GetNativeBinaryThenImportItAndRunInference/mul_add
+CommandGraphImportSystemMemory.WriteNativeBinaryToFileThenImportItAndRunInference/mul_add
+ZeInitDriversTest.ImportedSystemMemoryReportsHostImportedWithCurrentAppVersionHint
+ZeInitDriversTest.ImportedSystemMemoryReportsHostWithAppVersionHint1_17
+ZeInitDriversTest.ImportedSystemMemoryReportsHostWithoutAppVersionHint
 EOF
 fi
